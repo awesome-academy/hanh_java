@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:psms_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+
+  thymeleaf:
+    cache: false
+
+  mail:
+    host: localhost
+    port: 25
+
+jwt:
+  secret: test-secret-key-for-unit-tests-only-not-production-256-bits-long-minimum
+  expiration: 3600000
+  refresh-expiration: 604800000
+
+app:
+  upload-dir: ./test-uploads
+  base-url: http://localhost:8080
