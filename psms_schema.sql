@@ -10,6 +10,15 @@ SET FOREIGN_KEY_CHECKS = 0;
 SET SQL_MODE = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -------------------------------------------------------------
+-- 0. CREATE & USE DATABASE
+-- -------------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `psms`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE `psms`;
+
+-- -------------------------------------------------------------
 -- DROP các bảng cũ (thứ tự ngược FK dependency)
 -- Chạy an toàn nhiều lần — không mất data ngoài ý muốn nếu
 -- bạn chỉ muốn update schema, hãy comment block này lại
@@ -30,14 +39,6 @@ DROP TABLE IF EXISTS `revoked_access_tokens`; -- không có FK, drop ở đây c
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `roles`;
 
--- -------------------------------------------------------------
--- 0. CREATE & USE DATABASE
--- -------------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS `psms`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE `psms`;
 
 
 -- =============================================================
@@ -71,7 +72,6 @@ INSERT INTO `roles` (`name`, `description`) VALUES
 --
 --  INDEX STRATEGY:
 --    uq_users_email            → Login: WHERE email = ?
---    uq_users_eid              → OAuth2: WHERE eid_provider=? AND eid_subject=?
 --    idx_users_active          → Filter tài khoản: WHERE is_active=1 AND is_locked=0
 --    idx_users_created_at  [+] → Admin list: ORDER BY created_at DESC (sort mặc định)
 --    ft_users_search       [+] → Admin search: MATCH(full_name,email) AGAINST('keyword')
@@ -88,8 +88,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   `failed_login_count`     TINYINT      NOT NULL DEFAULT 0 COMMENT 'Brute force: đếm lần login sai liên tiếp, reset khi thành công',
   `locked_until`           DATETIME     NULL     COMMENT 'Brute force: tạm khóa đến thời điểm này, NULL = không bị khóa tạm',
   `email_notif_enabled`    TINYINT(1)   NOT NULL DEFAULT 1,
-  `eid_provider`           VARCHAR(50)  NULL     COMMENT 'VD: VNeID, Google',
-  `eid_subject`            VARCHAR(255) NULL     COMMENT 'Subject ID từ nhà cung cấp eID',
   `created_at`             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `last_login_at`          DATETIME     NULL,
@@ -97,9 +95,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `uq_users_email`
     (`email`)
     COMMENT 'Đảm bảo email duy nhất + tốc độ login',
-  UNIQUE KEY `uq_users_eid`
-    (`eid_provider`, `eid_subject`)
-    COMMENT 'OAuth2/eID: tránh duplicate account từ 1 provider',
   KEY `idx_users_active`
     (`is_active`, `is_locked`)
     COMMENT 'Filter tài khoản hoạt động: WHERE is_active=1 AND is_locked=0',
