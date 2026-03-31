@@ -1,0 +1,25 @@
+# src/main/resources/application-dev.yml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/psms?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password_here
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    show-sql: true
+
+  thymeleaf:
+    cache: false               # hot reload template khi dev
+
+jwt:
+  secret: dev-secret-key-change-this-in-production-must-be-at-least-256-bits-long
+
+app:
+  upload-dir: ./uploads
+  base-url: http://localhost:8080
+
+logging:
+  level:
+    com.psms: DEBUG
+    org.springframework.security: DEBUG

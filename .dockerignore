@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.claude/
+*.md
+docs/
+uploads/
+test-uploads/
+.idea/
+*.iml

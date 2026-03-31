@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: psms-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: psms_root_pass
+      MYSQL_DATABASE: psms
+      MYSQL_USER: psms_user
+      MYSQL_PASSWORD: psms_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./psms_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: psms-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/psms?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: psms_user
+      SPRING_DATASOURCE_PASSWORD: psms_pass
+      JWT_SECRET: docker-dev-secret-key-change-this-in-production-must-be-at-least-256-bits
+      APP_UPLOAD_DIR: /app/uploads
+      APP_BASE_URL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  mysql-data:
+  uploads:

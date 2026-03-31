@@ -1,0 +1,58 @@
+# src/main/resources/application.yml
+spring:
+  profiles:
+    active: dev
+
+  application:
+    name: psms
+
+  # JPA — ddl-auto sẽ override theo từng profile
+  jpa:
+    hibernate:
+      ddl-auto: validate       # validate: kiểm tra schema khớp entity, không tự tạo/xóa
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    open-in-view: false        # tắt OSIV — tránh lazy loading ngoài transaction
+
+  # Thymeleaf
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+
+  # Servlet file upload
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# JWT (secret sẽ override trong từng profile)
+jwt:
+  expiration: 3600000          # 1 giờ (ms)
+  refresh-expiration: 604800000 # 7 ngày (ms)
+
+# Swagger — bật trên dev, tắt trên prod
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: ASC
+  group-configs:
+    - group: client
+      paths-to-match: /api/client/**
+    - group: admin
+      paths-to-match: /api/admin/**
