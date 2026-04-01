@@ -436,7 +436,7 @@ CREATE TABLE IF NOT EXISTS `applications` (
     (`submitted_at` DESC)
     COMMENT '[MỚI] Export CSV date range: WHERE submitted_at BETWEEN ? AND ?;
              Admin filter từ ngày–đến ngày không kèm status',
-  CONSTRAINT `fk_app_citizen`      FOREIGN KEY (`citizen_id`)        REFERENCES `users`         (`id`),
+  CONSTRAINT `fk_app_citizen`      FOREIGN KEY (`citizen_id`)        REFERENCES `citizens`      (`id`),
   CONSTRAINT `fk_app_service_type` FOREIGN KEY (`service_type_id`)   REFERENCES `service_types` (`id`),
   CONSTRAINT `fk_app_staff`        FOREIGN KEY (`assigned_staff_id`) REFERENCES `users`         (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB

@@ -1,6 +1,7 @@
 package com.psms.repository;
 
 import com.psms.entity.Application;
+import com.psms.entity.Citizen;
 import com.psms.entity.Department;
 import com.psms.entity.ServiceCategory;
 import com.psms.entity.ServiceType;
@@ -31,8 +32,8 @@ class ApplicationRepositoryDataJpaTest {
     @Autowired
     private ApplicationRepository applicationRepository;
 
-    private User citizenA;
-    private User citizenB;
+    private Citizen citizenA;
+    private Citizen citizenB;
     private ServiceType serviceType;
     private Application appSubmittedByCitizenA;
     private Application appProcessingByCitizenA;
@@ -43,8 +44,12 @@ class ApplicationRepositoryDataJpaTest {
         Department department = persistDepartment();
         ServiceCategory category = persistCategory();
         serviceType = persistServiceType(category, department);
-        citizenA = persistUser("citizen.a@example.com", "Citizen A");
-        citizenB = persistUser("citizen.b@example.com", "Citizen B");
+
+        // Mỗi Citizen cần 1 User tương ứng (quan hệ 1-1)
+        User userA = persistUser("citizen.a@example.com", "Citizen A");
+        User userB = persistUser("citizen.b@example.com", "Citizen B");
+        citizenA = persistCitizen(userA, "001234567890");
+        citizenB = persistCitizen(userB, "001234567891");
 
         appSubmittedByCitizenA = persistApplication(
                 "HS-20260331-00001",
@@ -166,8 +171,16 @@ class ApplicationRepositoryDataJpaTest {
         return entityManager.persistFlushFind(user);
     }
 
+    // Citizen quan hệ 1-1 với User — cần persist riêng sau khi có User
+    private Citizen persistCitizen(User user, String nationalId) {
+        Citizen citizen = new Citizen();
+        citizen.setUser(user);
+        citizen.setNationalId(nationalId);
+        return entityManager.persistFlushFind(citizen);
+    }
+
     private Application persistApplication(String code,
-                                           User citizen,
+                                           Citizen citizen,
                                            ApplicationStatus status,
                                            LocalDateTime submittedAt) {
         Application application = new Application();
@@ -180,4 +193,3 @@ class ApplicationRepositoryDataJpaTest {
         return entityManager.persistFlushFind(application);
     }
 }
-

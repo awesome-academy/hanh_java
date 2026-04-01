@@ -34,7 +34,7 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc("HS-20260331-"))
+        when(repository.findLatestByCodePrefix("HS-20260331-"))
                 .thenReturn(Optional.empty());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
@@ -47,14 +47,14 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc("HS-20260331-"))
+        when(repository.findLatestByCodePrefix("HS-20260331-"))
                 .thenReturn(Optional.of(applicationWithCode("HS-20260331-00042")));
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
 
         assertEquals("HS-20260331-00043", generator.generate());
         assertEquals("HS-20260331-00044", generator.generate());
-        verify(repository, times(1)).findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc("HS-20260331-");
+        verify(repository, times(1)).findLatestByCodePrefix("HS-20260331-");
     }
 
     @Test
@@ -62,9 +62,9 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc("HS-20260331-"))
+        when(repository.findLatestByCodePrefix("HS-20260331-"))
                 .thenReturn(Optional.of(applicationWithCode("HS-20260331-00007")));
-        when(repository.findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc("HS-20260401-"))
+        when(repository.findLatestByCodePrefix("HS-20260401-"))
                 .thenReturn(Optional.empty());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
@@ -79,7 +79,7 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc(anyString()))
+        when(repository.findLatestByCodePrefix(anyString()))
                 .thenReturn(Optional.empty());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);

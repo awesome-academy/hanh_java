@@ -19,7 +19,7 @@ public interface ApplicationMapper {
     ApplicationResponse toResponse(Application application);
 
     @Mapping(target = "citizenId", source = "citizen.id")
-    @Mapping(target = "citizenFullName", source = "citizen.fullName")
+    @Mapping(target = "citizenFullName", source = "citizen.user.fullName")
     @Mapping(target = "serviceTypeId", source = "serviceType.id")
     @Mapping(target = "serviceTypeName", source = "serviceType.name")
     @Mapping(target = "departmentName", source = "serviceType.department.name")

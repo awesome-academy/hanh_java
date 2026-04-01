@@ -2,17 +2,8 @@ package com.psms.entity;
 
 import com.psms.entity.base.AuditableLongEntity;
 import com.psms.enums.ApplicationStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -21,6 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Application extends AuditableLongEntity {
 
     @Column(name = "application_code", nullable = false, length = 30, unique = true)
@@ -28,7 +21,7 @@ public class Application extends AuditableLongEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "citizen_id", nullable = false)
-    private User citizen;
+    private Citizen citizen;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "service_type_id", nullable = false)

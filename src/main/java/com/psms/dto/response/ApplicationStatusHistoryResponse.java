@@ -1,15 +1,15 @@
 package com.psms.dto.response;
 
 import com.psms.enums.ApplicationStatus;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ApplicationStatusHistoryResponse {
 
     private Long id;

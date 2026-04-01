@@ -2,6 +2,8 @@ package com.psms.entity.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,6 +19,8 @@ import java.time.LocalDateTime;
  * <p><b>Entity sử dụng:</b> ServiceType, Application, ApplicationStatusHistory.
  */
 @MappedSuperclass
+@Getter
+@Setter
 public abstract class AuditableLongEntity extends LongBaseEntity {
 
     @CreationTimestamp
@@ -26,20 +30,4 @@ public abstract class AuditableLongEntity extends LongBaseEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }

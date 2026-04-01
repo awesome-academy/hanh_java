@@ -1,9 +1,7 @@
 package com.psms.dto.response;
 
 import com.psms.enums.Gender;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,6 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CitizenProfileResponse {
 
     private Long citizenId;

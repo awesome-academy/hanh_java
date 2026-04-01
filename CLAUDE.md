@@ -33,7 +33,7 @@ Trước khi code, phải:
 1. **Thảo luận** với user về các bước sẽ làm (liệt kê rõ bước 1, bước 2...)
 2. **Giải thích** keyword mới hoặc challenge kỹ thuật trước khi code
 3. **Chờ xác nhận** rồi mới làm từng bước một
-4. Những chỗ code tường minh rồi thì không cần comment. Chỉ comment với những chỗ logic phức tạp hoặc keyword mới.
+4. Những chỗ code tường minh rồi thì không cần comment. Chỉ comment với những chỗ logic phức tạp hoặc keyword mới
 5. Sau mỗi bước, hỏi user muốn tiếp tục không. Không được làm all-in rồi mới show code. Cần chia nhỏ ra để user theo dõi và hiểu từng phần.
 6. Cần đưa ra các solution như một dự án thực tế không phải là một bài tập algorithm. Cần giải thích trade-off giữa các solution, ưu nhược của từng approach, và tại sao chọn cách này mà không phải cách kia.
 7. Có Annotation @Operation trên mỗi controller method để mô tả API endpoint đó làm gì, input output ra sao, và business rules liên quan. Đây là phần rất quan trọng vì nó giúp document API ngay trong code, và cũng giúp user hiểu rõ hơn về từng endpoint khi đọc code.

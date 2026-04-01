@@ -75,7 +75,7 @@ public class ApplicationCodeGenerator {
         // Truy vấn DB: tìm mã hồ sơ có prefix ngày hôm nay, lấy mã lớn nhất (DESC LIMIT 1)
         // Dùng Optional.map để xử lý trường hợp chưa có mã nào trong ngày → trả về 0
         int lastSequence = applicationRepository
-                .findTopByApplicationCodeStartingWithOrderByApplicationCodeDesc(prefix)
+                .findLatestByCodePrefix(prefix)
                 .map(existing -> extractSequence(existing.getApplicationCode(), prefix))
                 .orElse(0); // Chưa có mã nào trong ngày → bắt đầu từ sequence 1
 

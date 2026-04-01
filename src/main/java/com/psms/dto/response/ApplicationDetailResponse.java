@@ -1,9 +1,7 @@
 package com.psms.dto.response;
 
 import com.psms.enums.ApplicationStatus;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,6 +11,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ApplicationDetailResponse {
 
     private Long id;

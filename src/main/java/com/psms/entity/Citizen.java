@@ -10,9 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -21,6 +19,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Citizen extends AuditableLongEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -50,4 +50,3 @@ public class Citizen extends AuditableLongEntity {
     private String province;
 
 }
-
