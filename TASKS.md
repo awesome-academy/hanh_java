@@ -57,28 +57,28 @@
 > **Base:** `task/init-project`
 
 **Schema & Seed**
-- [ ] `#02-01` Chạy `psms_schema.sql` vào MySQL (15 bảng + indexes)
-- [ ] `#02-02` Chạy `psms_seed.sql` — 4 roles, 5 departments, 6 service types, 1 admin, 2 citizens mẫu
+- [x] `#02-01` Chạy `psms_schema.sql` vào MySQL (15 bảng + indexes)
+- [x] `#02-02` Chạy `psms_seed.sql` — 4 roles, 5 departments, 6 service types, 1 admin, 2 citizens mẫu
 
 **Entities — Domain 1 (Auth)**
-- [ ] `#02-03` Entity `Role` + Enum `RoleName`
-- [ ] `#02-04` Entity `User` implement `UserDetails` — field: `email`, `fullName`, `password`, `isActive`, `isLocked`
-- [ ] `#02-05` Entity `Citizen` (1-1 User) + Entity `Department` + Entity `Staff`
+- [x] `#02-03` Entity `Role` + Enum `RoleName`
+- [x] `#02-04` Entity `User` implement `UserDetails` — field: `email`, `fullName`, `password`, `isActive`, `isLocked`
+- [x] `#02-05` Entity `Citizen` (1-1 User) + Entity `Department` + Entity `Staff`
 
 **Entities — Domain 2 (Services)**
-- [ ] `#02-06` Entity `ServiceCategory` + Entity `ServiceType`
+- [x] `#02-06` Entity `ServiceCategory` + Entity `ServiceType`
 
 **Entities — Domain 3 (Applications)**
-- [ ] `#02-07` Entity `Application` + Enum `ApplicationStatus` (7 trạng thái)
-- [ ] `#02-08` Entity `ApplicationStatusHistory`
+- [x] `#02-07` Entity `Application` + Enum `ApplicationStatus` (7 trạng thái)
+- [x] `#02-08` Entity `ApplicationStatusHistory`
 
 **Repositories & Mappers**
-- [ ] `#02-09` Repositories cho tất cả entities (extend `JpaRepository` + `JpaSpecificationExecutor`)
-- [ ] `#02-10` MapStruct mappers: `UserMapper`, `CitizenMapper`, `ApplicationMapper`, `ServiceTypeMapper`
-- [ ] `#02-11` `ApplicationCodeGenerator` — sinh mã `HS-{YYYYMMDD}-{5 số}`, thread-safe
+- [x] `#02-09` Repositories cho tất cả entities (extend `JpaRepository` + `JpaSpecificationExecutor`)
+- [x] `#02-10` MapStruct mappers: `UserMapper`, `CitizenMapper`, `ApplicationMapper`, `ServiceTypeMapper`
+- [x] `#02-11` `ApplicationCodeGenerator` — sinh mã `HS-{YYYYMMDD}-{5 số}`, thread-safe
 
 **Test**
-- [ ] `#02-12` `@DataJpaTest` cho `ApplicationRepository` — filter by status, citizen, date range
+- [x] `#02-12` `@DataJpaTest` cho `ApplicationRepository` — filter by status, citizen, date range
 
 **Definition of Done:**
 ```

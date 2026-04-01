@@ -34,7 +34,7 @@ Hệ thống hướng đến việc số hoá toàn bộ quy trình hành chính
 
 **Ngoài phạm vi (Out of scope)**
 - Thanh toán lệ phí trực tuyến (tích hợp cổng thanh toán)
-- Chữ ký số / xác thực eID (có thể bổ sung sau)
+- Chữ ký số / xác thực eID
 - App mobile (iOS / Android)
 - Tích hợp hệ thống bên ngoài (cơ sở dữ liệu dân cư quốc gia...)
 

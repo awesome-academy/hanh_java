@@ -1,9 +1,10 @@
 # src/main/resources/application-dev.yml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/psms?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
-    username: root
-    password: your_password_here
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/psms?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true}
+    # Ưu tiên: SPRING_DATASOURCE_USERNAME (chuẩn Spring Boot / Docker) → DB_USERNAME (legacy) → psms_user (default local)
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:Aa@123456}}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

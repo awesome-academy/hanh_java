@@ -1,2 +1,30 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# Git line-ending and encoding rules
+# Prevents mojibake when pushing/pulling across Windows ↔ macOS ↔ Linux
+
+# Default: normalize line endings to LF on commit
+* text=auto eol=lf
+
+# Java source files — UTF-8, LF
+*.java      text eol=lf
+*.xml       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.sql       text eol=lf
+*.md        text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+*.js        text eol=lf
+
+# .properties — force UTF-8 so git never re-encodes Vietnamese text
+*.properties text eol=lf working-tree-encoding=UTF-8
+
+# Binary files — never touch
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
+*.class binary
+
