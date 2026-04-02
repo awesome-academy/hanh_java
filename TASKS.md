@@ -94,46 +94,46 @@
 > **Base:** `task/entities-repositories`
 
 **Backend**
-- [ ] `#03-01` `JwtTokenProvider` (generate accessToken 1h + `jti` claim, refreshToken 7d, validate, extract)
-- [ ] `#03-02` `JwtAuthenticationFilter` (`OncePerRequestFilter`) — check `revoked_access_tokens` khi validate
-- [ ] `#03-03` `SecurityConfig` — URL rules đầy đủ theo SPECS.md Section 8
-- [ ] `#03-04` `POST /api/auth/register` — tạo User + Citizen, gán role CITIZEN
-- [ ] `#03-05` `POST /api/auth/login` — trả accessToken + lưu HttpSession, set HttpOnly cookie cho refreshToken:
+- [x] `#03-01` `JwtTokenProvider` (generate accessToken 1h + `jti` claim, refreshToken 7d, validate, extract)
+- [x] `#03-02` `JwtAuthenticationFilter` (`OncePerRequestFilter`) — check `revoked_access_tokens` khi validate
+- [x] `#03-03` `SecurityConfig` — URL rules đầy đủ theo SPECS.md Section 8
+- [x] `#03-04` `POST /api/auth/register` — tạo User + Citizen, gán role CITIZEN
+- [x] `#03-05` `POST /api/auth/login` — trả accessToken + lưu HttpSession, set HttpOnly cookie cho refreshToken:
   - Lưu accessToken vào `HttpSession` (Thymeleaf SSR đọc được)
   - Set `HttpOnly; Secure; SameSite=Strict` cookie cho refreshToken
   - INSERT refreshToken vào `refresh_tokens` DB
   - Cập nhật `last_login_at`
-- [ ] `#03-06` `POST /api/admin/auth/login` — chỉ STAFF+, tương tự login citizen
-- [ ] `#03-07` `POST /api/auth/refresh-token` — **Token Rotation**:
+- [x] `#03-06` `POST /api/admin/auth/login` — chỉ STAFF+, tương tự login citizen
+- [x] `#03-07` `POST /api/auth/refresh-token` — **Token Rotation**:
   - Nhận refresh token → validate (tồn tại trong DB + chưa hết hạn)
   - Xóa token cũ → INSERT token mới → trả accessToken mới + refreshToken mới
   - Nếu token không tồn tại (đã dùng rồi) → revoke toàn bộ session user đó
-- [ ] `#03-08` `POST /api/auth/logout`:
+- [x] `#03-08` `POST /api/auth/logout`:
   - Lấy `jti` từ accessToken trong HttpSession → INSERT vào `revoked_access_tokens`
   - Xóa refreshToken khỏi `refresh_tokens` (by user_id)
   - Invalidate `HttpSession`
   - Xóa HttpOnly refresh token cookie
-- [ ] `#03-09` `RevokedTokenService` — `revoke(jti, expiresAt)`, `isRevoked(jti)`
-- [ ] `#03-10` `RefreshTokenService` — `create(userId)`, `validate(token)`, `rotate(oldToken)`, `revokeAllByUser(userId)`
-- [ ] `#03-11` `@Scheduled` cleanup task (mỗi 1h):
+- [x] `#03-09` `RevokedTokenService` — `revoke(jti, expiresAt)`, `isRevoked(jti)`
+- [x] `#03-10` `RefreshTokenService` — `create(userId)`, `validate(token)`, `rotate(oldToken)`, `revokeAllByUser(userId)`
+- [x] `#03-11` `@Scheduled` cleanup task (mỗi 1h):
   - `DELETE FROM refresh_tokens WHERE expires_at < NOW()`
   - `DELETE FROM revoked_access_tokens WHERE expires_at < NOW()`
 
 **UI — Auth Pages**
-- [ ] `#03-12` CSS `base.css` — CSS variables, reset, typography
-- [ ] `#03-13` CSS `components.css` — button, input, form-group, badge/pill, alert, card
-- [ ] `#03-14` Template `auth/login.html` — form email+password, hiện lỗi `th:if="${error}"`
-- [ ] `#03-15` Template `auth/register.html` — form đầy đủ, `th:errors` từng field
-- [ ] `#03-16` Template `auth/admin-login.html` — layout riêng "Cổng quản trị nội bộ"
-- [ ] `#03-17` `AuthMvcController` — POST login/register/logout với PRG pattern
-- [ ] `#03-18` `AuthViewController` — GET /auth/login, /auth/register, /admin/login
+- [x] `#03-12` CSS `base.css` — CSS variables, reset, typography
+- [x] `#03-13` CSS `components.css` — button, input, form-group, badge/pill, alert, card
+- [x] `#03-14` Template `auth/login.html` — form email+password, hiện lỗi `th:if="${error}"`
+- [x] `#03-15` Template `auth/register.html` — form đầy đủ, `th:errors` từng field
+- [x] `#03-16` Template `auth/admin-login.html` — layout riêng "Cổng quản trị nội bộ"
+- [x] `#03-17` `AuthMvcController` — POST login/register/logout với PRG pattern
+- [x] `#03-18` `AuthViewController` — GET /auth/login, /auth/register, /admin/login
 
 **Test**
-- [ ] `#03-19` Auth flow: register → login → access protected endpoint
-- [ ] `#03-20` Role access: citizen → 403 admin route; no token → 401
-- [ ] `#03-21` Refresh token rotation: dùng token cũ sau khi rotate → 401
-- [ ] `#03-22` Logout → access token bị blacklist → 401 khi dùng lại
-- [ ] `#03-23` Cleanup task: tokens hết hạn bị xóa khỏi DB
+- [x] `#03-19` Auth flow: register → login → access protected endpoint
+- [x] `#03-20` Role access: citizen → 403 admin route; no token → 401
+- [x] `#03-21` Refresh token rotation: dùng token cũ sau khi rotate → 401
+- [x] `#03-22` Logout → access token bị blacklist → 401 khi dùng lại
+- [x] `#03-23` Cleanup task: tokens hết hạn bị xóa khỏi DB
 
 **Definition of Done:**
 ```

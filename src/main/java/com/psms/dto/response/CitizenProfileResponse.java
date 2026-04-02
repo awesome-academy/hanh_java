@@ -23,7 +23,6 @@ public class CitizenProfileResponse {
     private Gender gender;
     private String permanentAddress;
     private String ward;
-    private String district;
     private String province;
     private LocalDateTime joinedAt;
 }

@@ -116,7 +116,7 @@ users ──< activity_logs
 | `roles` | 4 vai trò cố định | id, name, description |
 | `users` | Tài khoản đăng nhập (tất cả vai trò) | id, email, password, full_name, phone, is_active, is_locked, failed_login_count, locked_until, eid_provider, eid_subject |
 | `user_roles` | Liên kết user ↔ role (nhiều-nhiều) | user_id, role_id |
-| `citizens` | Profile mở rộng của công dân (1-1 users) | national_id, date_of_birth, gender, permanent_address, ward, district, province |
+| `citizens` | Profile mở rộng của công dân (1-1 users) | national_id, date_of_birth, gender, permanent_address, ward, province |
 | `departments` | Cơ quan / phòng ban | code, name, address, phone, email, leader_id |
 | `staff` | Profile mở rộng của cán bộ (1-1 users) | staff_code, department_id, position, is_available |
 | `service_categories` | Lĩnh vực dịch vụ (8 lĩnh vực mặc định) | code, name, description, icon, sort_order |

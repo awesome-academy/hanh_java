@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký — Cổng DVCQG</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+</head>
+<body>
+<div class="auth-wrap">
+    <div class="auth-card wide">
+        <div class="auth-logo">
+            <div class="auth-logo-icon">DV</div>
+            <div>
+                <div class="auth-logo-name">Cổng DVCQG</div>
+                <div class="auth-logo-sub">Dịch vụ công trực tuyến</div>
+            </div>
+        </div>
+        <div class="auth-title">Tạo tài khoản</div>
+        <div class="auth-subtitle">Điền thông tin để đăng ký tài khoản công dân</div>
+        <div th:if="${error}" class="flash flash-error" th:text="${error}"></div>
+        <form th:action="@{/auth/register}" method="post"
+              th:object="${registerRequest}" class="form-stack">
+            <div class="fg">
+                <label class="fl" for="fullName">Họ và tên *</label>
+                <input id="fullName" type="text" th:field="*{fullName}"
+                       th:class="${#fields.hasErrors('fullName')} ? 'fi2 is-error' : 'fi2'"
+                       placeholder="Nguyễn Văn A" autocomplete="name" required autofocus>
+                <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="field-error"></span>
+            </div>
+            <div class="form-g2">
+                <div class="fg">
+                    <label class="fl" for="email">Email *</label>
+                    <input id="email" type="email" th:field="*{email}"
+                           th:class="${#fields.hasErrors('email')} ? 'fi2 is-error' : 'fi2'"
+                           placeholder="your@email.com" required>
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></span>
+                </div>
+                <div class="fg">
+                    <label class="fl" for="password">Mật khẩu *</label>
+                    <input id="password" type="password" th:field="*{password}"
+                           th:class="${#fields.hasErrors('password')} ? 'fi2 is-error' : 'fi2'"
+                           placeholder="Tối thiểu 8 ký tự" required>
+                    <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="field-error"></span>
+                </div>
+            </div>
+            <div class="form-g2">
+                <div class="fg">
+                    <label class="fl" for="nationalId">Số CCCD/CMND *</label>
+                    <input id="nationalId" type="text" th:field="*{nationalId}"
+                           th:class="${#fields.hasErrors('nationalId')} ? 'fi2 is-error' : 'fi2'"
+                           placeholder="9 hoặc 12 chữ số" maxlength="20" required>
+                    <span th:if="${#fields.hasErrors('nationalId')}" th:errors="*{nationalId}" class="field-error"></span>
+                </div>
+                <div class="fg">
+                    <label class="fl" for="dateOfBirth">Ngày sinh</label>
+                    <input id="dateOfBirth" type="date" th:field="*{dateOfBirth}"
+                           th:class="${#fields.hasErrors('dateOfBirth')} ? 'fi2 is-error' : 'fi2'">
+                    <span th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}" class="field-error"></span>
+                </div>
+            </div>
+            <div class="form-g2">
+                <div class="fg">
+                    <label class="fl" for="gender">Giới tính</label>
+                    <select id="gender" th:field="*{gender}" class="fi2">
+                        <option value="">-- Chọn giới tính --</option>
+                        <option th:each="g : ${genders}" th:value="${g}" th:text="${g.label}"></option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label class="fl" for="phone">Số điện thoại</label>
+                    <input id="phone" type="tel" th:field="*{phone}"
+                           th:class="${#fields.hasErrors('phone')} ? 'fi2 is-error' : 'fi2'"
+                           placeholder="0912345678">
+                    <span th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error"></span>
+                </div>
+            </div>
+            <div class="fg">
+                <label class="fl" for="permanentAddress">Địa chỉ thường trú</label>
+                <input id="permanentAddress" type="text" th:field="*{permanentAddress}"
+                       class="fi2" placeholder="Số nhà, đường, khu vực...">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="fg">
+                    <label class="fl" for="ward">Phường/Xã</label>
+                    <input id="ward" type="text" th:field="*{ward}" class="fi2" placeholder="Phường Tây Mỗ">
+                    <span th:if="${#fields.hasErrors('ward')}" th:errors="*{ward}" class="field-error"></span>
+                </div>
+                <div class="fg">
+                    <label class="fl" for="province">Tỉnh/TP</label>
+                    <input id="province" type="text" th:field="*{province}" class="fi2" placeholder="TP. Hà Nội">
+                    <span th:if="${#fields.hasErrors('province')}" th:errors="*{province}" class="field-error"></span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-p btn-full" style="margin-top:4px">Tạo tài khoản</button>
+        </form>
+        <hr class="auth-divider">
+        <div class="auth-footer">Đã có tài khoản? <a th:href="@{/auth/login}">Đăng nhập</a></div>
+    </div>
+</div>
+</body>
+</html>

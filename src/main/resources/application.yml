@@ -16,7 +16,7 @@ spring:
         format_sql: true
     open-in-view: false        # tắt OSIV — tránh lazy loading ngoài transaction
 
-  # i18n — đọc messages.properties bằng UTF-8 (mặc định ISO-8859-1 sẽ bị mojibake tiếng Việt)
+  # i18n — đọc messages.properties bằng UTF-8
   messages:
     basename: messages
     encoding: UTF-8
@@ -58,6 +58,6 @@ springdoc:
     groups-order: ASC
   group-configs:
     - group: client
-      paths-to-match: /api/client/**
+      paths-to-match: /api/auth/**, /api/client/**
     - group: admin
       paths-to-match: /api/admin/**
