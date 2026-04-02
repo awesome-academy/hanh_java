@@ -9,10 +9,12 @@ import com.psms.repository.UserRepository;
 import com.psms.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Quản lý refresh token trong DB — hỗ trợ Token Rotation và Reuse Detection.
@@ -63,41 +65,55 @@ public class RefreshTokenService {
     /**
      * Validate refresh token: tồn tại trong DB và chưa hết hạn.
      *
+     * <p><b>noRollbackFor:</b> Khi token hết hạn, {@link #assertNotExpired} DELETE khỏi DB
+     * rồi throw. Nếu không có {@code noRollbackFor}, Spring rollback toàn bộ tx →
+     * delete bị huỷ → token hết hạn vẫn còn trong DB mãi mãi.
+     *
      * @param tokenString refresh token string từ HttpOnly cookie
-     * @return entity {@link RefreshToken}
-     * @throws BusinessException nếu token không tồn tại hoặc đã hết hạn
+     * @return entity {@link RefreshToken} đã xác thực còn hiệu lực
+     * @throws AuthenticationCredentialsNotFoundException nếu token không tồn tại hoặc đã hết hạn (→ HTTP 401)
      */
-    @Transactional(readOnly = true)
+    @Transactional(noRollbackFor = AuthenticationCredentialsNotFoundException.class)
     public RefreshToken validate(String tokenString) {
         RefreshToken token = refreshTokenRepository.findByToken(tokenString)
-                .orElseThrow(() -> new BusinessException("Refresh token không hợp lệ hoặc đã hết hạn"));
-
-        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            // Token hết hạn nhưng chưa bị cleanup — xóa luôn
-            refreshTokenRepository.delete(token);
-            throw new BusinessException("Refresh token đã hết hạn, vui lòng đăng nhập lại");
-        }
-
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException(
+                        "Refresh token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại"));
+        // delete nếu expired + throw → commit nhờ noRollbackFor
+        assertNotExpired(token);
         return token;
     }
 
     /**
      * Token Rotation: xóa token cũ → sinh cặp token mới.
      *
-     * <p>Nếu token cũ không tồn tại trong DB → Reuse Detection:
-     * xóa toàn bộ session của user và ném exception.
+     * <p>Phân biệt 3 trường hợp:
+     * <ol>
+     *   <li>Token không tồn tại trong DB → Reuse Detection: revoke all sessions → 401</li>
+     *   <li>Token tồn tại nhưng hết hạn  → eager cleanup → 401</li>
+     *   <li>Token hợp lệ                 → DELETE old, INSERT new → trả token mới</li>
+     * </ol>
+     *
+     * <p><b>noRollbackFor — tại sao bắt buộc:</b><br>
+     * Cả 2 path lỗi đều cần ghi DB trước khi throw:
+     * <ul>
+     *   <li>Reuse: {@code revokeAllByUser()} join outer tx → nếu rollback → sessions KHÔNG bị thu hồi
+     *       → attacker vẫn dùng được token cũ. Đây là security bug.</li>
+     *   <li>Expired: {@code delete(oldToken)} join outer tx → nếu rollback → token hết hạn vẫn còn DB.</li>
+     * </ul>
+     * {@code noRollbackFor} đảm bảo tx commit ngay cả khi exception được throw.
+     * Các exception khác (DB error, NPE...) vẫn rollback bình thường.
      *
      * @param oldTokenString refresh token cũ từ client
      * @return cặp token mới {@link RotationResult}
      */
-    @Transactional
+    @Transactional(noRollbackFor = AuthenticationCredentialsNotFoundException.class)
     public RotationResult rotate(String oldTokenString) {
         RefreshToken oldToken = refreshTokenRepository.findByToken(oldTokenString)
                 .orElse(null);
 
         if (oldToken == null) {
-            // Reuse Detection: token đã dùng rồi — có thể bị đánh cắp
-            // Tìm user từ JWT claim để revoke toàn bộ session
+            // Reuse Detection: token đã dùng rồi — có thể bị đánh cắp.
+            // revokeAllByUser() join outer tx → nhờ noRollbackFor, commit được đảm bảo.
             try {
                 String username = jwtTokenProvider.extractUsername(oldTokenString);
                 userRepository.findByEmail(username).ifPresent(user -> {
@@ -107,13 +123,16 @@ public class RefreshTokenService {
             } catch (Exception e) {
                 log.warn("Refresh token reuse detected — cannot extract user, ignoring: {}", e.getMessage());
             }
-            throw new BusinessException("Refresh token không hợp lệ. Toàn bộ phiên đăng nhập đã bị thu hồi");
+            throw new AuthenticationCredentialsNotFoundException(
+                    "Refresh token không hợp lệ. Toàn bộ phiên đăng nhập đã bị thu hồi");
         }
 
-        // Xóa token cũ
+        // delete nếu expired + throw → commit nhờ noRollbackFor
+        assertNotExpired(oldToken);
+
+        // Token hợp lệ — tiến hành rotation
         refreshTokenRepository.delete(oldToken);
 
-        // Load user và sinh token mới
         User user = userRepository.findById(oldToken.getUserId())
                 .orElseThrow(() -> new BusinessException("User không tồn tại"));
 
@@ -121,6 +140,22 @@ public class RefreshTokenService {
         RefreshToken newRefreshToken = create(user);
 
         return new RotationResult(newAccessToken, newRefreshToken.getToken());
+    }
+
+    /**
+     * Tìm {@code userId} từ refresh token trong DB — KHÔNG parse JWT claim.
+     *
+     * <p>Dùng trong logout(): nếu token còn trong DB thì lấy userId từ record
+     * và revoke toàn bộ session, bất kể token đã expired hay malformed về mặt JWT.
+     * Nếu token không tồn tại trong DB (đã bị revoke trước đó) → trả về empty, bỏ qua.
+     *
+     * @param tokenString refresh token string từ HttpOnly cookie
+     * @return {@link java.util.Optional} chứa userId nếu tìm thấy trong DB
+     */
+    @Transactional(readOnly = true)
+    public Optional<Long> findUserIdByToken(String tokenString) {
+        return refreshTokenRepository.findByToken(tokenString)
+                .map(RefreshToken::getUserId);
     }
 
     /**
@@ -132,6 +167,26 @@ public class RefreshTokenService {
     public void revokeAllByUser(Long userId) {
         refreshTokenRepository.deleteAllByUserId(userId);
         log.debug("All refresh tokens revoked for userId={}", userId);
+    }
+
+    // ----------------------------------------------------------------
+    // Private helpers
+    // ----------------------------------------------------------------
+
+    /**
+     * Kiểm tra token chưa hết hạn. Nếu hết hạn: DELETE khỏi DB (eager cleanup) và throw 401.
+     *
+     * <p>Dùng chung bởi {@link #validate} và {@link #rotate} để tránh duplicate logic.
+     * Chạy trong transaction của caller — caller phải có {@code noRollbackFor} để
+     * đảm bảo delete được commit khi exception được throw.
+     */
+    private void assertNotExpired(RefreshToken token) {
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(token);
+            log.debug("Expired refresh token cleaned up for userId={}", token.getUserId());
+            throw new AuthenticationCredentialsNotFoundException(
+                    "Refresh token đã hết hạn. Vui lòng đăng nhập lại");
+        }
     }
 
     // ----------------------------------------------------------------

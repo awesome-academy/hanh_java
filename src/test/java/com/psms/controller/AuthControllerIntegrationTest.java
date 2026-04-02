@@ -253,7 +253,7 @@ class AuthControllerIntegrationTest {
     @DisplayName("#03-21b: Service — Reuse Detection: rotate token cũ lần 2 → BusinessException")
     void tokenRotation_service_reuseOldToken_throwsBusinessException() {
         // Tạo user trực tiếp qua repository (tránh HTTP layer để test service thuần túy)
-        User user = buildTestUser("service-rotate@example.com", "001234567898");
+        User user = buildTestUser("service-rotate@example.com");
         userRepository.save(user);
 
         // Tạo refresh token
@@ -378,7 +378,7 @@ class AuthControllerIntegrationTest {
     }
 
     /** Tạo User entity trực tiếp (không qua HTTP) — dùng cho service-level tests */
-    private User buildTestUser(String email, String nationalId) {
+    private User buildTestUser(String email) {
         Role citizenRole = roleRepository.findByName(RoleName.CITIZEN)
                 .orElseThrow(() -> new IllegalStateException("CITIZEN role chưa được seed"));
         User user = new User();

@@ -2,6 +2,7 @@ package com.psms.controller.web;
 
 import com.psms.dto.request.RegisterRequest;
 import com.psms.enums.Gender;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +21,8 @@ public class AuthViewController {
      */
     @GetMapping("/auth/login")
     public String loginPage(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
         return "auth/login";
@@ -33,7 +35,8 @@ public class AuthViewController {
      */
     @GetMapping("/auth/register")
     public String registerPage(Model model, Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
         model.addAttribute("registerRequest", new RegisterRequest());
@@ -47,10 +50,10 @@ public class AuthViewController {
      */
     @GetMapping("/admin/login")
     public String adminLoginPage(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
             return "redirect:/admin/dashboard";
         }
         return "auth/admin-login";
     }
 }
-

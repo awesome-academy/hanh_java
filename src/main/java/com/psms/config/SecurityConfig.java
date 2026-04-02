@@ -5,6 +5,7 @@ import com.psms.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,6 +64,7 @@ public class SecurityConfig {
     // ----------------------------------------------------------------
 
     @Bean
+    @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
             // Chỉ áp dụng cho /api/**
@@ -120,6 +122,7 @@ public class SecurityConfig {
     // ----------------------------------------------------------------
 
     @Bean
+    @Order(2)
     public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
         http
             // Áp dụng cho tất cả route còn lại (MVC)
@@ -179,7 +182,7 @@ public class SecurityConfig {
                 .permitAll()
             )
 
-            // JWT filter cũng chạy trên MVC chain để đọc token từ session
+            // JWT filter cũng chạy trên MVC chain để xử lý Bearer token từ Authorization header
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

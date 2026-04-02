@@ -27,8 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -49,6 +53,14 @@ public class AuthService {
 
     private static final String SESSION_ACCESS_TOKEN_KEY = "ACCESS_TOKEN";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+
+    /**
+     * Các role được phép truy cập cổng quản trị Admin.
+     * Dùng EnumSet thay List<String> để: type-safe, compiler bắt typo,
+     * và EnumSet có hiệu năng tốt hơn cho enum lookup.
+     */
+    private static final Set<RoleName> ADMIN_PORTAL_ROLES =
+            EnumSet.of(RoleName.STAFF, RoleName.MANAGER, RoleName.SUPER_ADMIN);
 
     private final UserRepository userRepository;
     private final CitizenRepository citizenRepository;
@@ -187,6 +199,43 @@ public class AuthService {
     }
 
     // ----------------------------------------------------------------
+    // Admin Login
+    // ----------------------------------------------------------------
+
+    /**
+     * Xác thực đăng nhập qua cổng quản trị.
+     *
+     * <p>Khác với {@link #login} (dùng cho citizen), method này:
+     * <ul>
+     *   <li>Gọi {@code authenticationManager} để kiểm tra credentials</li>
+     *   <li>Kiểm tra thêm role — chỉ STAFF / MANAGER / SUPER_ADMIN được phép</li>
+     *   <li>Trả về {@link Authentication} để controller set vào {@code SecurityContext}</li>
+     * </ul>
+     *
+     * @param email    email đăng nhập
+     * @param password mật khẩu
+     * @return {@link Authentication} đã được xác thực và kiểm tra quyền
+     * @throws org.springframework.security.authentication.BadCredentialsException nếu sai thông tin
+     * @throws AccessDeniedException nếu tài khoản không có quyền admin
+     */
+    public Authentication adminLogin(String email, String password) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password));
+
+        // Chỉ STAFF / MANAGER / SUPER_ADMIN mới được qua cổng admin
+        boolean hasAdminRole = auth.getAuthorities().stream()
+                .anyMatch(a -> ADMIN_PORTAL_ROLES.stream()
+                        .anyMatch(role -> role.toAuthority().equals(a.getAuthority())));
+
+        if (!hasAdminRole) {
+            throw new AccessDeniedException("Bạn không có quyền truy cập trang Admin.");
+        }
+
+        log.info("Admin authenticated: email={}, roles={}", email, auth.getAuthorities());
+        return auth;
+    }
+
+    // ----------------------------------------------------------------
     // Refresh Token
     // ----------------------------------------------------------------
 
@@ -194,7 +243,7 @@ public class AuthService {
      * Token Rotation: xóa refresh token cũ, sinh cặp token mới.
      *
      * <p>Refresh token được đọc từ HttpOnly cookie.
-     * Nếu cookie không có → 401 (client cần login lại).
+     * Nếu cookie không có → client cần login lại.
      * Nếu token đã bị dùng (reuse) → revoke toàn bộ session.
      *
      * @param httpRequest  để đọc cookie
@@ -261,17 +310,10 @@ public class AuthService {
             revokedTokenService.revoke(jti, expiresAt);
         }
 
-
-        // Xóa refresh token khỏi DB
         String refreshTokenStr = extractRefreshTokenFromCookie(httpRequest);
         if (refreshTokenStr != null) {
-            try {
-                String username = jwtTokenProvider.extractUsername(refreshTokenStr);
-                userRepository.findByEmail(username).ifPresent(user ->
-                        refreshTokenService.revokeAllByUser(user.getId()));
-            } catch (Exception e) {
-                log.debug("Could not extract user from refresh token during logout: {}", e.getMessage());
-            }
+            refreshTokenService.findUserIdByToken(refreshTokenStr)
+                    .ifPresent(refreshTokenService::revokeAllByUser);
         }
 
         // Xóa cookie (maxAge = 0)
@@ -284,19 +326,30 @@ public class AuthService {
     // Helpers
     // ----------------------------------------------------------------
 
+    /**
+     * Tạo và gắn HttpOnly refresh token cookie vào response.
+     *
+     * <p>Dùng {@code Cookie.setAttribute("SameSite", "Strict")} của Servlet 6.0+ (Jakarta EE 10+)
+     * thay vì manual {@code response.addHeader("Set-Cookie", ...)} — tránh double header bug
+     * và đảm bảo tuân thủ Servlet API chuẩn.
+     *
+     * <p>Attributes:
+     * <ul>
+     *   <li>{@code HttpOnly} — không đọc được từ JavaScript, chống XSS</li>
+     *   <li>{@code Secure} — chỉ gửi qua HTTPS (Spring Boot bỏ qua trên dev HTTP)</li>
+     *   <li>{@code SameSite=Strict} — không gửi kèm cross-site request, chống CSRF</li>
+     *   <li>{@code Path=/api/auth} — chỉ gửi khi gọi /api/auth, không leak sang route khác</li>
+     * </ul>
+     */
     private void setRefreshTokenCookie(HttpServletResponse response, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, value);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);         // HTTPS only — Spring Boot tự bỏ qua trên dev HTTP
-        cookie.setPath("/api/auth");    // chỉ gửi khi gọi /api/auth (không leak sang các route khác)
+        cookie.setSecure(true);
+        cookie.setPath("/api/auth");
         cookie.setMaxAge(maxAgeSeconds);
-        // SameSite=Strict — không thể set qua javax.servlet.http.Cookie API trực tiếp,
-        // cần dùng response header
+        // Servlet 6.0+ (Jakarta EE 10+): setAttribute() hỗ trợ RFC 6265 — không cần manual add header
+        cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
-        // Ghi đè Set-Cookie header để thêm SameSite=Strict
-        response.setHeader("Set-Cookie",
-                String.format("%s=%s; Path=/api/auth; Max-Age=%d; HttpOnly; Secure; SameSite=Strict",
-                        REFRESH_TOKEN_COOKIE_NAME, value, maxAgeSeconds));
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {

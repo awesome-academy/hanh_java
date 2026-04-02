@@ -30,7 +30,7 @@ import java.util.UUID;
  *     exp   → expiration (now + jwt.expiration ms)
  * </pre>
  *
- * <p><b>Refresh token:</b> JWT đơn giản, không chứa roles, không có jti.
+ * <p><b>Refresh token:</b> JWT đơn giản, không chứa roles, CÓ jti (UUID, đảm bảo unique, hỗ trợ rotation)..
  * Token rotation được xử lý ở {@link com.psms.service.RefreshTokenService}.
  */
 @Slf4j

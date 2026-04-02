@@ -70,7 +70,7 @@ public class AuthController {
             - Kiểm tra account tồn tại, password đúng, không bị khóa (isLocked, lockedUntil)
             - Thành công: access token trả trong body, refresh token lưu HttpOnly cookie
             - Thành công: cập nhật last_login_at, reset failed_login_count về 0
-            - Thất bại: không tiết lộ field nào sai (SPECS 4.1)
+            - Thất bại: không tiết lộ field nào sai
 
             **Input:** LoginRequest (email, password)
             **Output:** AuthResponse (accessToken, expiresIn, email, fullName, roles)
@@ -95,7 +95,7 @@ public class AuthController {
         description = """
             Đọc refresh token từ HttpOnly cookie, xóa token cũ, sinh cặp token mới.
 
-            **Business rules (SPECS 8.1):**
+            **Business rules
             - Token Rotation: mỗi lần refresh → xóa token cũ → INSERT token mới
             - Reuse Detection: nếu token cũ đã bị dùng (không còn trong DB)
               → revoke toàn bộ session của user đó → 401, buộc login lại

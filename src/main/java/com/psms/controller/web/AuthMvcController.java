@@ -5,16 +5,14 @@ import com.psms.dto.request.RegisterRequest;
 import com.psms.enums.Gender;
 import com.psms.exception.BusinessException;
 import com.psms.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,21 +24,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 
 /**
  * MVC controller xử lý POST request của auth pages — PRG Pattern.
- *
- * <p><b>Lưu ý phân chia:</b>
- * <ul>
- *   <li>{@code POST /auth/login} — Spring Security xử lý tự động qua
- *       {@code formLogin().loginProcessingUrl()}. Controller KHÔNG cần handle.</li>
- *   <li>{@code POST /auth/logout} — Spring Security xử lý tự động qua
- *       {@code logout().logoutUrl()}. Controller KHÔNG cần handle.</li>
- *   <li>{@code POST /auth/register} — Controller xử lý (Spring Security không biết register).</li>
- *   <li>{@code POST /admin/login} — Controller xử lý thêm role-check (STAFF+).</li>
- * </ul>
- *
  * <p><b>PRG Pattern:</b> Tất cả POST thành công đều redirect → tránh form resubmit khi F5.
  */
 @Slf4j
@@ -49,7 +35,6 @@ import java.util.List;
 public class AuthMvcController {
 
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
 
     // ----------------------------------------------------------------
     // POST /auth/register — #03-17
@@ -97,19 +82,19 @@ public class AuthMvcController {
     // ----------------------------------------------------------------
 
     /**
-     * Xử lý đăng nhập cổng quản trị.
+     * Xử lý đăng nhập cổng quản trị — delegate hoàn toàn sang {@link AuthService#adminLogin}.
      *
-     * <p>Điểm khác biệt so với {@code /auth/login} (Spring Security formLogin):
-     * <ul>
-     *   <li>Kiểm tra thêm role — chỉ STAFF/MANAGER/SUPER_ADMIN được qua</li>
-     *   <li>Citizen cố đăng nhập → redirect với lỗi, không set SecurityContext</li>
-     *   <li>Thành công → set SecurityContext vào session → redirect /admin/dashboard</li>
-     * </ul>
+     * <p>Flow (PRG):
+     * <ol>
+     *   <li>Validation fail → redirect với {@code ?error=true}</li>
+     *   <li>Sai credentials / bị khóa → redirect với {@code ?error=true}</li>
+     *   <li>Không đủ quyền admin → redirect với flash message lỗi</li>
+     *   <li>Thành công → set {@code SecurityContext} vào session → redirect {@code /admin/dashboard}</li>
+     * </ol>
      */
     @PostMapping("/admin/login")
     public String adminLogin(@Valid @ModelAttribute LoginRequest request,
                              BindingResult bindingResult,
-                             HttpServletRequest httpRequest,
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
 
@@ -118,33 +103,24 @@ public class AuthMvcController {
         }
 
         try {
-            // Xác thực qua Spring Security AuthenticationManager
-            Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(), request.getPassword()));
+            Authentication auth = authService.adminLogin(request.getEmail(), request.getPassword());
 
-            // Kiểm tra role — chỉ cho STAFF/MANAGER/SUPER_ADMIN
-            List<String> allowedRoles = List.of("ROLE_STAFF", "ROLE_MANAGER", "ROLE_SUPER_ADMIN");
-            boolean hasAdminRole = auth.getAuthorities().stream()
-                    .anyMatch(a -> allowedRoles.contains(a.getAuthority()));
-
-            if (!hasAdminRole) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Bạn không có quyền truy cập trang Admin.");
-                return "redirect:/admin/login?error=true";
-            }
-
-            // Set SecurityContext vào session — Spring Security sẽ tự đọc lại ở request sau
+            // Set SecurityContext vào session — Spring Security tự đọc lại ở request sau
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(auth);
             SecurityContextHolder.setContext(context);
             session.setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 
-            log.info("Admin login: email={}, roles={}", request.getEmail(), auth.getAuthorities());
             return "redirect:/admin/dashboard";
 
+        } catch (AccessDeniedException e) {
+            // Tài khoản hợp lệ nhưng không đủ quyền admin (CITIZEN cố đăng nhập vào admin)
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/login?error=true";
+
         } catch (BadCredentialsException | DisabledException | LockedException e) {
+            // Sai mật khẩu / tài khoản bị vô hiệu hoá / bị khoá
             return "redirect:/admin/login?error=true";
         }
     }

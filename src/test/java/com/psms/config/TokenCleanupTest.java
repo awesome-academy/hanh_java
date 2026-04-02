@@ -34,7 +34,6 @@ class TokenCleanupTest {
     @Autowired private TokenCleanupScheduler tokenCleanupScheduler;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private RevokedAccessTokenRepository revokedTokenRepository;
-    @Autowired private UserRepository userRepository;
 
     @BeforeEach
     void cleanup() {
