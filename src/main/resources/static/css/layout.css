@@ -1,0 +1,437 @@
+/* =============================================================
+   layout.css — Shell layout: topbar, sidebar, page-content
+   ============================================================= */
+
+/* ── Client shell ───────────────────────────────────────────── */
+
+/*
+ * .client-shell: full-height flex column.
+ * topbar cố định trên cùng, page-content cuộn bên dưới.
+ */
+.client-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ── Topbar (Client) ────────────────────────────────────────── */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--nav);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.08);
+}
+
+.topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    background: rgba(255,255,255,.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 13px;
+    color: var(--gold);
+    flex-shrink: 0;
+}
+
+.logo-text strong {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.logo-text span {
+    font-size: 10.5px;
+    color: rgba(255,255,255,.55);
+}
+
+/* Nav links */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+}
+
+.nl {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,.72);
+    text-decoration: none;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+}
+
+.nl:hover {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    text-decoration: none;
+}
+
+.nl.active {
+    background: rgba(255,255,255,.14);
+    color: var(--gold2);
+    font-weight: 600;
+}
+
+/* Right-side controls */
+.topbar-r {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Notification bell */
+.notif-btn {
+    position: relative;
+    background: rgba(255,255,255,.1);
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: rgba(255,255,255,.8);
+    transition: background .15s;
+}
+
+.notif-btn:hover { background: rgba(255,255,255,.18); }
+
+.notif-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 99px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+}
+
+/* User avatar initials */
+.ava {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--nav);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* ── Page content (Client) ──────────────────────────────────── */
+.page-content {
+    flex: 1;
+    padding: 28px 24px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ── Admin shell ────────────────────────────────────────────── */
+
+/*
+ * .adm-shell: 2-cột — sidebar cố định bên trái, content cuộn bên phải.
+ * Sidebar width = 220px; content chiếm phần còn lại.
+ */
+.adm-shell {
+    display: flex;
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+/* ── Sidebar (Admin) ────────────────────────────────────────── */
+.sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--side);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    overflow-y: auto;
+}
+
+/* Sidebar logo */
+.sb-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+
+.sb-logo-ic {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--side-ac);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 12px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.sb-ltext strong {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.sb-ltext span {
+    font-size: 10px;
+    color: var(--side-text);
+}
+
+/* Section label */
+.sb-sec {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: rgba(255,255,255,.3);
+    padding: 16px 14px 4px;
+}
+
+/* Menu item */
+.sb-it {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 14px;
+    margin: 1px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--side-text);
+    text-decoration: none;
+    transition: background .15s, color .15s;
+    position: relative;
+}
+
+.sb-it:hover {
+    background: var(--side2);
+    color: #fff;
+    text-decoration: none;
+}
+
+.sb-it.on {
+    background: var(--side-ac);
+    color: #fff;
+    font-weight: 600;
+}
+
+.sb-ic {
+    font-size: 15px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
+
+/* Pending badge on sidebar item */
+.sb-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 1px 6px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Footer: user info + logout */
+.sb-footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,.07);
+    padding: 12px 14px;
+    flex-shrink: 0;
+}
+
+.sb-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sb-ava {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--side-ac);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.sb-uname strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.2;
+    /* giới hạn tên dài không tràn */
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sb-uname span {
+    font-size: 10.5px;
+    color: var(--side-text);
+}
+
+/* ── Admin content wrapper ──────────────────────────────────── */
+
+/* Khoảng trống bên trái bằng đúng width sidebar */
+.adm-main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Admin topbar — breadcrumb + user actions */
+.adm-topbar {
+    height: 52px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.adm-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+}
+
+.adm-breadcrumb a {
+    color: var(--info);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.adm-breadcrumb a:hover { text-decoration: underline; }
+
+.adm-breadcrumb .sep { color: var(--border); }
+
+.adm-breadcrumb .cur {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Logout button in admin topbar */
+.adm-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--font);
+    transition: border-color .15s, color .15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.adm-logout:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    text-decoration: none;
+}
+
+/* Admin page content */
+.adm-content {
+    flex: 1;
+    padding: 24px;
+}
+
+/* Page header row: title + actions */
+.pg-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pg-hd h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.pg-hd p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+

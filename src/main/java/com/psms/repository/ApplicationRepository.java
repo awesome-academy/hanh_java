@@ -29,5 +29,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
     long countByAssignedStaffIdAndStatusIn(Long assignedStaffId, Collection<ApplicationStatus> statuses);
 
     long countByCitizenIdAndSubmittedAtBetween(Long citizenId, LocalDateTime from, LocalDateTime to);
+
+    long countByStatusIn(Collection<ApplicationStatus> statuses);
 }
 

@@ -28,11 +28,11 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 1. Departments (phải insert trước vì users.leader_id FK)
 -- -------------------------------------------------------------
 INSERT INTO `departments` (`code`, `name`, `address`, `phone`, `email`) VALUES
-  ('PB-001', 'UBND Phường Bến Nghé',       'Q.1, TP.HCM',          '02838221234', 'bennge@hcm.gov.vn'),
-  ('PB-002', 'Sở Xây dựng TP.HCM',         'Q.1, TP.HCM',          '02838295678', 'sxd@hcm.gov.vn'),
-  ('PB-003', 'Sở Giáo dục & Đào tạo',      'Q.3, TP.HCM',          '02838391234', 'sgd@hcm.gov.vn'),
-  ('PB-004', 'Sở Tài nguyên & Môi trường', 'Q.Bình Thạnh, TP.HCM', '02838481234', 'stnmt@hcm.gov.vn'),
-  ('PB-005', 'Sở Y tế TP.HCM',             'Q.10, TP.HCM',         '02838651234', 'syt@hcm.gov.vn');
+  ('PB-001', 'UBND Phường Hoàn Kiếm',      'Q.Hoàn Kiếm, TP.Hà Nội',  '02439421234', 'hoankiem@hanoi.gov.vn'),
+  ('PB-002', 'Sở Xây dựng TP.Hà Nội',      'Q.Ba Đình, TP.Hà Nội',     '02438295678', 'sxd@hanoi.gov.vn'),
+  ('PB-003', 'Sở Giáo dục & Đào tạo',      'Q.Đống Đa, TP.Hà Nội',     '02438391234', 'sgd@hanoi.gov.vn'),
+  ('PB-004', 'Sở Tài nguyên & Môi trường', 'Q.Cầu Giấy, TP.Hà Nội',   '02438481234', 'stnmt@hanoi.gov.vn'),
+  ('PB-005', 'Sở Y tế TP.Hà Nội',          'Q.Hai Bà Trưng, TP.Hà Nội','02438651234', 'syt@hanoi.gov.vn');
 
 
 -- -------------------------------------------------------------
@@ -63,17 +63,17 @@ INSERT INTO `user_roles` (`user_id`, `role_id`) VALUES
 INSERT INTO `citizens` (`user_id`, `national_id`, `date_of_birth`, `gender`,
                          `permanent_address`, `ward`, `province`) VALUES
   (4, '079090012345', '1990-06-15', 'FEMALE',
-   '123 Lý Tự Trọng', 'Phường Bến Nghé', 'TP.HCM'),
+   '123 Đinh Tiên Hoàng', 'Phường Hoàn Kiếm', 'TP.Hà Nội'),
   (5, '001090023456', '1988-03-22', 'MALE',
-   '45 Nguyễn Trãi',  'Phường 2',        'TP.HCM');
+   '45 Nguyễn Trãi',      'Phường Thượng Đình', 'TP.Hà Nội');
 
 
 -- -------------------------------------------------------------
 -- 5. Staff (cán bộ mẫu)
 -- -------------------------------------------------------------
 INSERT INTO `staff` (`user_id`, `staff_code`, `department_id`, `position`) VALUES
-  (2, 'CB-001', 1, 'Chuyên viên'),   -- tmkhoa → UBND Phường Bến Nghé
-  (3, 'CB-002', 2, 'Trưởng phòng');  -- nhduc  → Sở Xây dựng
+  (2, 'CB-001', 1, 'Chuyên viên'),   -- tmkhoa → UBND Phường Hoàn Kiếm
+  (3, 'CB-002', 2, 'Trưởng phòng');  -- nhduc  → Sở Xây dựng TP.Hà Nội
 
 
 -- -------------------------------------------------------------

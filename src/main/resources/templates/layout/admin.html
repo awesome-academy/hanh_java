@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!--
+  layout/admin.html — Layout dùng chung cho mọi trang Admin Portal.
+
+  Cách dùng:
+    <html th:replace="~{layout/admin :: layout('Tên trang', ~{:: main}, 'dashboard', 'Dashboard')}">
+    <head></head>
+    <body>
+      <main><!-- nội dung trang admin --></main>
+    </body>
+    </html>
+
+  Parameters:
+    title          — <title> của trang
+    content        — fragment nội dung (~{:: main})
+    activePage     — "dashboard|applications|users|services|departments|staff|logs"
+    breadcrumbLabel — label hiển thị trên breadcrumb
+-->
+<html th:fragment="layout(title, content, activePage, breadcrumbLabel)"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null} ? (${title} + ' — Admin Portal') : 'Admin Portal'">Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="adm-shell">
+
+    <!-- ── Sidebar ────────────────────────────────────────── -->
+    <aside class="sidebar">
+
+        <div class="sb-logo">
+            <div class="sb-logo-ic">DV</div>
+            <div class="sb-ltext">
+                <strong>Admin Portal</strong>
+                <span>DVCQG System</span>
+            </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding-top:4px">
+
+            <div class="sb-sec">Tổng quan</div>
+            <a class="sb-it" th:classappend="${activePage == 'dashboard'} ? ' on'"
+               th:href="@{/admin/dashboard}">
+                <span class="sb-ic">📊</span>Dashboard
+            </a>
+
+            <div class="sb-sec">Quản lý</div>
+
+            <a class="sb-it" th:classappend="${activePage == 'applications'} ? ' on'"
+               th:href="@{/admin/applications}">
+                <span class="sb-ic">📁</span>Hồ sơ
+                <span class="sb-badge" th:if="${pendingCount != null and pendingCount > 0}"
+                      th:text="${pendingCount > 99} ? '99+' : ${pendingCount}"></span>
+            </a>
+
+            <a class="sb-it" sec:authorize="hasRole('SUPER_ADMIN')"
+               th:classappend="${activePage == 'users'} ? ' on'"
+               th:href="@{/admin/users}">
+                <span class="sb-ic">👥</span>Người dùng
+            </a>
+
+            <a class="sb-it" th:classappend="${activePage == 'services'} ? ' on'"
+               th:href="@{/admin/services}">
+                <span class="sb-ic">📋</span>Dịch vụ
+            </a>
+
+            <a class="sb-it" th:classappend="${activePage == 'departments'} ? ' on'"
+               th:href="@{/admin/departments}">
+                <span class="sb-ic">🏛️</span>Phòng ban
+            </a>
+
+            <a class="sb-it" th:classappend="${activePage == 'staff'} ? ' on'"
+               th:href="@{/admin/staff}">
+                <span class="sb-ic">👤</span>Cán bộ
+            </a>
+
+            <div class="sb-sec">Hệ thống</div>
+
+            <a class="sb-it" sec:authorize="hasAnyRole('MANAGER','SUPER_ADMIN')"
+               th:classappend="${activePage == 'logs'} ? ' on'"
+               th:href="@{/admin/logs}">
+                <span class="sb-ic">📜</span>Activity Log
+            </a>
+
+        </div>
+
+        <!-- Footer: user info + logout -->
+        <div class="sb-footer">
+            <div class="sb-user">
+                <div class="sb-ava">
+                    <span sec:authentication="principal.username"
+                          th:with="email=${#authentication.name}"
+                          th:text="${#strings.length(email) >= 2 ? #strings.substring(email,0,2) : email}">
+                        ??
+                    </span>
+                </div>
+                <div class="sb-uname">
+                    <strong sec:authentication="principal.username"></strong>
+                    <span sec:authorize="hasRole('SUPER_ADMIN')">Super Admin</span>
+                    <span sec:authorize="hasRole('MANAGER') and !hasRole('SUPER_ADMIN')">Manager</span>
+                    <span sec:authorize="hasRole('STAFF') and !hasRole('MANAGER') and !hasRole('SUPER_ADMIN')">Cán bộ</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main area ──────────────────────────────────────── -->
+    <div class="adm-main">
+
+        <div class="adm-topbar">
+            <div class="adm-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Admin</a>
+                <span class="sep">/</span>
+                <span class="cur" th:text="${breadcrumbLabel} ?: 'Dashboard'">Dashboard</span>
+            </div>
+
+            <form th:action="@{/auth/logout}" method="post" style="display:inline">
+                <button type="submit" class="adm-logout">⎋ Đăng xuất</button>
+            </form>
+        </div>
+
+        <!-- ── Flash messages ──────────────────────────────── -->
+        <div th:if="${success}" class="flash flash-success" id="flash-msg"
+             th:text="${success}" style="margin: 12px 24px 0;"></div>
+        <div th:if="${error}" class="flash flash-error" id="flash-msg"
+             th:text="${error}" style="margin: 12px 24px 0;"></div>
+        <div th:if="${warn}" class="flash flash-warn" id="flash-msg"
+             th:text="${warn}" style="margin: 12px 24px 0;"></div>
+
+        <!-- ── Page content ────────────────────────────────── -->
+        <div class="adm-content">
+            <th:block th:replace="${content}"/>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
+

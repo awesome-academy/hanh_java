@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Dịch vụ công', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Dịch vụ công</h1>
+            <p>Tìm kiếm và nộp hồ sơ trực tuyến</p>
+        </div>
+    </div>
+
+    <!-- ── Filter bar ─────────────────────────────────────────────── -->
+    <form class="fbar" method="get" th:action="@{/services}">
+        <input class="fi" type="text" name="keyword"
+               th:value="${keyword}"
+               placeholder="Tìm tên dịch vụ...">
+
+        <select class="fi-s" name="categoryId">
+            <option value="">Tất cả lĩnh vực</option>
+            <option th:each="cat : ${categories}"
+                    th:value="${cat.id}"
+                    th:text="${cat.name}"
+                    th:selected="${cat.id == categoryId}">
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-p" style="padding:8px 16px;font-size:13px">
+            Tìm kiếm
+        </button>
+        <a th:href="@{/services}" class="btn btn-o"
+           style="padding:8px 16px;font-size:13px"
+           th:if="${keyword != null or categoryId != null}">
+            Xoá filter
+        </a>
+    </form>
+
+    <!-- ── Service list ───────────────────────────────────────────── -->
+    <div class="svc-list">
+        <div th:if="${services.isEmpty()}"
+             style="padding:32px;text-align:center;color:var(--muted)">
+            <div style="font-size:32px;margin-bottom:8px">🔍</div>
+            <div style="font-size:14px;font-weight:600">Không tìm thấy dịch vụ nào</div>
+            <div style="font-size:12.5px;margin-top:4px">Thử thay đổi từ khoá hoặc lĩnh vực</div>
+        </div>
+
+        <a class="svc" th:each="svc, iter : ${services.content}"
+           th:href="@{/services/{id}(id=${svc.id})}">
+            <div class="svc-ic"
+                 th:style="${iter.index % 3 == 0 ? 'background:#EFF6FF' :
+                             iter.index % 3 == 1 ? 'background:#F0FDF4' :
+                                                   'background:#FEF9C3'}">📋</div>
+            <div class="svc-info">
+                <div class="svc-name" th:text="${svc.name}">Tên dịch vụ</div>
+                <div class="svc-meta">
+                    <span class="pill p-blue" th:text="${svc.categoryName}">Lĩnh vực</span>
+                    <span th:text="${svc.processingTimeDays} + ' ngày'">5 ngày</span>
+                    <span th:text="${svc.fee.signum() == 0 ? 'Miễn phí' : #numbers.formatInteger(svc.fee, 0, 'COMMA') + ' VNĐ'}">
+                        Miễn phí
+                    </span>
+                </div>
+            </div>
+            <span class="svc-dept" th:text="${svc.departmentName}">Phòng ban</span>
+        </a>
+    </div>
+
+    <!-- ── Pagination ─────────────────────────────────────────────── -->
+    <div class="pager" th:if="${services.totalPages > 1}">
+        <div class="pg-info"
+             th:text="${'Hiển thị ' + displayFrom + '–' + displayTo + ' / ' + services.totalElements + ' dịch vụ'}">
+        </div>
+        <div class="pg-btns">
+            <a class="pg"
+               th:classappend="${!services.hasPrevious()} ? ' on'"
+               th:href="${!services.hasPrevious()} ? '#'
+                         : @{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number - 1})}">
+                ← Trước
+            </a>
+            <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
+                <a class="pg"
+                   th:classappend="${i == services.number} ? ' on'"
+                   th:href="@{/services(keyword=${keyword},categoryId=${categoryId},page=${i})}"
+                   th:text="${i + 1}">
+                </a>
+            </th:block>
+            <a class="pg"
+               th:classappend="${!services.hasNext()} ? ' on'"
+               th:href="${!services.hasNext()} ? '#'
+                         : @{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number + 1})}">
+                Tiếp →
+            </a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
