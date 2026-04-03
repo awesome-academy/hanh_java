@@ -1,21 +1,4 @@
 <!DOCTYPE html>
-<!--
-  layout/admin.html — Layout dùng chung cho mọi trang Admin Portal.
-
-  Cách dùng:
-    <html th:replace="~{layout/admin :: layout('Tên trang', ~{:: main}, 'dashboard', 'Dashboard')}">
-    <head></head>
-    <body>
-      <main><!-- nội dung trang admin --></main>
-    </body>
-    </html>
-
-  Parameters:
-    title          — <title> của trang
-    content        — fragment nội dung (~{:: main})
-    activePage     — "dashboard|applications|users|services|departments|staff|logs"
-    breadcrumbLabel — label hiển thị trên breadcrumb
--->
 <html th:fragment="layout(title, content, activePage, breadcrumbLabel)"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
@@ -57,7 +40,7 @@
                th:href="@{/admin/applications}">
                 <span class="sb-ic">📁</span>Hồ sơ
                 <span class="sb-badge" th:if="${pendingCount != null and pendingCount > 0}"
-                      th:text="${pendingCount > 99} ? '99+' : ${pendingCount}"></span>
+                      th:text="${pendingCount > 99 ? '99+' : pendingCount}"></span>
             </a>
 
             <a class="sb-it" sec:authorize="hasRole('SUPER_ADMIN')"
@@ -127,11 +110,11 @@
         </div>
 
         <!-- ── Flash messages ──────────────────────────────── -->
-        <div th:if="${success}" class="flash flash-success" id="flash-msg"
+        <div th:if="${success}" class="flash flash-success"
              th:text="${success}" style="margin: 12px 24px 0;"></div>
-        <div th:if="${error}" class="flash flash-error" id="flash-msg"
+        <div th:if="${error}" class="flash flash-error"
              th:text="${error}" style="margin: 12px 24px 0;"></div>
-        <div th:if="${warn}" class="flash flash-warn" id="flash-msg"
+        <div th:if="${warn}" class="flash flash-warn"
              th:text="${warn}" style="margin: 12px 24px 0;"></div>
 
         <!-- ── Page content ────────────────────────────────── -->

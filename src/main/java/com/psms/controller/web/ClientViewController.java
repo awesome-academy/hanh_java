@@ -6,6 +6,7 @@ import com.psms.dto.response.ServiceTypeResponse;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.service.ServiceCatalogService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -29,10 +30,10 @@ import java.util.List;
 public class ClientViewController {
 
     private final ServiceCatalogService serviceCatalogService;
+    private static final String DEFAULT_PAGE_SIZE_STR = "10";
 
     // ─── GET / ─────────────────────────────────────────────────
 
-    @Operation(summary = "Trang chủ công dân", description = "Hero section + category grid + 5 DV phổ biến")
     @GetMapping("/")
     public String home(Model model) {
         List<ServiceCategoryResponse> categories = serviceCatalogService.findAllActiveCategories();
@@ -47,31 +48,41 @@ public class ClientViewController {
     }
 
     // ───  GET /services ──────────────────────────────────────────
-
-    @Operation(
-        summary = "Danh sách dịch vụ công",
-        description = "Filter keyword + categoryId, phân trang, giữ filter params khi chuyển trang"
-    )
+    /**
+     * Danh sách dịch vụ công.
+     * Filter keyword + categoryId, phân trang, giữ filter params khi chuyển trang.
+     */
     @GetMapping("/services")
     public String serviceList(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size,
             Model model) {
 
-        Page<ServiceTypeResponse> services = serviceCatalogService.searchServices(keyword, categoryId, page, size);
+        // Giới hạn page không âm và size trong khoảng 1..50 để tránh PageRequest.of(...) ném lỗi
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(1, Math.min(size, 50));
+        Page<ServiceTypeResponse> services = serviceCatalogService.searchServices(keyword, categoryId, safePage, safeSize);
         List<ServiceCategoryResponse> categories = serviceCatalogService.findAllActiveCategories();
 
         // Tính sẵn các giá trị phân trang — tránh dùng T(Math) trong Thymeleaf
         // vì Spring Boot 3+ chặn truy cập class Java tĩnh từ SpEL trong template
         int pageStart   = Math.max(0, services.getNumber() - 2);
         int pageEnd     = Math.min(services.getTotalPages() - 1, services.getNumber() + 2);
-        long displayFrom = (long) services.getNumber() * services.getSize() + 1;
-        long displayTo   = Math.min(
+
+        long displayFrom;
+        long displayTo;
+        if (services.getNumberOfElements() == 0) {
+            displayFrom = 0;
+            displayTo = 0;
+        } else {
+            displayFrom = (long) services.getNumber() * services.getSize() + 1;
+            displayTo = Math.min(
                 (long) services.getNumber() * services.getSize() + services.getNumberOfElements(),
                 services.getTotalElements()
-        );
+            );
+        }
 
         model.addAttribute("services", services);
         model.addAttribute("categories", categories);
@@ -88,11 +99,10 @@ public class ClientViewController {
     }
 
     // ─── #05-06: GET /services/{id} ─────────────────────────────────────
-
-    @Operation(
-        summary = "Chi tiết dịch vụ công",
-        description = "Tên, mô tả, yêu cầu hồ sơ, thời hạn, lệ phí, phòng ban. Button 'Nộp hồ sơ ngay'"
-    )
+    /**
+     * Chi tiết dịch vụ công".
+     * Tên, mô tả, yêu cầu hồ sơ, thời hạn, lệ phí, phòng ban. Button 'Nộp hồ sơ ngay'.
+     */
     @GetMapping("/services/{id}")
     public String serviceDetail(@PathVariable Long id, Model model) {
         ServiceTypeDetailResponse service = serviceCatalogService.findServiceById(id);

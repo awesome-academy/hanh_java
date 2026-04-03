@@ -28,6 +28,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -150,7 +151,11 @@ class ServiceCatalogControllerTest {
             mockMvc.perform(get("/api/client/services")
                             .param("size", "100")
                             .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
+
+            // Đảm bảo controller KHÔNG forward size=100 xuống service mà phải cap = 50
+            verify(serviceCatalogService).searchServices(isNull(), isNull(), eq(0), eq(50));
         }
 
         @Test
@@ -163,7 +168,11 @@ class ServiceCatalogControllerTest {
             mockMvc.perform(get("/api/client/services")
                             .param("size", "50")
                             .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
+
+            // Đảm bảo size=50 được giữ nguyên, không bị thay đổi thành giá trị khác
+            verify(serviceCatalogService).searchServices(isNull(), isNull(), eq(0), eq(50));
         }
     }
 

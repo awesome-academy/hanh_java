@@ -3,13 +3,11 @@ package com.psms.service;
 import com.psms.dto.response.ServiceCategoryResponse;
 import com.psms.dto.response.ServiceTypeDetailResponse;
 import com.psms.dto.response.ServiceTypeResponse;
-import com.psms.entity.ServiceCategory;
 import com.psms.entity.ServiceType;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.mapper.ServiceTypeMapper;
 import com.psms.repository.ServiceCategoryRepository;
 import com.psms.repository.ServiceTypeRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,15 +53,6 @@ class ServiceCatalogServiceTest {
 
     // ─── Fixtures ──────────────────────────────────────────────────────
 
-    private ServiceCategory buildCategory(Integer id, String code, String name, short sortOrder) {
-        ServiceCategory cat = new ServiceCategory();
-        cat.setId(id);
-        cat.setCode(code);
-        cat.setName(name);
-        cat.setSortOrder(sortOrder);
-        cat.setActive(true);
-        return cat;
-    }
 
     private ServiceType buildServiceType(Long id, String name) {
         ServiceType st = new ServiceType();
@@ -81,21 +70,19 @@ class ServiceCatalogServiceTest {
         @Test
         @DisplayName("Trả list category đúng thứ tự sort_order, kèm serviceCount")
         void returnsActiveCategoriesWithServiceCount() {
-            // Given
-            ServiceCategory cat1 = buildCategory(1, "HC", "Hành chính", (short) 1);
-            ServiceCategory cat2 = buildCategory(2, "DT", "Đầu tư", (short) 2);
+            // Given — stub đúng method mà service thực sự gọi (1 query JOIN + GROUP BY)
+            ServiceCategoryResponse dto1 = ServiceCategoryResponse.builder()
+                    .id(1).code("HC").name("Hành chính").sortOrder((short) 1).serviceCount(3L).build();
+            ServiceCategoryResponse dto2 = ServiceCategoryResponse.builder()
+                    .id(2).code("DT").name("Đầu tư").sortOrder((short) 2).serviceCount(0L).build();
 
-            given(categoryRepository.findAllByIsActiveTrueOrderBySortOrderAsc())
-                    .willReturn(List.of(cat1, cat2));
-
-            // countByCategory_IdAndIsActiveTrue trả 3 cho cat1, 0 cho cat2
-            given(serviceTypeRepository.countByCategory_IdAndIsActiveTrue(1)).willReturn(3L);
-            given(serviceTypeRepository.countByCategory_IdAndIsActiveTrue(2)).willReturn(0L);
+            given(categoryRepository.findAllActiveWithServiceCount())
+                    .willReturn(List.of(dto1, dto2));
 
             // When
             List<ServiceCategoryResponse> result = serviceCatalogService.findAllActiveCategories();
 
-            // Then
+            // Then — assert trực tiếp DTO, không cần stub count riêng
             assertThat(result).hasSize(2);
             assertThat(result.get(0).getCode()).isEqualTo("HC");
             assertThat(result.get(0).getServiceCount()).isEqualTo(3L);
@@ -106,7 +93,7 @@ class ServiceCatalogServiceTest {
         @Test
         @DisplayName("Trả list rỗng khi không có category active nào")
         void returnsEmptyListWhenNoCategoriesActive() {
-            given(categoryRepository.findAllByIsActiveTrueOrderBySortOrderAsc())
+            given(categoryRepository.findAllActiveWithServiceCount())
                     .willReturn(List.of());
 
             List<ServiceCategoryResponse> result = serviceCatalogService.findAllActiveCategories();

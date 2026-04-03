@@ -26,6 +26,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -150,6 +151,24 @@ class ClientViewControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(model().attribute("keyword", nullValue()))
                     .andExpect(model().attribute("categoryId", nullValue()));
+
+            // Xác nhận tường minh: service PHẢI được gọi đúng params (null, null, 0, 10)
+            // Thiếu verify này thì test có thể pass dù controller không gọi searchServices gì cả
+            verify(serviceCatalogService).searchServices(isNull(), isNull(), eq(0), eq(10));
+        }
+
+        @Test
+        @DisplayName("size > 50 → controller cap xuống 50 trước khi gọi service")
+        void sizeAbove50IsCappedAt50() throws Exception {
+            Page<ServiceTypeResponse> page = new PageImpl<>(List.of(), PageRequest.of(0, 50), 0);
+            // Controller phải gọi với safeSize = 50, không phải 200
+            given(serviceCatalogService.searchServices(isNull(), isNull(), eq(0), eq(50))).willReturn(page);
+            given(serviceCatalogService.findAllActiveCategories()).willReturn(List.of());
+
+            mockMvc.perform(get("/services").param("size", "200"))
+                    .andExpect(status().isOk());
+
+            verify(serviceCatalogService).searchServices(isNull(), isNull(), eq(0), eq(50));
         }
 
         @Test

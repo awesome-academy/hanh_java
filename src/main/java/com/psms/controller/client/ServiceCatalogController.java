@@ -28,7 +28,8 @@ import java.util.List;
 public class ServiceCatalogController {
 
     private final ServiceCatalogService serviceCatalogService;
-    private static final int DEFAULT_PAGE_SIZE = 10;
+
+    private static final String DEFAULT_PAGE_SIZE_STR = "10";
 
     // ─── GET /api/client/service-categories ───────────────────
 
@@ -80,11 +81,12 @@ public class ServiceCatalogController {
         @Parameter(description = "Tìm theo tên dịch vụ") @RequestParam(required = false) String keyword,
         @Parameter(description = "Lọc theo ID lĩnh vực") @RequestParam(required = false) Integer categoryId,
         @Parameter(description = "Trang (0-based)") @RequestParam(defaultValue = "0") int page,
-        @Parameter(description = "Số bản ghi/trang (max 50)") @RequestParam(defaultValue = "" + DEFAULT_PAGE_SIZE) int size ) {
+        @Parameter(description = "Số bản ghi/trang (max 50)")  @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size ) {
 
-        // Giới hạn size tối đa 50 để tránh query quá lớn
-        int safeSize = Math.min(size, 50);
-        Page<ServiceTypeResponse> result = serviceCatalogService.searchServices(keyword, categoryId, page, safeSize);
+        // Giới hạn page không âm và size trong khoảng 1..50 để tránh PageRequest.of(...) ném lỗi
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.max(1, Math.min(size, 50));
+        Page<ServiceTypeResponse> result = serviceCatalogService.searchServices(keyword, categoryId, safePage, safeSize);
         return ResponseEntity.ok(ApiResponse.success("OK", result));
     }
 

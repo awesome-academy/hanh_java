@@ -1,19 +1,4 @@
 <!DOCTYPE html>
-<!--
-  layout/client.html — Layout dùng chung cho mọi trang phía citizen.
-
-  Cách dùng trong page template:
-    <html th:replace="~{layout/client :: layout('Trang chủ', ~{:: main})}">
-    <head></head>
-    <body>
-      <main>
-        <!-- nội dung trang -->
-      </main>
-    </body>
-    </html>
-
-  Controller phải addAttribute("activeNav", "home|services|applications|profile|notifications")
--->
 <html th:fragment="layout(title, content)"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
@@ -88,11 +73,11 @@
     </div>
 
     <!-- ── Flash messages ─────────────────────────────────── -->
-    <div th:if="${success}" class="flash flash-success" id="flash-msg"
+    <div th:if="${success}" class="flash flash-success"
          th:text="${success}" style="margin: 12px 24px 0;"></div>
-    <div th:if="${error}" class="flash flash-error" id="flash-msg"
+    <div th:if="${error}" class="flash flash-error"
          th:text="${error}" style="margin: 12px 24px 0;"></div>
-    <div th:if="${warn}" class="flash flash-warn" id="flash-msg"
+    <div th:if="${warn}" class="flash flash-warn"
          th:text="${warn}" style="margin: 12px 24px 0;"></div>
 
     <!-- ── Page content ───────────────────────────────────── -->
