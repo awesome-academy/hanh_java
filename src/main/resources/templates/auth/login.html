@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập — Cổng DVCQG</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+</head>
+<body>
+<div class="auth-wrap">
+    <div class="auth-card">
+
+        <!-- Logo -->
+        <div class="auth-logo">
+            <div class="auth-logo-icon">DV</div>
+            <div>
+                <div class="auth-logo-name">Cổng DVCQG</div>
+                <div class="auth-logo-sub">Dịch vụ công trực tuyến</div>
+            </div>
+        </div>
+
+        <div class="auth-title">Đăng nhập</div>
+        <div class="auth-subtitle">Nhập email và mật khẩu để tiếp tục</div>
+
+        <!-- Lỗi từ Spring Security (sai pass / bị khóa) -->
+        <div th:if="${param.error}" class="flash flash-error">
+            Email hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.
+        </div>
+        <!-- Thông báo sau khi đăng xuất -->
+        <div th:if="${param.logout}" class="flash flash-success">
+            Bạn đã đăng xuất thành công.
+        </div>
+        <!-- Flash từ redirect (vd: sau khi đăng ký xong) -->
+        <div th:if="${success}" class="flash flash-success" th:text="${success}"></div>
+
+        <!--
+            Spring Security intercepts POST /auth/login tại loginProcessingUrl.
+            usernameParameter="email" đã cấu hình trong SecurityConfig.
+            Thymeleaf th:action tự inject CSRF token.
+        -->
+        <form th:action="@{/auth/login}" method="post" class="form-stack">
+
+            <div class="fg">
+                <label class="fl" for="email">Email</label>
+                <input id="email" type="email" name="email"
+                       class="fi2" placeholder="your@email.com"
+                       autocomplete="email" required autofocus>
+            </div>
+
+            <div class="fg">
+                <label class="fl" for="password">Mật khẩu</label>
+                <input id="password" type="password" name="password"
+                       class="fi2" placeholder="••••••••"
+                       autocomplete="current-password" required>
+            </div>
+
+            <button type="submit" class="btn btn-p btn-full" style="margin-top:6px">
+                Đăng nhập
+            </button>
+
+        </form>
+
+        <hr class="auth-divider">
+
+        <div class="auth-footer">
+            Chưa có tài khoản? <a th:href="@{/auth/register}">Đăng ký ngay</a>
+        </div>
+        <div class="auth-footer" style="margin-top:10px">
+            Bạn là cán bộ? <a th:href="@{/admin/login}">Cổng quản trị</a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
+

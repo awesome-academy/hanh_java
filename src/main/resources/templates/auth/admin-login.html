@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị — PSMS Admin</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+</head>
+<body>
+<div class="admin-auth-wrap">
+    <div class="admin-auth-card">
+        <div class="auth-logo" style="margin-bottom:28px">
+            <div class="auth-logo-icon admin">&#128274;</div>
+            <div>
+                <div class="auth-logo-name" style="color:#fff">PSMS Admin</div>
+                <div class="auth-logo-sub">Cổng quản trị nội bộ</div>
+            </div>
+        </div>
+        <div class="auth-title">Đăng nhập quản trị</div>
+        <div class="auth-subtitle">Chỉ dành cho cán bộ, quản lý và quản trị viên</div>
+        <div th:if="${param.error}" class="flash flash-error">
+            Email hoặc mật khẩu không đúng, hoặc bạn không có quyền truy cập.
+        </div>
+        <div th:if="${error}" class="flash flash-error" th:text="${error}"></div>
+        <form th:action="@{/admin/login}" method="post" class="form-stack">
+            <div class="fg">
+                <label class="fl" for="email">Email</label>
+                <input id="email" type="email" name="email"
+                       class="fi2" placeholder="your@organization.gov.vn"
+                       autocomplete="email" required autofocus>
+            </div>
+            <div class="fg">
+                <label class="fl" for="password">Mật khẩu</label>
+                <input id="password" type="password" name="password"
+                       class="fi2" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
+                       autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-admin btn-full" style="margin-top:6px">
+                Đăng nhập
+            </button>
+        </form>
+        <div class="auth-footer" style="margin-top:16px">
+            <a th:href="@{/auth/login}">&#8592; Về cổng công dân</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -52,14 +52,17 @@ mysql -u root -p psms < psms_schema.sql                  # init schema
 
 ```
 src/main/java/com/psms/
-├── config/       # Security, JWT, Async, Swagger
+├── config/       # SecurityConfig, JwtProperties
+├── security/     # JwtAuthenticationFilter
+├── scheduler/    # TokenCleanupScheduler (@Scheduled)
 ├── controller/
 │   ├── client/   # REST /api/client/**
 │   ├── admin/    # REST /api/admin/**
-│   └── view/     # MVC → Thymeleaf (HTML)
+│   └── web/      # MVC → Thymeleaf (HTML)
 ├── service/
 ├── repository/
 ├── entity/
+│   └── base/     # BaseEntity, LongBaseEntity, AuditableLongEntity
 ├── dto/          # request/ + response/
 ├── mapper/       # MapStruct only
 ├── exception/

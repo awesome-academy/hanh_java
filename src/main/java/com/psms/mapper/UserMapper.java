@@ -25,6 +25,7 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "lastLoginAt", ignore = true)
+    @Mapping(target = "authorities", ignore = true)  // UserDetails field, Spring Security tự tính từ roles
     User toEntity(RegisterRequest request);
 
     @Mapping(target = "roles", expression = "java(mapRoleNames(user.getRoles()))")

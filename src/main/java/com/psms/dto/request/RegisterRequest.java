@@ -49,8 +49,6 @@ public class RegisterRequest {
     @Size(max = 100, message = "{validation.ward.size}")
     private String ward;
 
-    @Size(max = 100, message = "{validation.district.size}")
-    private String district;
 
     @Size(max = 100, message = "{validation.province.size}")
     private String province;

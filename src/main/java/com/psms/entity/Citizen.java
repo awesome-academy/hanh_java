@@ -43,8 +43,6 @@ public class Citizen extends AuditableLongEntity {
     @Column(name = "ward", length = 100)
     private String ward;
 
-    @Column(name = "district", length = 100)
-    private String district;
 
     @Column(name = "province", length = 100)
     private String province;

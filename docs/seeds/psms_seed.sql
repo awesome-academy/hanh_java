@@ -61,11 +61,11 @@ INSERT INTO `user_roles` (`user_id`, `role_id`) VALUES
 -- 4. Citizens (công dân mẫu)
 -- -------------------------------------------------------------
 INSERT INTO `citizens` (`user_id`, `national_id`, `date_of_birth`, `gender`,
-                         `permanent_address`, `ward`, `district`, `province`) VALUES
+                         `permanent_address`, `ward`, `province`) VALUES
   (4, '079090012345', '1990-06-15', 'FEMALE',
-   '123 Lý Tự Trọng', 'Phường Bến Nghé', 'Quận 1', 'TP.HCM'),
+   '123 Lý Tự Trọng', 'Phường Bến Nghé', 'TP.HCM'),
   (5, '001090023456', '1988-03-22', 'MALE',
-   '45 Nguyễn Trãi',  'Phường 2',        'Quận 5', 'TP.HCM');
+   '45 Nguyễn Trãi',  'Phường 2',        'TP.HCM');
 
 
 -- -------------------------------------------------------------

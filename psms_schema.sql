@@ -186,7 +186,6 @@ CREATE TABLE IF NOT EXISTS `citizens` (
   `gender`            ENUM('MALE','FEMALE','OTHER') NULL,
   `permanent_address` TEXT         NULL,
   `ward`              VARCHAR(100) NULL,
-  `district`          VARCHAR(100) NULL,
   `province`          VARCHAR(100) NULL,
   `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -273,6 +273,43 @@ model.addAttribute("stats", dashboardService.getPublicStats());
 </div>
 ```
 
+**Địa chỉ thường trú — display (view mode, full-width):**
+```html
+<!--
+  Địa chỉ hiển thị là chuỗi ghép: permanent_address, ward, province.
+  Format: "[số nhà, đường], [Phường/Xã], [Tỉnh/TP]"
+-->
+<div class="fg full">
+  <div class="fl">Địa chỉ thường trú</div>
+  <div class="fi2"
+       th:text="${citizen.permanentAddress + ', ' + citizen.ward + ', ' + citizen.province}">
+    123 Thanh Niên, Phường Tây Mỗ, TP.Hà Nội
+  </div>
+</div>
+```
+
+**Địa chỉ thường trú — edit mode (grid 2 cột, không có district):**
+```html
+<!--
+  Trường permanentAddress (số nhà, đường) full-width.
+  Ward + Province hiển thị song song — grid 2 cột.
+-->
+<div class="fg full">
+  <label class="fl">Địa chỉ thường trú</label>
+  <input class="fi2" th:field="*{permanentAddress}" placeholder="Số nhà, đường, khu vực...">
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  <div class="fg">
+    <label class="fl">Phường/Xã</label>
+    <input class="fi2" th:field="*{ward}" placeholder="Phường Tây Mỗ">
+  </div>
+  <div class="fg">
+    <label class="fl">Tỉnh/TP</label>
+    <input class="fi2" th:field="*{province}" placeholder="TP. Hà Nội">
+  </div>
+</div>
+```
+
 ---
 
 ## C-06 · Thông báo (/notifications)

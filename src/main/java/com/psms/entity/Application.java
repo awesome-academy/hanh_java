@@ -29,6 +29,7 @@ public class Application extends AuditableLongEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
+    @Builder.Default
     private ApplicationStatus status = ApplicationStatus.DRAFT;
 
     @Column(name = "submitted_at")
