@@ -3,10 +3,10 @@ package com.psms.controller.web;
 import com.psms.dto.response.ServiceCategoryResponse;
 import com.psms.dto.response.ServiceTypeDetailResponse;
 import com.psms.dto.response.ServiceTypeResponse;
+import com.psms.util.PaginationInfo;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.service.ServiceCatalogService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
+import com.psms.util.PaginationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -62,27 +62,12 @@ public class ClientViewController {
 
         // Giới hạn page không âm và size trong khoảng 1..50 để tránh PageRequest.of(...) ném lỗi
         int safePage = Math.max(page, 0);
-        int safeSize = Math.max(1, Math.min(size, 50));
+        int safeSize = Math.clamp(size, 1, 50);
         Page<ServiceTypeResponse> services = serviceCatalogService.searchServices(keyword, categoryId, safePage, safeSize);
         List<ServiceCategoryResponse> categories = serviceCatalogService.findAllActiveCategories();
 
         // Tính sẵn các giá trị phân trang — tránh dùng T(Math) trong Thymeleaf
-        // vì Spring Boot 3+ chặn truy cập class Java tĩnh từ SpEL trong template
-        int pageStart   = Math.max(0, services.getNumber() - 2);
-        int pageEnd     = Math.min(services.getTotalPages() - 1, services.getNumber() + 2);
-
-        long displayFrom;
-        long displayTo;
-        if (services.getNumberOfElements() == 0) {
-            displayFrom = 0;
-            displayTo = 0;
-        } else {
-            displayFrom = (long) services.getNumber() * services.getSize() + 1;
-            displayTo = Math.min(
-                (long) services.getNumber() * services.getSize() + services.getNumberOfElements(),
-                services.getTotalElements()
-            );
-        }
+        PaginationInfo pageInfo = PaginationUtils.calculate(services);
 
         model.addAttribute("services", services);
         model.addAttribute("categories", categories);
@@ -90,10 +75,10 @@ public class ClientViewController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("categoryId", categoryId);
         // Biến phân trang
-        model.addAttribute("pageStart", pageStart);
-        model.addAttribute("pageEnd", pageEnd);
-        model.addAttribute("displayFrom", displayFrom);
-        model.addAttribute("displayTo", displayTo);
+        model.addAttribute("pageStart", pageInfo.pageStart());
+        model.addAttribute("pageEnd", pageInfo.pageEnd());
+        model.addAttribute("displayFrom", pageInfo.displayFrom());
+        model.addAttribute("displayTo", pageInfo.displayTo());
         model.addAttribute("activeNav", "services");
         return "client/service-list";
     }

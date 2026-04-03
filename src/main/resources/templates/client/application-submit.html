@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Nộp hồ sơ', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Nộp hồ sơ trực tuyến</h1>
+            <p>Điền thông tin và chọn dịch vụ cần thực hiện</p>
+        </div>
+    </div>
+
+    <div style="max-width:680px;margin:0 auto;padding:24px">
+
+        <div class="card" style="padding:32px">
+            <h2 style="font-size:16px;font-weight:700;margin-bottom:24px;color:var(--text)">
+                Thông tin hồ sơ
+            </h2>
+
+            <form method="post" th:action="@{/applications/submit}" id="submit-form">
+                <!-- CSRF token tự động inject bởi Spring Security -->
+
+                <!-- Chọn dịch vụ -->
+                <div class="form-group" style="margin-bottom:20px">
+                    <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">
+                        Dịch vụ công <span style="color:var(--danger)">*</span>
+                    </label>
+                    <select name="serviceTypeId" class="fi-s" style="width:100%;padding:10px 12px"
+                            required>
+                        <option value="">— Chọn dịch vụ —</option>
+                        <option th:each="svc : ${services}"
+                                th:value="${svc.id}"
+                                th:text="${svc.name}"
+                                th:selected="${svc.id == preSelectedServiceId}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Ghi chú -->
+                <div class="form-group" style="margin-bottom:24px">
+                    <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px">
+                        Ghi chú (tuỳ chọn)
+                    </label>
+                    <textarea name="notes" class="fi"
+                              style="width:100%;min-height:100px;resize:vertical;padding:10px 12px"
+                              placeholder="Thông tin bổ sung hoặc yêu cầu đặc biệt..."></textarea>
+                </div>
+
+                <!-- Lưu ý -->
+                <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:12.5px;color:#1D4ED8">
+                    <strong>📋 Lưu ý:</strong> Sau khi nộp, hồ sơ sẽ được cơ quan tiếp nhận và xử lý.
+                    Bạn có thể theo dõi trạng thái tại mục <strong>"Hồ sơ của tôi"</strong>.
+                </div>
+
+                <div style="display:flex;gap:12px">
+                    <button type="submit" class="btn btn-p" id="submit-btn"
+                            style="padding:10px 24px;font-size:14px">
+                        Nộp hồ sơ
+                    </button>
+                    <a th:href="@{/applications}" class="btn btn-o"
+                       style="padding:10px 24px;font-size:14px">
+                        Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        // Ngăn double-submit: disable button sau click đầu tiên
+        document.getElementById('submit-form').addEventListener('submit', function() {
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Đang xử lý...';
+        });
+    </script>
+
+</main>
+</body>
+</html>
+

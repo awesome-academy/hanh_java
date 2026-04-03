@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout('Dashboard', ~{:: main}, 'dashboard', 'Dashboard')}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <!-- ── KPI Cards ─────────────────────────────────────────────────── -->
+    <div class="kpi-grid">
+
+        <div class="kpi">
+            <div class="kpi-ic">📁</div>
+            <div class="kpi-lbl">Tổng hồ sơ</div>
+            <div class="kpi-val" th:text="${stats.totalApplications}">0</div>
+            <div class="kpi-d d-flat">Toàn hệ thống</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-ic">⚙️</div>
+            <div class="kpi-lbl">Đang xử lý</div>
+            <div class="kpi-val" th:text="${stats.processingApplications}">0</div>
+            <div class="kpi-d d-up">Tiếp nhận + Xử lý + Bổ sung</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-ic">✅</div>
+            <div class="kpi-lbl">Hoàn thành</div>
+            <div class="kpi-val" th:text="${stats.completedApplications}">0</div>
+            <div class="kpi-d d-flat">Duyệt + Từ chối</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-ic">⚠️</div>
+            <div class="kpi-lbl">Quá hạn</div>
+            <div class="kpi-val" th:text="${stats.overdueApplications}"
+                 th:style="${stats.overdueApplications > 0} ? 'color:var(--danger)' : ''">0</div>
+            <div class="kpi-d d-down" th:if="${stats.overdueApplications > 0}">Cần xử lý gấp</div>
+            <div class="kpi-d d-flat" th:unless="${stats.overdueApplications > 0}">Không có hồ sơ quá hạn</div>
+        </div>
+
+    </div>
+
+    <!-- ── Recent applications table ─────────────────────────────────── -->
+    <div class="card" style="margin-top:0">
+        <div class="card-hd">
+            <strong>🕐 Hồ sơ mới nhất cần xử lý</strong>
+            <a th:href="@{/admin/applications}" class="bsm bv" style="font-size:12px">Xem tất cả →</a>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${recentApps.isEmpty()}"
+             style="padding:32px;text-align:center;color:var(--muted);font-size:13px">
+            🎉 Không có hồ sơ nào đang chờ xử lý
+        </div>
+
+        <table class="tbl" th:unless="${recentApps.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Mã hồ sơ</th>
+                    <th>Công dân</th>
+                    <th>Dịch vụ</th>
+                    <th>Ngày nộp</th>
+                    <th>Hạn XL</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="app : ${recentApps}">
+                    <td>
+                        <a class="lnk" th:href="@{/admin/applications/{id}(id=${app.id})}"
+                           th:text="${app.applicationCode}">HS-...</a>
+                    </td>
+                    <td th:text="${app.citizenFullName}">Nguyễn Văn A</td>
+                    <td th:text="${app.serviceTypeName}">Dịch vụ</td>
+                    <td th:text="${app.submittedAt != null ? #temporals.format(app.submittedAt,'dd/MM/yyyy') : '—'}">01/01</td>
+                    <td th:text="${app.processingDeadline != null ? #temporals.format(app.processingDeadline,'dd/MM/yyyy') : '—'}"
+                        th:style="${app.overdue} ? 'color:var(--danger);font-weight:600' : ''">
+                    </td>
+                    <td>
+                        <span class="pill" th:classappend="${app.statusBadgeClass}"
+                              th:text="${app.statusLabel}">Trạng thái</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/applications/{id}(id=${app.id})}" class="bsm bv">Xem</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>
+

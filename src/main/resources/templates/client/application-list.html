@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Hồ sơ của tôi', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Hồ sơ của tôi</h1>
+            <p>Theo dõi trạng thái và lịch sử xử lý hồ sơ</p>
+        </div>
+        <a th:href="@{/applications/submit}" class="btn btn-p"
+           style="padding:8px 18px;font-size:13px">
+            + Nộp hồ sơ mới
+        </a>
+    </div>
+
+    <!-- ── Filter bar ─────────────────────────────────────────────── -->
+    <form class="fbar" method="get" th:action="@{/applications}">
+        <select class="fi-s" name="status">
+            <option value="" th:selected="${status == null}">Tất cả trạng thái</option>
+            <option th:each="s : ${allStatuses}"
+                    th:value="${s.name()}"
+                    th:text="${s.label}"
+                    th:selected="${s == status}">
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-p" style="padding:8px 16px;font-size:13px">
+            Lọc
+        </button>
+        <a th:href="@{/applications}" class="btn btn-o"
+           style="padding:8px 16px;font-size:13px"
+           th:if="${status != null}">
+            Xoá filter
+        </a>
+    </form>
+
+    <!-- ── Application list ───────────────────────────────────────── -->
+    <div class="svc-list">
+
+        <!-- Empty state -->
+        <div th:if="${applications.isEmpty()}"
+             style="padding:48px;text-align:center;color:var(--muted)">
+            <div style="font-size:40px;margin-bottom:12px">📂</div>
+            <div style="font-size:14px;font-weight:600">Chưa có hồ sơ nào</div>
+            <div style="font-size:12.5px;margin-top:6px">
+                <a th:href="@{/applications/submit}" style="color:var(--primary)">
+                    Nộp hồ sơ đầu tiên →
+                </a>
+            </div>
+        </div>
+
+        <!-- List rows -->
+        <a class="svc" th:each="app : ${applications.content}"
+           th:href="@{/applications/{id}(id=${app.id})}">
+            <div class="svc-ic" style="background:#EFF6FF;font-size:20px">📄</div>
+            <div class="svc-info">
+                <div class="svc-name" th:text="${app.applicationCode}">HS-20260101-00001</div>
+                <div class="svc-meta">
+                    <span th:text="${app.serviceTypeName}">Tên dịch vụ</span>
+                    <span th:if="${app.submittedAt != null}"
+                          th:text="'Nộp: ' + ${#temporals.format(app.submittedAt, 'dd/MM/yyyy')}">
+                    </span>
+                    <span th:if="${app.processingDeadline != null}"
+                          th:text="'Hạn: ' + ${#temporals.format(app.processingDeadline, 'dd/MM/yyyy')}">
+                    </span>
+                </div>
+            </div>
+            <span class="pill" th:classappend="${app.statusBadgeClass}"
+                  th:text="${app.statusLabel}">Trạng thái</span>
+        </a>
+
+    </div>
+
+    <!-- ── Pagination ─────────────────────────────────────────────── -->
+    <div class="pager" th:if="${applications.totalPages > 1}">
+        <div class="pg-info"
+            th:text="${'Hiển thị ' + displayFrom + '–' + displayTo + ' / ' + applications.totalElements + ' hồ sơ'}">
+        </div>
+        <div class="pg-btns">
+            <a class="pg"
+               th:classappend="${!applications.hasPrevious()} ? ' on'"
+               th:href="${!applications.hasPrevious()} ? '#'
+                         : @{/applications(status=${status},page=${applications.number - 1})}">
+                ← Trước
+            </a>
+            <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
+                <a class="pg"
+                   th:classappend="${i == applications.number} ? ' on'"
+                   th:href="@{/applications(status=${status},page=${i})}"
+                   th:text="${i + 1}">
+                </a>
+            </th:block>
+            <a class="pg"
+               th:classappend="${!applications.hasNext()} ? ' on'"
+               th:href="${!applications.hasNext()} ? '#'
+                         : @{/applications(status=${status},page=${applications.number + 1})}">
+                Tiếp →
+            </a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
+

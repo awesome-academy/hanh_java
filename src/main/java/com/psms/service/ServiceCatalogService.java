@@ -95,5 +95,26 @@ public class ServiceCatalogService {
     public long countActiveServices() {
         return serviceTypeRepository.countByIsActiveTrue();
     }
+
+    /**
+     * Toàn bộ DV active sắp xếp A-Z — dùng cho dropdown form nộp hồ sơ.
+     */
+    public List<ServiceTypeResponse> findAllActiveServices() {
+        return serviceTypeRepository.findAllByIsActiveTrueOrderByNameAsc()
+                .stream()
+                .map(serviceTypeMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Toàn bộ DV (cả active và inactive) sắp xếp A-Z — dùng cho filter dropdown ở admin.
+     * Admin cần xem cả DV đã tắt để có thể filter hồ sơ cũ theo dịch vụ đó.
+     */
+    public List<ServiceTypeResponse> findAllServiceTypesForFilter() {
+        return serviceTypeRepository.findAll(org.springframework.data.domain.Sort.by("name").ascending())
+                .stream()
+                .map(serviceTypeMapper::toResponse)
+                .toList();
+    }
 }
 

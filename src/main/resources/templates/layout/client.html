@@ -64,6 +64,17 @@
                 </span>
             </div>
 
+            <!-- Nút Đăng xuất — chỉ hiện khi đã đăng nhập
+                 Dùng form POST để Spring Security CSRF được tự inject bởi Thymeleaf th:action -->
+            <form th:action="@{/auth/logout}" method="post"
+                  sec:authorize="isAuthenticated()"
+                  style="display:inline;margin:0">
+                <button type="submit" class="btn btn-logout"
+                        style="padding:7px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px">
+                    <span style="font-size:15px;line-height:1;">⎋</span> Đăng xuất
+                </button>
+            </form>
+
             <a class="btn btn-p" sec:authorize="!isAuthenticated()"
                th:href="@{/auth/login}"
                style="padding:7px 14px;font-size:13px">
@@ -86,6 +97,7 @@
     </div>
 
 </div>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>
 

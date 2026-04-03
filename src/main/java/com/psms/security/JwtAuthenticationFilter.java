@@ -93,13 +93,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Extract JWT từ {@code Authorization: Bearer <token>} header.
+     * Fallback: đọc từ {@code HttpSession["ACCESS_TOKEN"]} cho Thymeleaf SSR page request.
+     *
+     * <p>Browser không tự gửi Authorization header khi navigate trang — token được lưu
+     * trong HttpSession sau khi login. Filter đọc session để set SecurityContext,
+     * nhờ đó {@code sec:authorize} trong Thymeleaf layout hoạt động đúng.</p>
      *
      * @return token string hoặc null nếu không có / sai format
      */
     private String extractBearerToken(HttpServletRequest request) {
+        // 1. Ưu tiên Authorization header (REST API / Postman / SPA)
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
+        }
+        // 2. Fallback: HttpSession — dành cho Thymeleaf SSR page request
+        var session = request.getSession(false);
+        if (session != null) {
+            Object token = session.getAttribute("ACCESS_TOKEN");
+            if (token instanceof String s && StringUtils.hasText(s)) {
+                return s;
+            }
         }
         return null;
     }

@@ -85,7 +85,7 @@ public class ServiceCatalogController {
 
         // Giới hạn page không âm và size trong khoảng 1..50 để tránh PageRequest.of(...) ném lỗi
         int safePage = Math.max(page, 0);
-        int safeSize = Math.max(1, Math.min(size, 50));
+        int safeSize = Math.clamp(size, 1, 50);
         Page<ServiceTypeResponse> result = serviceCatalogService.searchServices(keyword, categoryId, safePage, safeSize);
         return ResponseEntity.ok(ApiResponse.success("OK", result));
     }
