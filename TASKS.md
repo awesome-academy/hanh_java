@@ -156,18 +156,15 @@
 > **Base:** `feature/security-auth`
 
 **CSS**
-- [ ] `#04-01` `layout.css` — `.topbar`, `.sidebar`, `.page-content`, `.admin-shell`
-- [ ] `#04-02` `client.css` — hero section, category grid, service card, stat box
-- [ ] `#04-03` `admin.css` — KPI card, bar chart placeholder, log item, sidebar badge
+- [x] `#04-01` `layout.css` — `.topbar`, `.sidebar`, `.page-content`, `.admin-shell`
+- [x] `#04-02` `client.css` — hero section, category grid, service card, stat box
+- [x] `#04-03` `admin.css` — KPI card, bar chart placeholder, log item, sidebar badge
 
 **Thymeleaf Layout**
-- [ ] `#04-04` `layout/client.html` — topbar (logo, nav links, notif bell, avatar), `layout:fragment="content"`
+- [x] `#04-04` `layout/client.html` — topbar (logo, nav links, notif bell, avatar), `layout:fragment="content"`
   - `sec:authorize`, `sec:authentication`, active nav state theo `${activeNav}`
-- [ ] `#04-05` `layout/admin.html` — sidebar (menu items, pending badge), topbar breadcrumb, `layout:fragment="content"`
-- [ ] `#04-06` `js/main.js` — `showToast()`, `confirmDialog()`, auto-hide flash sau 3s
-- [ ] `#04-07` `js/client.js` — skeleton (sẽ bổ sung ở #06, #09)
-- [ ] `#04-08` `js/admin.js` — skeleton (sẽ bổ sung ở #10, #13, #14)
-- [ ] `#04-09` Flash message pattern trong cả 2 layout (success/error)
+- [x] `#04-05` `layout/admin.html` — sidebar (menu items, pending badge), topbar breadcrumb, `layout:fragment="content"`
+- [x] `#04-06` Flash message pattern trong cả 2 layout (success/error)
 
 **Definition of Done:**
 ```
@@ -184,22 +181,27 @@
 > **Base:** `feature/base-layout`
 
 **Backend**
-- [ ] `#05-01` `GET /api/client/service-categories` — danh sách lĩnh vực active
-- [ ] `#05-02` `GET /api/client/services` — danh sách DV (phân trang, filter keyword + categoryId)
-- [ ] `#05-03` `GET /api/client/services/{id}` — chi tiết dịch vụ
+- [x] `#05-01` `GET /api/client/service-categories` — danh sách lĩnh vực active
+- [x] `#05-02` `GET /api/client/services` — danh sách DV (phân trang, filter keyword + categoryId)
+- [x] `#05-03` `GET /api/client/services/{id}` — chi tiết dịch vụ
 
 **UI**
-- [ ] `#05-04` `ClientViewController.home()` + Template `client/home.html`:
+- [x] `#05-04` `ClientViewController.home()` + Template `client/home.html`:
   - Hero section (tiêu đề, search box, 3 stats)
   - Grid 8 lĩnh vực (icon + tên + số DV)
   - Danh sách 5 DV phổ biến
-- [ ] `#05-05` `ClientViewController.serviceList()` + Template `client/service-list.html`:
+- [x] `#05-05` `ClientViewController.serviceList()` + Template `client/service-list.html`:
   - Filter bar (keyword + dropdown lĩnh vực)
   - Danh sách DV theo row
   - Pagination giữ nguyên filter params
-- [ ] `#05-06` `ClientViewController.serviceDetail()` + Template `client/service-detail.html`:
+- [x] `#05-06` `ClientViewController.serviceDetail()` + Template `client/service-detail.html`:
   - Tên, mô tả, yêu cầu hồ sơ, thời hạn, lệ phí, cơ quan
   - Button "Nộp hồ sơ ngay" → `/applications/submit?serviceId={id}`
+
+**Test**
+- [x] `#05-07` Unit test `ServiceCatalogServiceTest` — 11 cases: findAllActiveCategories, searchServices (keyword normalize, trim, null), findServiceById (found/not found/inactive), findPopularServices, countActiveServices
+- [x] `#05-08` Unit test `ServiceCatalogControllerTest` — 9 cases: REST endpoints với MockMvc standaloneSetup, 404 qua GlobalExceptionHandler, size cap = 50
+- [x] `#05-09` Unit test `ClientViewControllerTest` — 9 cases: view name, model attributes, filter params giữ nguyên, redirect + flash khi không tìm thấy DV
 
 **Definition of Done:**
 ```
@@ -207,6 +209,7 @@
 □ Filter keyword → URL update, kết quả đúng
 □ Pagination hoạt động, giữ filter khi chuyển trang
 □ Click DV → xem chi tiết → có nút "Nộp hồ sơ"
+□ 29 unit tests xanh (service + REST controller + MVC controller)
 ```
 
 ---
@@ -236,6 +239,7 @@
 **Test**
 - [ ] `#06-08` Submit → kiểm tra DB có record đúng, mã HS format `HS-YYYYMMDD-NNNNN`
 - [ ] `#06-09` Citizen chỉ xem được HS của mình (ownership check)
+- [ ] `#06-10` `js/main.js` — `showToast()`, `confirmAction()`, `preventDoubleSubmit()`, auto-hide flash 3s; thêm vào cả 2 layout
 
 **Definition of Done:**
 ```
@@ -279,6 +283,7 @@
 - [ ] `#07-10` State machine: tất cả valid transitions pass
 - [ ] `#07-11` State machine: tất cả invalid transitions → 400, DB không thay đổi
 - [ ] `#07-12` Role: CITIZEN không truy cập được admin endpoint
+- [ ] `#07-13` `LayoutControllerAdvice` — inject `pendingCount` (số HS status SUBMITTED + RECEIVED) vào model cho mọi request `/admin/**`; sidebar badge hiển thị đúng số hồ sơ chờ xử lý
 
 **Definition of Done:**
 ```
@@ -591,10 +596,10 @@
 | #01 task/init-project | 7 | #01-01 | #01-07 |
 | #02 task/entities-repositories | 12 | #02-01 | #02-12 |
 | #03 feature/security-auth | 23 | #03-01 | #03-23 |
-| #04 feature/base-layout | 9 | #04-01 | #04-09 |
+| #04 feature/base-layout | 6 | #04-01 | #04-06 |
 | #05 feature/client-service-catalog | 6 | #05-01 | #05-06 |
-| #06 feature/client-application | 9 | #06-01 | #06-09 |
-| #07 feature/admin-dashboard-application | 12 | #07-01 | #07-12 |
+| #06 feature/client-application | 10 | #06-01 | #06-10 |
+| #07 feature/admin-dashboard-application | 13 | #07-01 | #07-13 |
 | #08 feature/file-upload | 15 | #08-01 | #08-16 |
 | #09 feature/client-profile-notification | 12 | #09-01 | #09-13 |
 | #10 feature/admin-user-management | 13 | #10-01 | #10-13 |
@@ -603,7 +608,7 @@
 | #13 feature/admin-activity-log-dashboard | 6 | #13-01 | #13-06 |
 | #14 feature/import-export-csv | 9 | #14-01 | #14-09 |
 | #15 task/testing-hardening-cicd | 26 | #15-01 | #15-26 |
-| **Tổng** | **177** | | |
+| **Tổng** | **176** | | |
 
 ---
 
@@ -662,4 +667,4 @@ docs(#PR-TASK): README, Swagger, CHANGELOG
 
 ---
 
-*Cập nhật: 2026-03-31 · v3.1 — Fix compatibility issues · 15 PRs · 177 tasks*
+*Cập nhật: 2026-04-03 · v3.2 — Remove premature JS/LayoutControllerAdvice, move to correct features · 15 PRs · 176 tasks*

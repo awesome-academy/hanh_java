@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html th:fragment="layout(title, content)"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null} ? (${title} + ' — Cổng DVCQG') : 'Cổng DVCQG'">Cổng DVCQG</title>
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/client.css}">
+</head>
+<body>
+<div class="client-shell">
+
+    <!-- ── Topbar ─────────────────────────────────────────── -->
+    <div class="topbar">
+
+        <a class="topbar-logo" th:href="@{/}">
+            <div class="logo-icon">DV</div>
+            <div class="logo-text">
+                <strong>Cổng DVCQG</strong>
+                <span>Dịch vụ công trực tuyến</span>
+            </div>
+        </a>
+
+        <nav class="nav-links">
+            <a class="nl" th:classappend="${activeNav == 'home'} ? ' active'"
+               th:href="@{/}">Trang chủ</a>
+            <a class="nl" th:classappend="${activeNav == 'services'} ? ' active'"
+               th:href="@{/services}">Dịch vụ công</a>
+            <a class="nl" sec:authorize="isAuthenticated()"
+               th:classappend="${activeNav == 'applications'} ? ' active'"
+               th:href="@{/applications}">Hồ sơ của tôi</a>
+            <a class="nl" sec:authorize="isAuthenticated()"
+               th:classappend="${activeNav == 'profile'} ? ' active'"
+               th:href="@{/profile}">Hồ sơ cá nhân</a>
+            <a class="nl" sec:authorize="isAuthenticated()"
+               th:classappend="${activeNav == 'notifications'} ? ' active'"
+               th:href="@{/notifications}">Thông báo</a>
+        </nav>
+
+        <div class="topbar-r">
+            <button class="notif-btn" sec:authorize="isAuthenticated()"
+                    onclick="window.location='/notifications'" title="Thông báo">
+                🔔
+                <span class="notif-dot" id="notif-badge"
+                      th:if="${unreadCount != null and unreadCount > 0}"
+                      th:text="${unreadCount}"></span>
+            </button>
+
+            <!--
+              Dùng sec:authentication="principal.username" thay vì #authentication
+              để tránh lỗi khi anonymous user truy cập trang public
+            -->
+            <div class="ava" sec:authorize="isAuthenticated()"
+                 title="Tài khoản">
+                <span sec:authentication="principal.username"
+                      th:with="email=${#authentication.name}"
+                      th:text="${#strings.length(email) >= 2 ? #strings.substring(email,0,2) : email}">
+                    ??
+                </span>
+            </div>
+
+            <a class="btn btn-p" sec:authorize="!isAuthenticated()"
+               th:href="@{/auth/login}"
+               style="padding:7px 14px;font-size:13px">
+                Đăng nhập
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Flash messages ─────────────────────────────────── -->
+    <div th:if="${success}" class="flash flash-success"
+         th:text="${success}" style="margin: 12px 24px 0;"></div>
+    <div th:if="${error}" class="flash flash-error"
+         th:text="${error}" style="margin: 12px 24px 0;"></div>
+    <div th:if="${warn}" class="flash flash-warn"
+         th:text="${warn}" style="margin: 12px 24px 0;"></div>
+
+    <!-- ── Page content ───────────────────────────────────── -->
+    <div class="page-content">
+        <th:block th:replace="${content}"/>
+    </div>
+
+</div>
+</body>
+</html>
+

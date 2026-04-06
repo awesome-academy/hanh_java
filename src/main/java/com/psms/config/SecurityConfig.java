@@ -148,6 +148,10 @@ public class SecurityConfig {
                     "/auth/login", "/auth/register",
                     "/admin/login").permitAll()
 
+                // ── Public client pages (không cần đăng nhập) ────────────
+                .requestMatchers(
+                    "/", "/services", "/services/**").permitAll()
+
                 // ── Swagger (chỉ dev — prod tắt qua springdoc.api-docs.enabled) ──
                 .requestMatchers(
                     "/swagger-ui.html", "/swagger-ui/**",

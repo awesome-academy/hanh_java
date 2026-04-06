@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Trang chủ', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <!-- ── Hero ──────────────────────────────────────────────────── -->
+    <div class="hero">
+        <div class="hero-text">
+            <div class="hero-eyebrow">Cổng Dịch vụ công Quốc gia</div>
+            <h1>Nộp hồ sơ trực tuyến<br>nhanh chóng, tiện lợi</h1>
+            <p>Tra cứu và nộp hơn
+                <strong th:text="${totalServices}">200</strong>
+                dịch vụ hành chính công, không cần đến trực tiếp cơ quan nhà nước.
+            </p>
+            <form class="hero-search" method="get" th:action="@{/services}">
+                <input class="search-inp" type="text" name="keyword"
+                       placeholder="Tìm kiếm dịch vụ công...">
+                <button type="submit" class="hero-btn">Tìm kiếm</button>
+            </form>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-box">
+                <div class="stat-val" th:text="${totalServices}">200</div>
+                <div class="stat-lbl">Dịch vụ</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val">1,200+</div>
+                <div class="stat-lbl">Hồ sơ / tháng</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val">98%</div>
+                <div class="stat-lbl">Hài lòng</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Category grid ─────────────────────────────────────────── -->
+    <div class="sec-hd">
+        <h2>Lĩnh vực dịch vụ</h2>
+        <a th:href="@{/services}">Xem tất cả →</a>
+    </div>
+
+    <div class="cats">
+        <a class="cat" th:each="cat, iter : ${categories}"
+           th:href="@{/services(categoryId=${cat.id})}">
+            <div class="cat-ic"
+                 th:style="${iter.index % 5 == 0 ? 'background:#EFF6FF' :
+                             iter.index % 5 == 1 ? 'background:#F0FDF4' :
+                             iter.index % 5 == 2 ? 'background:#FEF9C3' :
+                             iter.index % 5 == 3 ? 'background:#FEE2E2' :
+                                                   'background:#EDE9FE'}">
+                <span th:text="${cat.icon} ?: '🏛️'">🏛️</span>
+            </div>
+            <p th:text="${cat.name}">Hành chính công</p>
+            <small th:text="${cat.serviceCount} + ' dịch vụ'">0 dịch vụ</small>
+        </a>
+    </div>
+
+    <!-- ── Popular services ──────────────────────────────────────── -->
+    <div class="sec-hd" style="margin-top: 8px">
+        <h2>Dịch vụ nổi bật</h2>
+        <a th:href="@{/services}">Xem tất cả →</a>
+    </div>
+
+    <div class="svc-list">
+        <div th:if="${#lists.isEmpty(popularServices)}"
+             style="padding:24px;text-align:center;color:var(--muted);font-size:13px">
+            Chưa có dịch vụ nào.
+        </div>
+
+        <a class="svc" th:each="svc, iter : ${popularServices}"
+           th:href="@{/services/{id}(id=${svc.id})}">
+            <div class="svc-ic"
+                 th:style="${iter.index % 3 == 0 ? 'background:#EFF6FF' :
+                             iter.index % 3 == 1 ? 'background:#F0FDF4' :
+                                                   'background:#FEF9C3'}">📋</div>
+            <div class="svc-info">
+                <div class="svc-name" th:text="${svc.name}">Tên dịch vụ</div>
+                <div class="svc-meta">
+                    <span class="pill p-blue" th:text="${svc.categoryName}">Lĩnh vực</span>
+                    <span th:text="${svc.processingTimeDays} + ' ngày'">5 ngày</span>
+                    <span th:text="${svc.fee.signum() == 0 ? 'Miễn phí' : #numbers.formatInteger(svc.fee, 0, 'COMMA') + ' VNĐ'}">
+                        Miễn phí
+                    </span>
+                </div>
+            </div>
+            <span class="svc-dept" th:text="${svc.departmentName}">Phòng ban</span>
+        </a>
+    </div>
+
+</main>
+</body>
+</html>
