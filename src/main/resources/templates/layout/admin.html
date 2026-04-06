@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div style="flex:1;overflow-y:auto;padding-top:4px">
+        <div class="sb-nav">
 
             <div class="sb-sec">Tổng quan</div>
             <a class="sb-it" th:classappend="${activePage == 'dashboard'} ? ' on'"
@@ -104,18 +104,15 @@
                 <span class="cur" th:text="${breadcrumbLabel} ?: 'Dashboard'">Dashboard</span>
             </div>
 
-            <form th:action="@{/auth/logout}" method="post" style="display:inline">
+            <form th:action="@{/auth/logout}" method="post" class="form-inline">
                 <button type="submit" class="adm-logout">⎋ Đăng xuất</button>
             </form>
         </div>
 
         <!-- ── Flash messages ──────────────────────────────── -->
-        <div th:if="${success}" class="flash flash-success"
-             th:text="${success}" style="margin: 12px 24px 0;"></div>
-        <div th:if="${error}" class="flash flash-error"
-             th:text="${error}" style="margin: 12px 24px 0;"></div>
-        <div th:if="${warn}" class="flash flash-warn"
-             th:text="${warn}" style="margin: 12px 24px 0;"></div>
+        <div th:if="${success}" class="flash flash-success flash-outer" th:text="${success}"></div>
+        <div th:if="${error}"   class="flash flash-error   flash-outer" th:text="${error}"></div>
+        <div th:if="${warn}"    class="flash flash-warn    flash-outer" th:text="${warn}"></div>
 
         <!-- ── Page content ────────────────────────────────── -->
         <div class="adm-content">

@@ -11,8 +11,7 @@
             <h1>Hồ sơ của tôi</h1>
             <p>Theo dõi trạng thái và lịch sử xử lý hồ sơ</p>
         </div>
-        <a th:href="@{/applications/submit}" class="btn btn-p"
-           style="padding:8px 18px;font-size:13px">
+        <a th:href="@{/applications/submit}" class="btn btn-p btn-sm">
             + Nộp hồ sơ mới
         </a>
     </div>
@@ -28,11 +27,8 @@
             </option>
         </select>
 
-        <button type="submit" class="btn btn-p" style="padding:8px 16px;font-size:13px">
-            Lọc
-        </button>
-        <a th:href="@{/applications}" class="btn btn-o"
-           style="padding:8px 16px;font-size:13px"
+        <button type="submit" class="btn btn-p btn-sm">Lọc</button>
+        <a th:href="@{/applications}" class="btn btn-o btn-sm"
            th:if="${status != null}">
             Xoá filter
         </a>
@@ -42,12 +38,11 @@
     <div class="svc-list">
 
         <!-- Empty state -->
-        <div th:if="${applications.isEmpty()}"
-             style="padding:48px;text-align:center;color:var(--muted)">
-            <div style="font-size:40px;margin-bottom:12px">📂</div>
-            <div style="font-size:14px;font-weight:600">Chưa có hồ sơ nào</div>
-            <div style="font-size:12.5px;margin-top:6px">
-                <a th:href="@{/applications/submit}" style="color:var(--primary)">
+        <div th:if="${applications.isEmpty()}" class="empty-box">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">Chưa có hồ sơ nào</div>
+            <div class="empty-sub">
+                <a th:href="@{/applications/submit}" class="text-primary">
                     Nộp hồ sơ đầu tiên →
                 </a>
             </div>
@@ -56,7 +51,7 @@
         <!-- List rows -->
         <a class="svc" th:each="app : ${applications.content}"
            th:href="@{/applications/{id}(id=${app.id})}">
-            <div class="svc-ic" style="background:#EFF6FF;font-size:20px">📄</div>
+            <div class="svc-ic svc-ic-doc">📄</div>
             <div class="svc-info">
                 <div class="svc-name" th:text="${app.applicationCode}">HS-20260101-00001</div>
                 <div class="svc-meta">
@@ -81,10 +76,9 @@
             th:text="${'Hiển thị ' + displayFrom + '–' + displayTo + ' / ' + applications.totalElements + ' hồ sơ'}">
         </div>
         <div class="pg-btns">
-            <a class="pg"
-               th:classappend="${!applications.hasPrevious()} ? ' on'"
-               th:href="${!applications.hasPrevious()} ? '#'
-                         : @{/applications(status=${status},page=${applications.number - 1})}">
+            <span class="pg on" th:if="${!applications.hasPrevious()}">← Trước</span>
+            <a class="pg" th:unless="${!applications.hasPrevious()}"
+               th:href="@{/applications(status=${status},page=${applications.number - 1})}">
                 ← Trước
             </a>
             <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
@@ -94,10 +88,9 @@
                    th:text="${i + 1}">
                 </a>
             </th:block>
-            <a class="pg"
-               th:classappend="${!applications.hasNext()} ? ' on'"
-               th:href="${!applications.hasNext()} ? '#'
-                         : @{/applications(status=${status},page=${applications.number + 1})}">
+            <span class="pg on" th:if="${!applications.hasNext()}">Tiếp →</span>
+            <a class="pg" th:unless="${!applications.hasNext()}"
+               th:href="@{/applications(status=${status},page=${applications.number + 1})}">
                 Tiếp →
             </a>
         </div>

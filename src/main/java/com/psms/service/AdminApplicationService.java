@@ -4,6 +4,7 @@ import com.psms.dto.request.AssignStaffRequest;
 import com.psms.dto.request.UpdateStatusRequest;
 import com.psms.dto.response.AdminApplicationResponse;
 import com.psms.dto.response.DashboardStatsResponse;
+import com.psms.dto.response.StaffSummaryResponse;
 import com.psms.entity.Application;
 import com.psms.entity.ApplicationStatusHistory;
 import com.psms.entity.Staff;
@@ -13,6 +14,7 @@ import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.mapper.ApplicationMapper;
+import com.psms.mapper.StaffMapper;
 import com.psms.repository.ApplicationRepository;
 import com.psms.repository.ApplicationSpecifications;
 import com.psms.repository.ApplicationStatusHistoryRepository;
@@ -47,6 +49,7 @@ public class AdminApplicationService {
     private final ApplicationStatusHistoryRepository historyRepository;
     private final StaffRepository staffRepository;
     private final ApplicationMapper applicationMapper;
+    private final StaffMapper staffMapper;
 
     /** Số hồ sơ pending tối đa hiển thị trên dashboard. */
     private static final int RECENT_PENDING_LIMIT = 10;
@@ -230,10 +233,11 @@ public class AdminApplicationService {
 
     /**
      * Danh sách cán bộ available theo phòng ban — dùng cho dropdown phân công trong UI.
-     * Đặt ở service để AdminViewController không phụ thuộc trực tiếp vào StaffRepository.
+     * Trả DTO thay vì entity để controller/template không phụ thuộc vào Staff entity.
      */
-    public List<Staff> findAvailableStaffByDepartment(Long departmentId) {
-        return staffRepository.findAllByDepartmentIdAndIsAvailableTrue(departmentId);
+    public List<StaffSummaryResponse> findAvailableStaffByDepartment(Long departmentId) {
+        return staffMapper.toSummaryResponses(
+                staffRepository.findAllByDepartmentIdAndIsAvailableTrue(departmentId));
     }
 
     // ─── Private helpers ──────────────────────────────────────────────────

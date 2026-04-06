@@ -77,6 +77,7 @@ class ApplicationServiceTest {
         user.setFullName("Nguyen Van A");
 
         citizen = new Citizen();
+        citizen.setId(1L); // Gán id thực tế
         citizen.setUser(user);
         citizen.setNationalId("001090012345");
 
@@ -287,6 +288,7 @@ class ApplicationServiceTest {
         void findById_wrongOwner_throwsException() {
             // Given — citizen của user 1 tồn tại
             Citizen anotherCitizen = new Citizen();
+            anotherCitizen.setId(2L); // Gán id thực tế
             anotherCitizen.setUser(user);
             anotherCitizen.setNationalId("001090099999");
 

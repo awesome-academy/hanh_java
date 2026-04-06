@@ -68,28 +68,23 @@
                  Dùng form POST để Spring Security CSRF được tự inject bởi Thymeleaf th:action -->
             <form th:action="@{/auth/logout}" method="post"
                   sec:authorize="isAuthenticated()"
-                  style="display:inline;margin:0">
-                <button type="submit" class="btn btn-logout"
-                        style="padding:7px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px">
-                    <span style="font-size:15px;line-height:1;">⎋</span> Đăng xuất
+                  class="form-inline">
+                <button type="submit" class="btn btn-logout">
+                    <span class="icon-esc">⎋</span> Đăng xuất
                 </button>
             </form>
 
-            <a class="btn btn-p" sec:authorize="!isAuthenticated()"
-               th:href="@{/auth/login}"
-               style="padding:7px 14px;font-size:13px">
+            <a class="btn btn-p btn-topbar" sec:authorize="!isAuthenticated()"
+               th:href="@{/auth/login}">
                 Đăng nhập
             </a>
         </div>
     </div>
 
     <!-- ── Flash messages ─────────────────────────────────── -->
-    <div th:if="${success}" class="flash flash-success"
-         th:text="${success}" style="margin: 12px 24px 0;"></div>
-    <div th:if="${error}" class="flash flash-error"
-         th:text="${error}" style="margin: 12px 24px 0;"></div>
-    <div th:if="${warn}" class="flash flash-warn"
-         th:text="${warn}" style="margin: 12px 24px 0;"></div>
+    <div th:if="${success}" class="flash flash-success flash-outer" th:text="${success}"></div>
+    <div th:if="${error}"   class="flash flash-error   flash-outer" th:text="${error}"></div>
+    <div th:if="${warn}"    class="flash flash-warn    flash-outer" th:text="${warn}"></div>
 
     <!-- ── Page content ───────────────────────────────────── -->
     <div class="page-content">
@@ -98,6 +93,13 @@
 
 </div>
 <script th:src="@{/js/main.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof preventDoubleSubmit === 'function') {
+            preventDoubleSubmit('submit-form');
+        }
+    });
+</script>
 </body>
 </html>
 

@@ -2,25 +2,28 @@ package com.psms.util;
 
 import org.springframework.data.domain.Page;
 
-// PaginationUtils.java
-public class PaginationUtils {
-    public static PaginationInfo calculate(Page<?> page) {
-        int pageStart = Math.max(0, page.getNumber() - 2);
-        int pageEnd   = Math.min(page.getTotalPages() - 1, page.getNumber() + 2);
+/**
+ * Tính toán thông tin phân trang cho Thymeleaf template.
+ * Dùng chung cho cả client và admin layout.
+ */
+public final class PaginationUtils {
 
-        long displayFrom;
-        long displayTo;
-        if (page.getNumberOfElements() == 0) {
-            displayFrom = 0;
-            displayTo = 0;
-        } else {
-            displayFrom = (long) page.getNumber() * page.getSize() + 1;
-            displayTo = Math.min(
-                (long) page.getNumber() * page.getSize() + page.getNumberOfElements(),
-                page.getTotalElements()
-            );
+    private PaginationUtils() {}
+
+    public static PaginationInfo calculate(Page<?> page) {
+        if (page.isEmpty()) {
+            return new PaginationInfo(0, 0, 0, 0);
         }
-        return new PaginationInfo(pageStart, pageEnd, displayFrom, displayTo);
+
+        int cur = page.getNumber();
+        long offset = (long) cur * page.getSize();
+
+        return new PaginationInfo(
+                Math.max(0, cur - 2),
+                Math.min(page.getTotalPages() - 1, cur + 2),
+                offset + 1,
+                offset + page.getNumberOfElements()
+        );
     }
 }
 

@@ -35,7 +35,7 @@
             <div class="kpi-ic">⚠️</div>
             <div class="kpi-lbl">Quá hạn</div>
             <div class="kpi-val" th:text="${stats.overdueApplications}"
-                 th:style="${stats.overdueApplications > 0} ? 'color:var(--danger)' : ''">0</div>
+                 th:classappend="${stats.overdueApplications > 0} ? 'text-danger' : ''">0</div>
             <div class="kpi-d d-down" th:if="${stats.overdueApplications > 0}">Cần xử lý gấp</div>
             <div class="kpi-d d-flat" th:unless="${stats.overdueApplications > 0}">Không có hồ sơ quá hạn</div>
         </div>
@@ -43,15 +43,14 @@
     </div>
 
     <!-- ── Recent applications table ─────────────────────────────────── -->
-    <div class="card" style="margin-top:0">
+    <div class="card">
         <div class="card-hd">
             <strong>🕐 Hồ sơ mới nhất cần xử lý</strong>
-            <a th:href="@{/admin/applications}" class="bsm bv" style="font-size:12px">Xem tất cả →</a>
+            <a th:href="@{/admin/applications}" class="bsm bv">Xem tất cả →</a>
         </div>
 
         <!-- Empty state -->
-        <div th:if="${recentApps.isEmpty()}"
-             style="padding:32px;text-align:center;color:var(--muted);font-size:13px">
+        <div th:if="${recentApps.isEmpty()}" class="empty-box sm">
             🎉 Không có hồ sơ nào đang chờ xử lý
         </div>
 
@@ -77,7 +76,7 @@
                     <td th:text="${app.serviceTypeName}">Dịch vụ</td>
                     <td th:text="${app.submittedAt != null ? #temporals.format(app.submittedAt,'dd/MM/yyyy') : '—'}">01/01</td>
                     <td th:text="${app.processingDeadline != null ? #temporals.format(app.processingDeadline,'dd/MM/yyyy') : '—'}"
-                        th:style="${app.overdue} ? 'color:var(--danger);font-weight:600' : ''">
+                        th:classappend="${app.overdue} ? 'text-danger font-semibold' : ''">
                     </td>
                     <td>
                         <span class="pill" th:classappend="${app.statusBadgeClass}"

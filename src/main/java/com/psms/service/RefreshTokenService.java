@@ -123,7 +123,7 @@ public class RefreshTokenService {
             } catch (Exception e) {
                 log.warn("Refresh token reuse detected — cannot extract user, ignoring: {}", e.getMessage());
             }
-            throw new BusinessException(
+            throw new AuthenticationCredentialsNotFoundException(
                     "Refresh token đã bị dùng lại (reuse). Toàn bộ phiên đăng nhập đã bị thu hồi");
         }
 

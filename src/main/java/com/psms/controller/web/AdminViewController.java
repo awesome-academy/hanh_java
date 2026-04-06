@@ -5,7 +5,7 @@ import com.psms.dto.request.UpdateStatusRequest;
 import com.psms.dto.response.AdminApplicationResponse;
 import com.psms.dto.response.DashboardStatsResponse;
 import com.psms.dto.response.ServiceTypeResponse;
-import com.psms.entity.Staff;
+import com.psms.dto.response.StaffSummaryResponse;
 import com.psms.entity.User;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.BusinessException;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +76,7 @@ public class AdminViewController {
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size,
             Model model) {
 
+        // Giới hạn page không âm và size trong khoảng 1..100 để tránh PageRequest.of(...) ném lỗi
         int safePage = Math.max(page, 0);
         int safeSize = Math.clamp(size, 1, 100);
 
@@ -114,7 +114,7 @@ public class AdminViewController {
         Set<ApplicationStatus> allowedTransitions =
                 ApplicationStateMachine.getAllowedTransitions(app.getStatus());
 
-        List<Staff> availableStaff =
+        List<StaffSummaryResponse> availableStaff =
                 adminApplicationService.findAvailableStaffByDepartment(app.getDepartmentId());
 
         model.addAttribute("app", app);
@@ -135,11 +135,10 @@ public class AdminViewController {
             @PathVariable Long id,
             @RequestParam ApplicationStatus newStatus,
             @RequestParam(required = false) String notes,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User actingUser,
             RedirectAttributes ra) {
 
         try {
-            User actingUser = (User) userDetails;
             UpdateStatusRequest request = UpdateStatusRequest.builder()
                     .newStatus(newStatus)
                     .notes(notes)

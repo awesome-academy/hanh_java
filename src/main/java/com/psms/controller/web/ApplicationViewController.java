@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -67,12 +66,11 @@ public class ApplicationViewController {
      */
     @PostMapping("/submit")
     public String submitApplication(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @RequestParam Long serviceTypeId,
             @RequestParam(required = false) String notes,
             RedirectAttributes ra) {
 
-        User user = (User) userDetails;
         SubmitApplicationRequest request = SubmitApplicationRequest.builder()
                 .serviceTypeId(serviceTypeId)
                 .notes(notes)
@@ -92,7 +90,7 @@ public class ApplicationViewController {
      */
     @GetMapping
     public String listMyApplications(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @RequestParam(required = false) ApplicationStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size,
@@ -102,7 +100,6 @@ public class ApplicationViewController {
         int safePage = Math.max(page, 0);
         int safeSize = Math.clamp(size, 1, 50);
 
-        User user = (User) userDetails;
         Page<ApplicationResponse> applications =
             applicationService.findMyApplications(user.getId(), status, safePage, safeSize);
 
@@ -127,11 +124,10 @@ public class ApplicationViewController {
 
     @GetMapping("/{id}")
     public String showApplicationDetail(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @PathVariable Long id,
             Model model) {
 
-        User user = (User) userDetails;
         ApplicationDetailResponse detail = applicationService.findMyApplicationById(user.getId(), id);
 
         model.addAttribute("appDetail", detail);

@@ -28,11 +28,8 @@
             </option>
         </select>
 
-        <button type="submit" class="btn btn-p" style="padding:8px 16px;font-size:13px">
-            Tìm kiếm
-        </button>
-        <a th:href="@{/services}" class="btn btn-o"
-           style="padding:8px 16px;font-size:13px"
+        <button type="submit" class="btn btn-p btn-sm">Tìm kiếm</button>
+        <a th:href="@{/services}" class="btn btn-o btn-sm"
            th:if="${keyword != null or categoryId != null}">
             Xoá filter
         </a>
@@ -40,19 +37,15 @@
 
     <!-- ── Service list ───────────────────────────────────────────── -->
     <div class="svc-list">
-        <div th:if="${services.isEmpty()}"
-             style="padding:32px;text-align:center;color:var(--muted)">
-            <div style="font-size:32px;margin-bottom:8px">🔍</div>
-            <div style="font-size:14px;font-weight:600">Không tìm thấy dịch vụ nào</div>
-            <div style="font-size:12.5px;margin-top:4px">Thử thay đổi từ khoá hoặc lĩnh vực</div>
+        <div th:if="${services.isEmpty()}" class="empty-box sm">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">Không tìm thấy dịch vụ nào</div>
+            <div class="empty-sub">Thử thay đổi từ khoá hoặc lĩnh vực</div>
         </div>
 
         <a class="svc" th:each="svc, iter : ${services.content}"
            th:href="@{/services/{id}(id=${svc.id})}">
-            <div class="svc-ic"
-                 th:style="${iter.index % 3 == 0 ? 'background:#EFF6FF' :
-                             iter.index % 3 == 1 ? 'background:#F0FDF4' :
-                                                   'background:#FEF9C3'}">📋</div>
+            <div class="svc-ic">📋</div>
             <div class="svc-info">
                 <div class="svc-name" th:text="${svc.name}">Tên dịch vụ</div>
                 <div class="svc-meta">
@@ -73,10 +66,9 @@
              th:text="${'Hiển thị ' + displayFrom + '–' + displayTo + ' / ' + services.totalElements + ' dịch vụ'}">
         </div>
         <div class="pg-btns">
-            <a class="pg"
-               th:classappend="${!services.hasPrevious()} ? ' on'"
-               th:href="${!services.hasPrevious()} ? '#'
-                         : @{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number - 1})}">
+            <span class="pg on" th:if="${!services.hasPrevious()}">← Trước</span>
+            <a class="pg" th:unless="${!services.hasPrevious()}"
+               th:href="@{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number - 1})}">
                 ← Trước
             </a>
             <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
@@ -86,10 +78,9 @@
                    th:text="${i + 1}">
                 </a>
             </th:block>
-            <a class="pg"
-               th:classappend="${!services.hasNext()} ? ' on'"
-               th:href="${!services.hasNext()} ? '#'
-                         : @{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number + 1})}">
+            <span class="pg on" th:if="${!services.hasNext()}">Tiếp →</span>
+            <a class="pg" th:unless="${!services.hasNext()}"
+               th:href="@{/services(keyword=${keyword},categoryId=${categoryId},page=${services.number + 1})}">
                 Tiếp →
             </a>
         </div>

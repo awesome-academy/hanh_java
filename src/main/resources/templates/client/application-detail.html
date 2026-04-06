@@ -11,128 +11,101 @@
             <h1 th:text="${appDetail.applicationCode}">HS-20260101-00001</h1>
             <p>Chi tiết và lịch sử xử lý hồ sơ</p>
         </div>
-        <a th:href="@{/applications}" class="btn btn-o"
-           style="padding:8px 18px;font-size:13px">
-            ← Quay lại
-        </a>
+        <a th:href="@{/applications}" class="btn btn-o btn-sm">← Quay lại</a>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;padding:0 0 32px">
+    <div class="app-detail-g">
 
         <!-- ── Cột trái: Thông tin hồ sơ ─────────────────────────── -->
         <div>
-            <div class="card" style="padding:24px;margin-bottom:16px">
-                <h3 style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;
-                           letter-spacing:.5px;margin-bottom:16px">Thông tin hồ sơ</h3>
+            <div class="card card-lg">
+                <h3 class="section-ttl">Thông tin hồ sơ</h3>
 
-                <table style="width:100%;border-collapse:collapse;font-size:13.5px">
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted);width:40%">Mã hồ sơ</td>
-                        <td style="padding:10px 0;font-weight:600"
-                            th:text="${appDetail.applicationCode}"></td>
+                <table class="info-tbl">
+                    <tr>
+                        <td class="lbl">Mã hồ sơ</td>
+                        <td class="val" th:text="${appDetail.applicationCode}"></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Trạng thái</td>
-                        <td style="padding:10px 0">
+                    <tr>
+                        <td class="lbl">Trạng thái</td>
+                        <td>
                             <span class="pill" th:classappend="${appDetail.statusBadgeClass}"
                                   th:text="${appDetail.statusLabel}"></span>
                         </td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Dịch vụ</td>
-                        <td style="padding:10px 0" th:text="${appDetail.serviceTypeName}"></td>
+                    <tr>
+                        <td class="lbl">Dịch vụ</td>
+                        <td th:text="${appDetail.serviceTypeName}"></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Cơ quan</td>
-                        <td style="padding:10px 0" th:text="${appDetail.departmentName}"></td>
+                    <tr>
+                        <td class="lbl">Cơ quan</td>
+                        <td th:text="${appDetail.departmentName}"></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Lệ phí</td>
-                        <td style="padding:10px 0"
-                            th:text="${appDetail.fee == null or appDetail.fee.signum() == 0 ? 'Miễn phí' : #numbers.formatInteger(appDetail.fee, 0, 'COMMA') + ' VNĐ'}">
-                        </td>
+                    <tr>
+                        <td class="lbl">Lệ phí</td>
+                        <td th:text="${T(com.psms.util.MoneyUtils).formatFee(appDetail.fee)}"></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Ngày nộp</td>
-                        <td style="padding:10px 0"
-                            th:text="${appDetail.submittedAt != null ? #temporals.format(appDetail.submittedAt, 'dd/MM/yyyy HH:mm') : '—'}">
-                        </td>
+                    <tr>
+                        <td class="lbl">Ngày nộp</td>
+                        <td th:text="${appDetail.submittedAt != null ? #temporals.format(appDetail.submittedAt, 'dd/MM/yyyy HH:mm') : '—'}"></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:10px 0;color:var(--muted)">Hạn xử lý</td>
-                        <td style="padding:10px 0"
-                            th:text="${appDetail.processingDeadline != null ? #temporals.format(appDetail.processingDeadline, 'dd/MM/yyyy') : '—'}">
-                        </td>
+                    <tr>
+                        <td class="lbl">Hạn xử lý</td>
+                        <td th:text="${appDetail.processingDeadline != null ? #temporals.format(appDetail.processingDeadline, 'dd/MM/yyyy') : '—'}"></td>
                     </tr>
                     <tr th:if="${appDetail.assignedStaffName != null}">
-                        <td style="padding:10px 0;color:var(--muted)">Cán bộ phụ trách</td>
-                        <td style="padding:10px 0" th:text="${appDetail.assignedStaffName}"></td>
+                        <td class="lbl">Cán bộ phụ trách</td>
+                        <td th:text="${appDetail.assignedStaffName}"></td>
                     </tr>
                 </table>
             </div>
 
             <!-- Ghi chú -->
-            <div class="card" style="padding:24px;margin-bottom:16px"
+            <div class="card card-lg"
                  th:if="${appDetail.notes != null and !#strings.isEmpty(appDetail.notes)}">
-                <h3 style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;
-                           letter-spacing:.5px;margin-bottom:12px">Ghi chú</h3>
-                <p style="font-size:13.5px;color:var(--text);line-height:1.6"
-                   th:text="${appDetail.notes}"></p>
+                <h3 class="section-ttl sm">Ghi chú</h3>
+                <p class="body-text" th:text="${appDetail.notes}"></p>
             </div>
 
             <!-- Lý do từ chối -->
-            <div class="card"
-                 style="padding:24px;border-left:4px solid var(--danger)"
+            <div class="card card-lg card-danger"
                  th:if="${appDetail.rejectionReason != null and !#strings.isEmpty(appDetail.rejectionReason)}">
-                <h3 style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:12px">
-                    Lý do từ chối
-                </h3>
-                <p style="font-size:13.5px;color:var(--text);line-height:1.6"
-                   th:text="${appDetail.rejectionReason}"></p>
+                <h3 class="section-ttl danger">Lý do từ chối</h3>
+                <p class="body-text" th:text="${appDetail.rejectionReason}"></p>
             </div>
         </div>
 
         <!-- ── Cột phải: Timeline ──────────────────────────────────── -->
         <div>
-            <div class="card" style="padding:24px">
-                <h3 style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;
-                           letter-spacing:.5px;margin-bottom:20px">Lịch sử xử lý</h3>
+            <div class="card card-lg">
+                <h3 class="section-ttl">Lịch sử xử lý</h3>
 
                 <!-- Empty timeline -->
-                <div th:if="${#lists.isEmpty(appDetail.statusHistory)}"
-                     style="text-align:center;color:var(--muted);font-size:13px;padding:16px 0">
+                <div th:if="${#lists.isEmpty(appDetail.statusHistory)}" class="empty-state">
                     Chưa có lịch sử
                 </div>
 
                 <!-- Timeline items -->
-                <div th:each="h, iter : ${appDetail.statusHistory}"
-                     style="display:flex;gap:12px;margin-bottom:20px">
+                <div th:each="h, iter : ${appDetail.statusHistory}" class="app-tl-item">
 
-                    <!-- Icon dot -->
-                    <div style="display:flex;flex-direction:column;align-items:center">
-                        <div style="width:32px;height:32px;border-radius:50%;display:flex;
-                                    align-items:center;justify-content:center;font-size:14px;flex-shrink:0"
-                             th:style="${iter.last}
-                                ? 'background:#DCFCE7;'
-                                : 'background:#F1F5F9;'">
+                    <!-- Icon dot + connector line -->
+                    <div class="app-tl-side">
+                        <!-- th:style giữ background vì là giá trị động -->
+                        <div class="app-tl-dot"
+                             th:classappend="${iter.last} ? 'done' : 'prev'">
                             <span th:text="${iter.last} ? '✅' : '🔄'"></span>
                         </div>
-                        <!-- Connector line (không hiện ở item cuối) -->
-                        <div th:if="${!iter.last}"
-                             style="width:2px;flex:1;background:var(--border);margin-top:4px;min-height:16px">
-                        </div>
+                        <div class="app-tl-line" th:if="${!iter.last}"></div>
                     </div>
 
                     <!-- Content -->
-                    <div style="padding-bottom:4px;flex:1">
-                        <div style="font-size:13px;font-weight:600;color:var(--text)"
-                             th:text="${h.newStatusLabel}">Trạng thái</div>
-                         <div style="font-size:12px;color:var(--muted);margin-top:2px"
+                    <div class="app-tl-content">
+                        <div class="app-tl-ttl" th:text="${h.newStatusLabel}">Trạng thái</div>
+                        <div class="app-tl-dt"
                              th:text="${h.changedAt != null ? #temporals.format(h.changedAt, 'dd/MM/yyyy HH:mm') : ''}">
                         </div>
-                        <div th:if="${h.notes != null and !#strings.isEmpty(h.notes)}"
-                             style="font-size:12px;color:var(--text);margin-top:4px;
-                                    background:#F8FAFC;border-radius:4px;padding:6px 8px"
+                        <div class="app-tl-note"
+                             th:if="${h.notes != null and !#strings.isEmpty(h.notes)}"
                              th:text="${h.notes}">
                         </div>
                     </div>

@@ -33,29 +33,27 @@
             </option>
         </select>
 
-        <button type="submit" class="btn btn-p" style="padding:8px 16px;font-size:13px">Lọc</button>
-        <a th:href="@{/admin/applications}" class="btn btn-o"
-           style="padding:8px 16px;font-size:13px"
+        <button type="submit" class="btn btn-p btn-sm">Lọc</button>
+        <a th:href="@{/admin/applications}" class="btn btn-o btn-sm"
            th:if="${status != null or serviceTypeId != null}">
             Xoá filter
         </a>
     </form>
 
     <!-- ── Applications table ─────────────────────────────────────────── -->
-    <div class="card" style="margin-top:0">
+    <div class="card">
 
         <!-- Summary -->
         <div class="card-hd" th:if="${applications.totalElements > 0}">
-            <span style="color:var(--muted);font-size:13px"
+            <span class="text-muted"
                   th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${applications.totalElements} + ' hồ sơ'">
             </span>
         </div>
 
         <!-- Empty state -->
-        <div th:if="${applications.isEmpty()}"
-             style="padding:48px;text-align:center;color:var(--muted)">
-            <div style="font-size:40px;margin-bottom:12px">📂</div>
-            <div style="font-size:14px;font-weight:600">Không có hồ sơ nào phù hợp</div>
+        <div th:if="${applications.isEmpty()}" class="empty-box">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">Không có hồ sơ nào phù hợp</div>
         </div>
 
         <table class="tbl" th:unless="${applications.isEmpty()}">
@@ -81,7 +79,7 @@
                     <td th:text="${app.serviceTypeName}">Dịch vụ</td>
                     <td th:text="${app.submittedAt != null ? #temporals.format(app.submittedAt,'dd/MM/yyyy') : '—'}">01/01</td>
                     <td th:text="${app.processingDeadline != null ? #temporals.format(app.processingDeadline,'dd/MM/yyyy') : '—'}"
-                        th:style="${app.overdue} ? 'color:var(--danger);font-weight:600' : ''">
+                        th:classappend="${app.overdue} ? 'text-danger font-semibold' : ''">
                     </td>
                     <td th:text="${app.assignedStaffName != null ? app.assignedStaffName : '— Chưa phân công'}">
                     </td>
@@ -103,10 +101,9 @@
              th:text="'Trang ' + (${applications.number + 1}) + ' / ' + ${applications.totalPages}">
         </div>
         <div class="pg-btns">
-            <a class="pg"
-               th:classappend="${!applications.hasPrevious()} ? ' on'"
-               th:href="${!applications.hasPrevious()} ? '#'
-                         : @{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number - 1})}">
+            <span class="pg on" th:if="${!applications.hasPrevious()}">← Trước</span>
+            <a class="pg" th:unless="${!applications.hasPrevious()}"
+               th:href="@{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number - 1})}">
                 ← Trước
             </a>
             <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
@@ -116,10 +113,9 @@
                    th:text="${i + 1}">
                 </a>
             </th:block>
-            <a class="pg"
-               th:classappend="${!applications.hasNext()} ? ' on'"
-               th:href="${!applications.hasNext()} ? '#'
-                         : @{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number + 1})}">
+            <span class="pg on" th:if="${!applications.hasNext()}">Tiếp →</span>
+            <a class="pg" th:unless="${!applications.hasNext()}"
+               th:href="@{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number + 1})}">
                 Tiếp →
             </a>
         </div>

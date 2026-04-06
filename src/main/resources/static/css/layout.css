@@ -435,3 +435,17 @@
     margin-top: 2px;
 }
 
+/* ── Layout helpers ──────────────────────────────────────────── */
+
+/* Sidebar nav scroll area */
+.sb-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 4px;
+}
+
+/* Inline form — dùng cho logout form trong topbar/sidebar */
+.form-inline { display: inline; }
+
+/* Flash message position trong layout (ngoài page-content) */
+.flash-outer { margin: 12px 24px 0; }

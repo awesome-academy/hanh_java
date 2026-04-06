@@ -17,7 +17,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -43,33 +42,34 @@ public class AdminApplicationController {
     @Operation(
         summary = "Danh sách hồ sơ (Admin)",
         description = """
-            Filter và phân trang hồ sơ cho admin theo: status, serviceTypeId, staffId, tu ngay, den ngay.
+            Filter và phân trang hồ sơ cho admin theo: status, serviceTypeId, staffId, từ ngày, đến ngày.
             Phân trang 20 hồ sơ/trang, sort submittedAt DESC.
-             - Admin xem được tất cả hồ sơ, không giới hạn ownership.
-             - Nếu filter rỗng thì trả về tất cả hồ sơ.
-             - Tất cả datetime đều ISO format, timezone server (UTC+7).
-             - Nếu filter không hợp lệ (e.g. from > to) thì trả về 400 Bad Request với message lỗi rõ ràng.
-             - Nếu page hoặc size âm, hoặc size > 100 thì trả về 400 Bad Request để tránh việc tạo PageRequest.of(...) ném lỗi.
             """
     )
     @GetMapping
     public ResponseEntity<ApiResponse<Page<AdminApplicationResponse>>> listApplications(
             @Parameter(description = "Loc theo trang thai") @RequestParam(required = false) ApplicationStatus status,
             @Parameter(description = "Loc theo ID dich vu") @RequestParam(required = false) Long serviceTypeId,
-            @Parameter(description = "Loc theo ID can bo phu trach") @RequestParam(required = false) Long staffId,
+            @Parameter(description = "Lọc theo Staff.id (bảng staff, KHÔNG phải User.id)") @RequestParam(required = false) Long staffId,
             @Parameter(description = "Tu ngay (ISO datetime)") @RequestParam(required = false)
                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @Parameter(description = "Den ngay (ISO datetime)") @RequestParam(required = false)
                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
-            @Parameter(description = "Trang (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "So ban ghi/trang (max 100)") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size) {
+            @Parameter(description = "Trang (0-based, >= 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "So ban ghi/trang (1–100)") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size) {
 
-        // Giới hạn page không âm và size trong khoảng 1..100 để tránh PageRequest.of(...) ném lỗi
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        if (page < 0) {
+            throw new IllegalArgumentException("'page' phải >= 0, nhận: " + page);
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("'size' phải trong khoảng 1–100, nhận: " + size);
+        }
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("'from' (" + from + ") không được sau 'to' (" + to + ")");
+        }
 
         Page<AdminApplicationResponse> result = adminApplicationService
-                .findAll(status, serviceTypeId, staffId, from, to, safePage, safeSize);
+                .findAll(status, serviceTypeId, staffId, from, to, page, size);
         return ResponseEntity.ok(ApiResponse.success("OK", result));
     }
 
@@ -100,9 +100,8 @@ public class AdminApplicationController {
     public ResponseEntity<ApiResponse<AdminApplicationResponse>> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateStatusRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal User actingUser) {
 
-        User actingUser = (User) userDetails;
         AdminApplicationResponse response = adminApplicationService.updateStatus(id, request, actingUser);
         return ResponseEntity.ok(ApiResponse.success("Cap nhat trang thai thanh cong", response));
     }

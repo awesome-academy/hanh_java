@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -54,10 +53,9 @@ public class ClientApplicationController {
     )
     @PostMapping
     public ResponseEntity<ApiResponse<ApplicationResponse>> submit(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @Valid @RequestBody SubmitApplicationRequest request) {
 
-        User user = (User) userDetails;
         ApplicationResponse response = applicationService.submit(user.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Nộp hồ sơ thành công", response));
@@ -84,16 +82,15 @@ public class ClientApplicationController {
     )
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ApplicationResponse>>> listMyApplications(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Lọc theo trạng thái") @RequestParam(required = false) ApplicationStatus status,
-            @Parameter(description = "Trang (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Số bản ghi/trang") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size) {
+            @Parameter(description = "Trang (0-based, >= 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Số bản ghi/trang (1–50)") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size) {
 
-        User user = (User) userDetails;
-        // Giới hạn page không âm và size trong khoảng 1..50 để tránh PageRequest.of(...) ném lỗi
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 50);
-        Page<ApplicationResponse> applications = applicationService.findMyApplications(user.getId(), status, safePage, safeSize);
+        if (page < 0) throw new IllegalArgumentException("'page' phải >= 0, nhận: " + page);
+        if (size < 1 || size > 50) throw new IllegalArgumentException("'size' phải trong khoảng 1–50, nhận: " + size);
+
+        Page<ApplicationResponse> applications = applicationService.findMyApplications(user.getId(), status, page, size);
         return ResponseEntity.ok(ApiResponse.success("OK", applications));
     }
 
@@ -113,10 +110,9 @@ public class ClientApplicationController {
     )
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ApplicationDetailResponse>> getMyApplicationDetail(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @PathVariable Long id) {
 
-        User user = (User) userDetails;
         ApplicationDetailResponse detail = applicationService.findMyApplicationById(user.getId(), id);
         return ResponseEntity.ok(ApiResponse.success("OK", detail));
     }

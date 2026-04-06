@@ -130,19 +130,11 @@ public class ApplicationService {
         Application application = applicationRepository.findByIdAndCitizenId(applicationId, citizen.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hồ sơ không tồn tại hoặc bạn không có quyền xem"));
 
-        // Trace raw entity trước khi mapper chạy (debug level — không print ở production)
-        log.debug("Raw Application entity: id={}, code={}, status={}, submittedAt={}, serviceType={}",
-                application.getId(),
-                application.getApplicationCode(),
-                application.getStatus(),
-                application.getSubmittedAt(),
-                application.getServiceType() != null ? application.getServiceType().getName() : "NULL"
-        );
-        // ────────────────────────────────────────────────────────────────
-
         ApplicationDetailResponse response = applicationMapper.toDetailResponse(application);
 
-        log.debug("Mapped ApplicationDetailResponse: {}", response);
+        log.debug("Mapped ApplicationDetailResponse for applicationId={}, code={}",
+            application.getId(),
+            application.getApplicationCode());
 
         // Gắn timeline theo thứ tự thời gian tăng dần
         List<ApplicationStatusHistory> histories =

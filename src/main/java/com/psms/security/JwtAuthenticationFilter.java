@@ -93,11 +93,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Extract JWT từ {@code Authorization: Bearer <token>} header.
-     * Fallback: đọc từ {@code HttpSession["ACCESS_TOKEN"]} cho Thymeleaf SSR page request.
+     * Fallback: đọc từ {@code HttpSession["ACCESS_TOKEN"]} — CHỈ cho Thymeleaf SSR (non-API).
      *
-     * <p>Browser không tự gửi Authorization header khi navigate trang — token được lưu
-     * trong HttpSession sau khi login. Filter đọc session để set SecurityContext,
-     * nhờ đó {@code sec:authorize} trong Thymeleaf layout hoạt động đúng.</p>
+     * <p>Session fallback bị bỏ qua với /api/** vì:
+     * <ul>
+     *   <li>REST API phải stateless — chỉ accept Bearer header.</li>
+     *   <li>Nếu /api/** nhận session token, browser tự đính JSESSIONID →
+     *       CSRF attack khả thi dù CSRF đã disabled trên apiFilterChain.</li>
+     * </ul>
      *
      * @return token string hoặc null nếu không có / sai format
      */
@@ -107,12 +110,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
-        // 2. Fallback: HttpSession — dành cho Thymeleaf SSR page request
-        var session = request.getSession(false);
-        if (session != null) {
-            Object token = session.getAttribute("ACCESS_TOKEN");
-            if (token instanceof String s && StringUtils.hasText(s)) {
-                return s;
+        // 2. Session fallback — chỉ cho Thymeleaf SSR, KHÔNG áp dụng cho /api/**
+        if (!request.getRequestURI().startsWith("/api/")) {
+            var session = request.getSession(false);
+            if (session != null) {
+                Object token = session.getAttribute("ACCESS_TOKEN");
+                if (token instanceof String s && StringUtils.hasText(s)) {
+                    return s;
+                }
             }
         }
         return null;

@@ -79,18 +79,22 @@ function preventDoubleSubmit(formId) {
 
 // ── Auto-hide flash messages ──────────────────────────────────────────
 /**
- * Tự động ẩn flash message (success/error/warn) sau 4 giây.
+ * Tự động ẩn flash message (success/info/warn) sau 4 giây.
  * Chạy khi DOM sẵn sàng.
+ *
+ * Sử dụng selector '.flash' để hỗ trợ nhiều flash message cùng lúc.
+ * Chỉ auto-hide nếu KHÔNG phải error/warn (theo class: flash-warn, flash-error).
  */
 function autoHideFlash() {
-    const flash = document.getElementById('flash-msg');
-    if (flash) {
-        setTimeout(() => {
-            flash.style.transition = 'opacity .5s';
-            flash.style.opacity = '0';
-            setTimeout(() => flash.remove(), 500);
-        }, 4000);
-    }
+    document.querySelectorAll('.flash').forEach(function(flash) {
+        if (!flash.classList.contains('flash-warn') && !flash.classList.contains('flash-error')) {
+            setTimeout(function() {
+                flash.style.transition = 'opacity .5s';
+                flash.style.opacity = 0;
+                setTimeout(function() { flash.remove(); }, 500);
+            }, 4000);
+        }
+    });
 }
 
 // ── CSS animation ─────────────────────────────────────────────────────
@@ -109,4 +113,3 @@ function autoHideFlash() {
 document.addEventListener('DOMContentLoaded', function () {
     autoHideFlash();
 });
-
