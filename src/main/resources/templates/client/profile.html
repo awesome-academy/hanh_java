@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Hồ sơ cá nhân', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Hồ sơ cá nhân</h1>
+            <p>Quản lý thông tin tài khoản và cài đặt</p>
+        </div>
+    </div>
+
+    <!-- ── Avatar + info header ─────────────────────────────────────── -->
+    <div class="card card-lg mb-16">
+        <div class="prof-hd">
+            <div class="prof-ava" th:text="${#strings.substring(profile.fullName, 0, 2)}">NV</div>
+            <div>
+                <h2 th:text="${profile.fullName}"></h2>
+                <p th:text="'Tham gia ' + ${#temporals.format(profile.joinedAt, 'dd/MM/yyyy')}"></p>
+                <span class="pill p-green" style="margin-top:4px">✓ Tài khoản đã xác minh</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Form cập nhật thông tin ──────────────────────────────────── -->
+    <div class="card card-lg mb-16">
+        <h3 class="section-ttl">Thông tin cá nhân</h3>
+
+        <form th:action="@{/profile}" method="post" th:object="${updateReq}">
+            <div class="form-g">
+
+                <div class="fg">
+                    <label class="fl">Họ và tên *</label>
+                    <input class="fi2" type="text" th:field="*{fullName}" required
+                           placeholder="Nguyễn Văn A">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Email *</label>
+                    <input class="fi2" type="email" th:field="*{email}" required
+                           placeholder="email@example.com">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Số CCCD</label>
+                    <!-- nationalId: disabled, không submit. Chỉ hiển thị giá trị từ profile -->
+                    <input class="fi2 dis" type="text" th:value="${profile.nationalId}"
+                           disabled title="CCCD không thể thay đổi">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Số điện thoại</label>
+                    <input class="fi2" type="tel" th:field="*{phone}" placeholder="0912345678">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Ngày sinh</label>
+                    <input class="fi2" type="date"
+                           id="dateOfBirth" name="dateOfBirth"
+                           th:value="${updateReq.dateOfBirth != null ? #temporals.format(updateReq.dateOfBirth, 'yyyy-MM-dd') : ''}">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Giới tính</label>
+                    <select class="fi2" th:field="*{gender}">
+                        <option value="">-- Chọn --</option>
+                        <option value="MALE">Nam</option>
+                        <option value="FEMALE">Nữ</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+                </div>
+
+                <div class="fg full">
+                    <label class="fl">Địa chỉ thường trú</label>
+                    <input class="fi2" type="text" th:field="*{permanentAddress}"
+                           placeholder="Số nhà, đường, khu vực...">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Phường/Xã</label>
+                    <input class="fi2" type="text" th:field="*{ward}" placeholder="Phường Tây Mỗ">
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Tỉnh/TP</label>
+                    <input class="fi2" type="text" th:field="*{province}" placeholder="TP. Hà Nội">
+                </div>
+
+            </div>
+
+            <div class="form-actions mt-16">
+                <button type="submit" class="btn btn-p">Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Đổi mật khẩu (collapsible) ──────────────────────────────── -->
+    <div class="card card-lg mb-16">
+        <button class="collapsible-toggle" type="button"
+                onclick="toggleCollapsible(this, 'pw-section')">
+            🔒 Đổi mật khẩu ›
+        </button>
+
+        <div id="pw-section" class="collapsible-body">
+            <form th:action="@{/profile/change-password}" method="post" th:object="${changePwReq}">
+                <div class="fg mb-12">
+                    <label class="fl">Mật khẩu hiện tại *</label>
+                    <input class="fi2" type="password" th:field="*{oldPassword}"
+                           placeholder="Nhập mật khẩu hiện tại" required>
+                </div>
+                <div class="fg mb-12">
+                    <label class="fl">Mật khẩu mới * (tối thiểu 8 ký tự)</label>
+                    <input class="fi2" type="password" th:field="*{newPassword}"
+                           placeholder="Nhập mật khẩu mới" required minlength="8">
+                </div>
+                <div class="fg mb-16">
+                    <label class="fl">Xác nhận mật khẩu mới *</label>
+                    <input class="fi2" type="password" th:field="*{confirmPassword}"
+                           placeholder="Nhập lại mật khẩu mới" required>
+                </div>
+                <button type="submit" class="btn btn-p btn-sm w-fit">Đổi mật khẩu</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Cài đặt thông báo ─────────────────────────────────────────── -->
+    <div class="card card-lg">
+        <h3 class="section-ttl">Cài đặt thông báo</h3>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">📧 Nhận email thông báo</div>
+                <div class="toggle-sub">Nhận email khi trạng thái hồ sơ thay đổi</div>
+            </div>
+            <form th:action="@{/profile/email-notifications}" method="post" style="display:flex;align-items:center;gap:12px">
+                <input type="hidden" name="enabled" th:value="${!emailNotifEnabled}">
+                <label class="switch">
+                    <input type="checkbox" name="enabledSwitch"
+                           th:checked="${emailNotifEnabled}"
+                           onchange="this.form.enabled.value = !this.checked ? 'false' : 'true'; this.form.submit();">
+                    <span class="slider"></span>
+                </label>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+    function toggleCollapsible(btn, targetId) {
+        const body = document.getElementById(targetId);
+        body.classList.toggle('open');
+        btn.textContent = body.classList.contains('open')
+            ? '🔒 Đổi mật khẩu ∧'
+            : '🔒 Đổi mật khẩu ›';
+    }
+    </script>
+
+</main>
+</body>
+</html>
+

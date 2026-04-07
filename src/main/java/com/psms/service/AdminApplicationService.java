@@ -51,6 +51,7 @@ public class AdminApplicationService {
     private final ApplicationMapper applicationMapper;
     private final StaffMapper staffMapper;
     private final DocumentService documentService;
+    private final NotificationService notificationService;
 
     /** Số hồ sơ pending tối đa hiển thị trên dashboard. */
     private static final int RECENT_PENDING_LIMIT = 10;
@@ -195,6 +196,9 @@ public class AdminApplicationService {
                 .changedBy(actingUser)
                 .notes(request.getNotes())
                 .build());
+
+        // Gửi thông báo in-app cho citizen về thay đổi trạng thái
+        notificationService.notifyStatusChange(app, newStatus, request.getNotes());
 
         log.info("Status updated: appId={} {} -> {} by userId={}",
                 id, oldStatus, newStatus, actingUser.getId());

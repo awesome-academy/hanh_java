@@ -8,6 +8,10 @@ import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.mapper.ApplicationMapper;
+import com.psms.mapper.StaffMapper;
+import com.psms.service.AdminApplicationService;
+import com.psms.service.DocumentService;
+import com.psms.service.NotificationService;
 import com.psms.util.ApplicationStateMachine;
 import com.psms.repository.ApplicationRepository;
 import com.psms.repository.ApplicationStatusHistoryRepository;
@@ -49,7 +53,9 @@ class AdminApplicationServiceTest {
     @Mock ApplicationStatusHistoryRepository historyRepository;
     @Mock StaffRepository staffRepository;
     @Mock ApplicationMapper applicationMapper;
+    @Mock StaffMapper staffMapper;
     @Mock DocumentService documentService;
+    @Mock NotificationService notificationService;
 
     @InjectMocks AdminApplicationService adminApplicationService;
 

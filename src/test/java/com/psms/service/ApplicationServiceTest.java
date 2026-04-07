@@ -17,6 +17,9 @@ import com.psms.repository.ApplicationStatusHistoryRepository;
 import com.psms.repository.CitizenRepository;
 import com.psms.repository.ServiceTypeRepository;
 import com.psms.util.ApplicationCodeGenerator;
+import com.psms.service.ApplicationService;
+import com.psms.service.DocumentService;
+import com.psms.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -61,6 +64,7 @@ class ApplicationServiceTest {
     @Mock ApplicationCodeGenerator           codeGenerator;
     @Mock ApplicationMapper                  applicationMapper;
     @Mock DocumentService                    documentService;
+    @Mock NotificationService                notificationService;
 
     @InjectMocks
     ApplicationService applicationService;

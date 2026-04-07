@@ -15,7 +15,7 @@ import lombok.*;
 @Builder
 public class UpdateStatusRequest {
 
-    @NotNull(message = "Trang thai khong duoc de trong")
+    @NotNull(message = "{validation.status.required}")
     private ApplicationStatus newStatus;
 
     // Bat buoc khi REJECTED hoac ADDITIONAL_REQUIRED

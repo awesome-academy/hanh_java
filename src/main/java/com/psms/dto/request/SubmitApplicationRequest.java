@@ -10,9 +10,8 @@ import lombok.*;
 @Builder
 public class SubmitApplicationRequest {
 
-    @NotNull(message = "Vui lòng chọn dịch vụ cần nộp hồ sơ")
+    @NotNull(message = "{validation.serviceType.required}")
     private Long serviceTypeId;
 
     private String notes;
 }
-

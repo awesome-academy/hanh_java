@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Thông báo', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Thông báo</h1>
+            <p th:text="'Bạn có ' + ${unreadCount} + ' thông báo chưa đọc'"></p>
+        </div>
+        <!-- Mark all as read -->
+        <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post">
+            <button type="submit" class="btn btn-o btn-sm">✓ Đánh dấu tất cả đã đọc</button>
+        </form>
+    </div>
+
+    <!-- ── Filter bar ─────────────────────────────────────────────── -->
+    <div class="card mb-12" style="padding:12px 16px">
+        <div class="notif-filter">
+            <a th:href="@{/notifications}"
+               class="btn btn-sm"
+               th:classappend="${isRead == null} ? 'btn-p' : 'btn-o'">
+                Tất cả
+            </a>
+            <a th:href="@{/notifications(isRead=false)}"
+               class="btn btn-sm"
+               th:classappend="${isRead != null and !isRead} ? 'btn-p' : 'btn-o'">
+                Chưa đọc
+            </a>
+            <a th:href="@{/notifications(isRead=true)}"
+               class="btn btn-sm"
+               th:classappend="${isRead != null and isRead} ? 'btn-p' : 'btn-o'">
+                Đã đọc
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Danh sách thông báo ────────────────────────────────────── -->
+    <div class="card" style="padding:0;overflow:hidden">
+
+        <!-- Empty state -->
+        <div th:if="${notifications.isEmpty()}" class="empty-box sm">
+            <div class="empty-icon">🔔</div>
+            <div class="empty-title">Chưa có thông báo nào</div>
+            <div class="empty-sub" th:text="${isRead != null and !isRead} ? 'Bạn đã đọc hết thông báo!' : 'Hệ thống sẽ thông báo khi có cập nhật hồ sơ'"></div>
+        </div>
+
+        <div class="notif-list">
+            <div th:each="notif : ${notifications.content}"
+                 class="notif-item"
+                 th:classappend="${!notif.isRead} ? ' ur'">
+
+                <!-- Icon avatar theo type — bgColor từ NotificationResponse -->
+                <div class="notif-ava"
+                     th:style="'background:' + ${notif.bgColor}"
+                     th:text="${notif.icon}">🔔</div>
+
+                <!-- Nội dung -->
+                <div class="notif-body">
+                    <div class="notif-ttl" th:text="${notif.title}">Tiêu đề</div>
+                    <div class="notif-d"   th:text="${notif.content}">Nội dung</div>
+                    <div class="notif-t"
+                         th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">
+                    </div>
+                </div>
+
+                <!-- Chấm unread -->
+                <div class="ur-dot" th:if="${!notif.isRead}"></div>
+
+                <!-- Form mark as read + redirect -->
+                <form th:action="@{/notifications/{id}/read(id=${notif.id})}"
+                      method="post" style="display:none" th:id="'nf-' + ${notif.id}">
+                    <input type="hidden" name="applicationId"
+                           th:if="${notif.applicationId != null}"
+                           th:value="${notif.applicationId}">
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${notifications.totalPages > 1}"
+             class="pg-row" style="padding:12px 16px;border-top:1px solid var(--border)">
+            <div class="pg-info"
+                 th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${notifications.totalElements}">
+            </div>
+            <div class="pg-btns">
+                <a th:if="${!notifications.first}"
+                   th:href="@{/notifications(page=${notifications.number - 1}, isRead=${isRead})}"
+                   class="pg-btn">← Trước</a>
+
+                <span th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
+                      th:class="${i == notifications.number} ? 'pg-btn on' : 'pg-btn'">
+                    <a th:if="${i != notifications.number}"
+                       th:href="@{/notifications(page=${i}, isRead=${isRead})}"
+                       th:text="${i + 1}">1</a>
+                    <span th:if="${i == notifications.number}" th:text="${i + 1}">1</span>
+                </span>
+
+                <a th:if="${!notifications.last}"
+                   th:href="@{/notifications(page=${notifications.number + 1}, isRead=${isRead})}"
+                   class="pg-btn">Sau →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Click vào notification → mark read + redirect -->
+    <script>
+    document.querySelectorAll('.notif-item').forEach((item, idx) => {
+        item.addEventListener('click', function() {
+            const form = this.querySelector('form[id^="nf-"]');
+            if (form) form.submit();
+        });
+    });
+    </script>
+
+</main>
+</body>
+</html>
+

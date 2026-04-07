@@ -338,6 +338,7 @@
 □ Download → mở được file đúng
 □ File .exe / > 10MB → thấy lỗi rõ ràng
 ```
+
 ---
 
 ### #09 · `feature/client-profile-notification`
@@ -345,26 +346,26 @@
 > **Base:** `feature/file-upload`
 
 **Schema**
-- [ ] `#09-01` Entity `Notification` + Enum `NotificationType` + Repository + Mapper
+- [x] `#09-01` Entity `Notification` + Enum `NotificationType` + Repository + Mapper
 
 **Backend — Profile**
-- [ ] `#09-03` `GET /api/client/profile` — xem thông tin
-- [ ] `#09-04` `PUT /api/client/profile` — cập nhật (không cho sửa `national_id`)
-- [ ] `#09-05` `PUT /api/client/profile/change-password`
+- [x] `#09-03` `GET /api/client/profile` — xem thông tin
+- [x] `#09-04` `PUT /api/client/profile` — cập nhật (không cho sửa `national_id`)
+- [x] `#09-05` `PUT /api/client/profile/change-password`
 
 **Backend — Notification**
-- [ ] `#09-06` `GET /api/client/notifications` — danh sách (filter isRead, phân trang)
-- [ ] `#09-07` `GET /api/client/notifications/unread-count` — đếm badge
-- [ ] `#09-08` `PUT /api/client/notifications/{id}/read`
-- [ ] `#09-09` `PUT /api/client/notifications/read-all`
-- [ ] `#09-10` `PUT /api/client/notifications/settings` — toggle email
+- [x] `#09-06` `GET /api/client/notifications` — danh sách (filter isRead, phân trang)
+- [x] `#09-07` `GET /api/client/notifications/unread-count` — đếm badge
+- [x] `#09-08` `PUT /api/client/notifications/{id}/read`
+- [x] `#09-09` `PUT /api/client/notifications/read-all`
+- [x] `#09-10` `PUT /api/client/notifications/settings` — toggle email (via ProfileService)
 
 **UI**
-- [ ] `#09-11` Template `client/profile.html`:
+- [x] `#09-11` Template `client/profile.html`:
   - Avatar initials, form 2 cột, CCCD disabled, đổi mật khẩu collapsible
-- [ ] `#09-12` Template `client/notifications.html`:
+- [x] `#09-12` Template `client/notifications.html`:
   - Feed unread/read, icon theo type, unread dot, "Đánh dấu tất cả đã đọc"
-- [ ] `#09-13` `js/client.js` — `updateNotifBadge()` poll mỗi 30s
+- [x] `#09-13` `js/client.js` — `updateNotifBadge()` poll mỗi 30s
 
 **Definition of Done:**
 ```

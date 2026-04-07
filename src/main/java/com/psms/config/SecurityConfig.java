@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 /**
  * Cấu hình Spring Security.
@@ -124,6 +125,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain mvcFilterChain(HttpSecurity http) throws Exception {
+
         http
             // Áp dụng cho tất cả route còn lại (MVC)
             .securityMatcher("/**")
@@ -131,6 +133,9 @@ public class SecurityConfig {
             // Session-based — Thymeleaf SSR đọc access token từ HttpSession
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+
+            // Chỉ lưu các GET request tới page thực sự vào RequestCache.
+            .requestCache(cache -> cache.requestCache(appRequestCache()))
 
             // CSRF bật cho Thymeleaf form (Spring Security tự inject csrf token)
             // csrf mặc định là enabled — không cần ghi tường minh
@@ -175,8 +180,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
-                .usernameParameter("email")     // form uses name="email"
-                .defaultSuccessUrl("/", true)
+                .usernameParameter("email")
+                .defaultSuccessUrl("/", false)  // false = ưu tiên saved request nếu có
                 .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
@@ -199,6 +204,28 @@ public class SecurityConfig {
     // ----------------------------------------------------------------
     // Beans
     // ----------------------------------------------------------------
+
+    /**
+     * RequestCache chỉ lưu các GET request tới page thực sự của app.
+     * Loại bỏ: /.well-known/** (Chrome DevTools), /api/**, static resources
+     * Mục đích: tránh redirect sai sau khi login (ví dụ: redirect về DevTools URL → 404).
+     */
+    @Bean
+    public HttpSessionRequestCache appRequestCache() {
+        HttpSessionRequestCache cache = new HttpSessionRequestCache();
+        cache.setRequestMatcher(request -> {
+            String uri = request.getRequestURI();
+            String method = request.getMethod();
+            return "GET".equals(method)
+                && !uri.startsWith("/.well-known/")
+                && !uri.startsWith("/api/")
+                && !uri.startsWith("/css/")
+                && !uri.startsWith("/js/")
+                && !uri.startsWith("/images/")
+                && !uri.equals("/favicon.ico");
+        });
+        return cache;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
