@@ -7,12 +7,15 @@ import com.psms.dto.response.ServiceTypeResponse;
 import com.psms.entity.User;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.ResourceNotFoundException;
+import com.psms.exception.BusinessException;
+import com.psms.exception.InvalidStatusTransitionException;
 import com.psms.service.ApplicationService;
 import com.psms.service.DocumentService;
 import com.psms.service.ServiceCatalogService;
 import com.psms.util.PaginationInfo;
 import com.psms.util.PaginationUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +34,7 @@ import java.util.List;
  * <p>Tất cả route yêu cầu role CITIZEN (enforce bằng @PreAuthorize).
  * Ownership check được đảm bảo bởi ApplicationService — citizen chỉ thấy HS của mình.
  */
+@Slf4j
 @Controller
 @RequestMapping("/applications")
 @RequiredArgsConstructor
@@ -81,10 +85,16 @@ public class ApplicationViewController {
                 .notes(notes)
                 .build();
 
-        ApplicationResponse response = applicationService.submit(user.getId(), request, files);
-        ra.addFlashAttribute("success",
-                "Nộp hồ sơ thành công! Mã hồ sơ: " + response.getApplicationCode());
-        return "redirect:/applications";
+        try {
+            ApplicationResponse response = applicationService.submit(user.getId(), request, files);
+            ra.addFlashAttribute("success",
+                    "Nộp hồ sơ thành công! Mã hồ sơ: " + response.getApplicationCode());
+            return "redirect:/applications";
+        } catch (BusinessException | ResourceNotFoundException ex) {
+            log.warn("Submit application failed — userId={}: {}", user.getId(), ex.getMessage());
+            ra.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/applications/submit?serviceTypeId=" + serviceTypeId;
+        }
     }
 
     // ─── GET /applications ─────────────────────────────────────────────
@@ -165,7 +175,8 @@ public class ApplicationViewController {
         try {
             documentService.uploadSupplementalDocuments(id, user.getId(), files);
             ra.addFlashAttribute("success", "Nộp bổ sung tài liệu thành công! Hồ sơ đã được chuyển về trạng thái chờ xử lý.");
-        } catch (Exception ex) {
+        } catch (BusinessException | ResourceNotFoundException | InvalidStatusTransitionException ex) {
+            log.warn("Upload supplemental docs failed — userId={}, appId={}: {}", user.getId(), id, ex.getMessage());
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/applications/" + id;
@@ -193,7 +204,8 @@ public class ApplicationViewController {
         try {
             documentService.deleteDocument(id, docId, user);
             ra.addFlashAttribute("success", "Đã xóa tài liệu thành công.");
-        } catch (Exception ex) {
+        } catch (BusinessException | ResourceNotFoundException | InvalidStatusTransitionException ex) {
+            log.warn("Delete document failed — userId={}, appId={}, docId={}: {}", user.getId(), id, docId, ex.getMessage());
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/applications/" + id;

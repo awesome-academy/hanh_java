@@ -18,12 +18,6 @@
 .btn-ico:hover  { background: var(--nav); color: #fff; }
 .btn-ico:active { transform: scale(.95); }
 
-/* Nút xóa tài liệu — override màu cho danger */
-.doc-del {
-    border-color: #FCA5A5;
-    color: var(--danger);
-}
-.doc-del:hover  { background: var(--danger); border-color: var(--danger); color: #fff; }
 /* =============================================================
    components.css — Reusable UI components
  ============================================================= */
@@ -639,7 +633,7 @@ select.fi2 {
 }
 
 /* =============================================================
-   File upload components (#08)
+   File upload components
  ============================================================= */
 
 /* Vùng kéo thả / chọn file */
@@ -699,8 +693,8 @@ select.fi2 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     flex-shrink: 0;
     border-radius: 6px;

@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.psms.entity.User;
 import org.springframework.web.bind.annotation.*;
+import com.psms.entity.ApplicationDocument;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Download tài liệu hồ sơ — có kiểm tra quyền truy cập.
@@ -33,14 +36,12 @@ public class FileController {
         description = """
             Tải về file tài liệu đính kèm của hồ sơ.
 
-            **Path:** `/api/files/{applicationId}/{filename}`
+            **Path:** `/files/{applicationId}/{filename}`
 
             **Business rules:**
             - Cần đăng nhập
             - CITIZEN chỉ download được file thuộc hồ sơ của mình
-            - STAFF / MANAGER / SUPER_ADMIN download được tất cả
-            - File không tồn tại → 404
-            - Không có quyền → 400
+            - STAFF / MANAGER / SUPER_ADMIN download được tất cả file
             """
     )
     @GetMapping("/**")
@@ -48,22 +49,33 @@ public class FileController {
             @AuthenticationPrincipal User user,
             HttpServletRequest request) {
 
-        // Extract relativePath: loại bỏ prefix "/api/files/"
+        // Extract relativePath: loại bỏ prefix "/api/files/" (có contextPath)
         String uri = request.getRequestURI();
-        String relativePath = uri.startsWith(PREFIX) ? uri.substring(PREFIX.length()) : uri;
+        String contextPath = request.getContextPath();
+        String fullPrefix = contextPath + PREFIX;
+        String relativePath = uri.startsWith(fullPrefix) ? uri.substring(fullPrefix.length()) : uri;
 
-        // Kiểm tra quyền (throws BusinessException nếu không có quyền)
-        documentService.authorizeDownload(relativePath, user);
+        // Kiểm tra quyền và lấy ApplicationDocument để lấy fileName gốc
+        ApplicationDocument doc = documentService.authorizeDownload(relativePath, user);
 
         Resource resource = fileStorageService.load(relativePath);
+
+        // Lấy tên file gốc (fileName) để hiển thị đúng khi tải về
+        String originalFileName = doc.getFileName();
+        // Encode theo RFC 5987 để hỗ trợ ký tự Unicode / có dấu tiếng Việt
+        String encodedFileName = URLEncoder.encode(originalFileName, StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
 
         // Content-Disposition: inline để browser preview PDF/ảnh, attachment cho docx
         String contentType = resolveContentType(relativePath);
         String disposition = relativePath.endsWith(".docx") ? "attachment" : "inline";
+        String contentDisposition = String.format(
+                "%s; filename=\"%s\"; filename*=UTF-8''%s",
+                disposition, originalFileName.replace("\"", ""), encodedFileName
+        );
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        disposition + "; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }

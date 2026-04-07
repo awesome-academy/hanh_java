@@ -76,7 +76,7 @@ public class ApplicationService {
         LocalDateTime now = LocalDateTime.now();
         LocalDate deadline = now.toLocalDate().plusDays(serviceType.getProcessingTimeDays());
 
-        // 6. Ghi history ngay khi tạo hồ sơ để đảm bảo audit trail đầy đủ, kể cả khi có lỗi sau đó.
+        // 5. Tạo Application + ApplicationStatusHistory trong transaction → rollback nếu lỗi
         Application application = Application.builder()
                 .applicationCode(code)
                 .citizen(citizen)
@@ -97,7 +97,7 @@ public class ApplicationService {
                 .notes("Công dân nộp hồ sơ")
                 .build());
 
-        // Lưu file đính kèm nếu có (delegate sang DocumentService)
+        //6. Lưu file đính kèm - nếu throw, transaction ở bước 5 sẽ rollback → không có Application nửa vời nếu file lỗi.
         documentService.saveDocuments(application, files, citizen.getUser(), false);
 
         return applicationMapper.toResponse(application);

@@ -18,6 +18,7 @@ import com.psms.util.ApplicationStateMachine;
 import com.psms.util.PaginationInfo;
 import com.psms.util.PaginationUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -40,6 +41,7 @@ import java.util.Set;
  * PRG pattern: POST → redirect GET để tránh double-submit.
  * Controller chỉ phụ thuộc vào Service, không inject Repository trực tiếp.
  */
+@Slf4j
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -198,7 +200,8 @@ public class AdminViewController {
         try {
             documentService.uploadResponseDocuments(id, files, user);
             ra.addFlashAttribute("success", "Upload tài liệu phản hồi thành công");
-        } catch (Exception ex) {
+        } catch (BusinessException | ResourceNotFoundException ex) {
+            log.warn("Upload response docs failed — adminId={}, appId={}: {}", user.getId(), id, ex.getMessage());
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/admin/applications/" + id;
@@ -226,7 +229,8 @@ public class AdminViewController {
         try {
             documentService.deleteDocument(id, docId, user);
             ra.addFlashAttribute("success", "Đã xóa tài liệu thành công.");
-        } catch (Exception ex) {
+        } catch (BusinessException | ResourceNotFoundException ex) {
+            log.warn("Delete document failed — adminId={}, appId={}, docId={}: {}", user.getId(), id, docId, ex.getMessage());
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/admin/applications/" + id;

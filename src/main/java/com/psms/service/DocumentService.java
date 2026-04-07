@@ -168,12 +168,12 @@ public class DocumentService {
     // ─── Xóa tài liệu (soft delete) ──────────────────────────────────────
 
     /**
-     * Xóa mềm tài liệu với kiểm tra phân quyền đầy đủ (SPECS 4.6 + 5.3).
+     * Xóa mềm tài liệu với kiểm tra phân quyền đầy đủ.
      *
      * <p>Permission matrix:
      * <ul>
      *   <li>CITIZEN — chỉ xóa doc của mình (is_response=false), chỉ khi status=SUBMITTED</li>
-     *   <li>STAFF — chỉ xóa tài liệu phản hồi (is_response=true)</li>
+     *   <li>STAFF — chỉ xóa tài liệu phản hồi (is_response=true) do chính mình upload</li>
      *   <li>MANAGER / SUPER_ADMIN — xóa bất kỳ doc nào</li>
      * </ul>
      */
@@ -212,7 +212,7 @@ public class DocumentService {
             return; // không giới hạn
         }
         if (hasRole(currentUser, "STAFF")) {
-            validateStaffDeletePermission(doc);
+            validateStaffDeletePermission(doc, currentUser);
             return;
         }
         if (hasRole(currentUser, "CITIZEN")) {
@@ -222,17 +222,22 @@ public class DocumentService {
         throw new BusinessException("Không có quyền xóa tài liệu này");
     }
 
-    private void validateStaffDeletePermission(ApplicationDocument doc) {
+    private void validateStaffDeletePermission(ApplicationDocument doc, User currentUser) {
+        // STAFF chỉ xóa tài liệu phản hồi (is_response=true) do chính mình upload
         if (!doc.isResponse()) {
             throw new BusinessException(
-                "Cán bộ chỉ có thể xóa tài liệu phản hồi do mình upload");
+                "Cán bộ chỉ có thể xóa tài liệu phản hồi. Đây là tài liệu do công dân nộp, không có quyền xóa.");
+        }
+        if (!doc.getUploadedBy().getId().equals(currentUser.getId())) {
+            throw new BusinessException(
+                "Cán bộ chỉ có thể xóa tài liệu phản hồi do chính mình upload.");
         }
     }
 
     private void validateCitizenDeletePermission(ApplicationDocument doc,
                                                  User currentUser) {
         if (doc.isResponse()) {
-            throw new BusinessException("Không có quyền xóa tài liệu này");
+            throw new BusinessException("Đây là tài liệu phản hồi từ cán bộ, công dân không có quyền xóa.");
         }
 
         Application app = doc.getApplication();
@@ -269,10 +274,18 @@ public class DocumentService {
     // ─── Download authorization ────────────────────────────────────────────
 
     /**
-     * Kiểm tra quyền download: citizen chỉ download file thuộc HS của mình.
-     * Admin/Staff có thể download tất cả. File đã xóa mềm không cho download.
+     * Kiểm tra quyền download.
+     *
+     * <p>Trả về entity thay vì void/String để tránh query DB thứ hai ở controller.
+     *
+     * <p>Rules:
+     * <ul>
+     *   <li>STAFF / MANAGER / SUPER_ADMIN — download tất cả</li>
+     *   <li>CITIZEN — chỉ download file thuộc hồ sơ của mình</li>
+     *   <li>File đã xóa mềm (is_deleted=true) → 404</li>
+     * </ul>
      */
-    public String authorizeDownload(String relativePath, User currentUser) {
+    public ApplicationDocument authorizeDownload(String relativePath, User currentUser) {
         ApplicationDocument doc = documentRepository.findByFilePathAndIsDeletedFalse(relativePath)
                 .orElseThrow(() -> new ResourceNotFoundException("File không tồn tại"));
 
@@ -281,7 +294,7 @@ public class DocumentService {
                         || r.getName().name().equals("MANAGER")
                         || r.getName().name().equals("SUPER_ADMIN"));
 
-        if (isAdminOrStaff) return relativePath;
+        if (isAdminOrStaff) return doc;
 
         // Citizen chỉ download HS của mình
         Long citizenId = citizenRepository.findByUserId(currentUser.getId())
@@ -292,7 +305,7 @@ public class DocumentService {
             throw new BusinessException("Không có quyền truy cập file này");
         }
 
-        return relativePath;
+        return doc;
     }
 
     // ─── Private helpers ──────────────────────────────────────────────────

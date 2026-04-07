@@ -23,7 +23,7 @@ public class ApplicationDocumentResponse {
     private boolean isResponse;
     private ValidationStatus validationStatus;
 
-    /** Download URL — được set bởi controller sau khi map. */
+    /** Download URL — được populate trong quá trình build/mapping response. */
     private String downloadUrl;
 
     public String getValidationLabel() {

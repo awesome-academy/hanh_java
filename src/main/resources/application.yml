@@ -52,8 +52,13 @@ jwt:
 # File storage
 file:
   upload-dir: uploads          # relative to working dir; override trong prod
-  allowed-types: pdf,jpg,jpeg,png,docx
-  max-size-bytes: 10485760     # 10 MB
+  max-size-bytes: 10485760     #10MB
+  allowed-extensions:
+    - pdf
+    - jpg
+    - jpeg
+    - png
+    - docx
 
 # Swagger — bật trên dev, tắt trên prod
 springdoc:

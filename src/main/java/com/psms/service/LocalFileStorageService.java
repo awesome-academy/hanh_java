@@ -4,7 +4,7 @@ import com.psms.exception.BusinessException;
 import com.psms.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import com.psms.config.FileStorageProperties;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -31,17 +31,19 @@ import java.util.UUID;
 @Service
 public class LocalFileStorageService implements FileStorageService {
 
-    private static final long MAX_SIZE = 10_485_760L; // 10 MB
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("pdf", "jpg", "jpeg", "png", "docx");
 
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
+    private final FileStorageProperties fileProps;
+    // Constructor tường minh thay cho @RequiredArgsConstructor
+    public LocalFileStorageService(FileStorageProperties fileProps) {
+        this.fileProps = fileProps;
+    }
 
     private Path uploadRoot;
 
     @PostConstruct
     public void init() {
-        uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+        String dir = fileProps.uploadDir() != null ? fileProps.uploadDir() : "uploads";
+        uploadRoot = Paths.get(dir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(uploadRoot);
             log.info("File storage initialized at: {}", uploadRoot);
@@ -57,17 +59,18 @@ public class LocalFileStorageService implements FileStorageService {
         }
 
         // Validate size
-        if (file.getSize() > MAX_SIZE) {
-            throw new BusinessException("File vượt quá dung lượng cho phép (tối đa 10 MB): "
+        if (file.getSize() > fileProps.maxSizeBytes()) {
+            throw new BusinessException("File vượt quá dung lượng cho phép (tối đa "
+                    + fileProps.maxSizeMb() + " MB): "
                     + file.getOriginalFilename());
         }
 
         // Validate extension
         String ext = extractExtension(file.getOriginalFilename());
-        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+        if (!fileProps.isExtensionAllowed(ext)) {
             throw new BusinessException(
                     "Định dạng file không được hỗ trợ: ." + ext
-                    + ". Chỉ chấp nhận: PDF, JPG, JPEG, PNG, DOCX");
+                    + ". Chỉ chấp nhận: " + fileProps.allowedExtensionsDisplay());
         }
 
         // Sanitize filename: bỏ path component, giữ lại tên gốc để UX tốt

@@ -209,7 +209,7 @@
                               method="post"
                               th:action="@{/admin/applications/{id}/documents/{docId}/delete(id=${app.id},docId=${doc.id})}"
                               onsubmit="return confirm('Xóa file này khỏi hồ sơ?')">
-                            <button type="submit" class="btn-ico doc-del" title="Xóa tài liệu">🗑</button>
+                            <button type="submit" class="doc-del" title="Xóa tài liệu">🗑</button>
                         </form>
                     </div>
                 </div>
@@ -230,7 +230,7 @@
                         <form method="post"
                               th:action="@{/admin/applications/{id}/documents/{docId}/delete(id=${app.id},docId=${doc.id})}"
                               onsubmit="return confirm('Xóa tài liệu phản hồi này?')">
-                            <button type="submit" class="btn-ico doc-del" title="Xóa tài liệu phản hồi">🗑</button>
+                            <button type="submit" class="doc-del" title="Xóa tài liệu phản hồi">🗑</button>
                         </form>
                     </div>
                 </div>

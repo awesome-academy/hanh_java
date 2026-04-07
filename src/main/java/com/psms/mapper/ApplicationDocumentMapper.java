@@ -12,7 +12,7 @@ public interface ApplicationDocumentMapper {
 
     @Mapping(target = "uploadedById",   source = "uploadedBy.id")
     @Mapping(target = "uploadedByName", source = "uploadedBy.fullName")
-    @Mapping(target = "downloadUrl",    ignore = true) // set bởi controller sau khi map
+    @Mapping(target = "downloadUrl",    ignore = true) // URL sẽ được set thủ công trong service sau khi mapping
     ApplicationDocumentResponse toResponse(ApplicationDocument document);
 
     List<ApplicationDocumentResponse> toResponses(List<ApplicationDocument> documents);

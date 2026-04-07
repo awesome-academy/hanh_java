@@ -321,15 +321,40 @@ class DocumentServiceTest {
         }
 
         @Test
-        @DisplayName("STAFF xóa response doc (is_response=true) → thành công")
-        void staff_deletesResponseDoc_succeeds() {
+        @DisplayName("STAFF xóa response doc do chính mình upload → thành công")
+        void staff_deletesOwnResponseDoc_succeeds() {
             User staff = userWithRole(5L, RoleName.STAFF);
-            given(documentRepository.findByIdAndIsDeletedFalse(2L)).willReturn(Optional.of(responseDoc));
+
+            // responseDoc phải do chính staff (id=5L) upload mới được xóa
+            ApplicationDocument ownResponseDoc = ApplicationDocument.builder()
+                    .application(submittedApp)
+                    .fileName("response.pdf")
+                    .filePath("100/response.pdf")
+                    .fileType("pdf")
+                    .fileSize(1024L)
+                    .uploadedBy(staff)          // staff là người upload
+                    .isResponse(true)
+                    .build();
+            ownResponseDoc.setId(2L);
+
+            given(documentRepository.findByIdAndIsDeletedFalse(2L)).willReturn(Optional.of(ownResponseDoc));
 
             documentService.deleteDocument(100L, 2L, staff);
 
-            assertThat(responseDoc.isDeleted()).isTrue();
-            verify(documentRepository).save(responseDoc);
+            assertThat(ownResponseDoc.isDeleted()).isTrue();
+            verify(documentRepository).save(ownResponseDoc);
+        }
+
+        @Test
+        @DisplayName("STAFF xóa response doc do người khác upload → BusinessException")
+        void staff_deletesOtherStaffResponseDoc_throwsBusinessException() {
+            User staff = userWithRole(5L, RoleName.STAFF);
+            // responseDoc.uploadedBy = citizenUser (id=1L) ≠ staff (id=5L)
+            given(documentRepository.findByIdAndIsDeletedFalse(2L)).willReturn(Optional.of(responseDoc));
+
+            assertThatThrownBy(() -> documentService.deleteDocument(100L, 2L, staff))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("chính mình upload");
         }
 
         @Test
