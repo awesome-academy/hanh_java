@@ -36,4 +36,7 @@ build/
 .history
 
 # Claude local notes (không commit)
-CLAUDE.local.md
+
+
+#Uploaded files (không commit)
+uploads/

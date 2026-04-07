@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,18 +46,21 @@ public class ApplicationService {
     private final ServiceTypeRepository serviceTypeRepository;
     private final ApplicationCodeGenerator codeGenerator;
     private final ApplicationMapper applicationMapper;
+    private final DocumentService documentService;
 
     // ─── Submit ───────────────────────────────────────────────────────
 
     /**
-     * Nộp hồ sơ mới: sinh mã HS → tạo Application (SUBMITTED) → ghi history (null→SUBMITTED).
+     * Nộp hồ sơ mới: sinh mã HS → tạo Application (SUBMITTED) → ghi history → lưu file.
      *
      * @param userId  ID của User đang đăng nhập (lấy từ principal)
      * @param request DTO chứa serviceTypeId + notes
+     * @param files   danh sách file đính kèm (nullable)
      * @return ApplicationResponse với applicationCode đã sinh
      */
     @Transactional
-    public ApplicationResponse submit(Long userId, SubmitApplicationRequest request) {
+    public ApplicationResponse submit(Long userId, SubmitApplicationRequest request,
+                                      List<MultipartFile> files) {
         // 1. Kiểm tra citizen tồn tại (user phải có profile citizen)
         Citizen citizen = citizenRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin công dân"));
@@ -72,7 +76,7 @@ public class ApplicationService {
         LocalDateTime now = LocalDateTime.now();
         LocalDate deadline = now.toLocalDate().plusDays(serviceType.getProcessingTimeDays());
 
-        // 5. Lưu Application
+        // 6. Ghi history ngay khi tạo hồ sơ để đảm bảo audit trail đầy đủ, kể cả khi có lỗi sau đó.
         Application application = Application.builder()
                 .applicationCode(code)
                 .citizen(citizen)
@@ -85,16 +89,16 @@ public class ApplicationService {
 
         application = applicationRepository.save(application);
 
-        // 6. Ghi history: null → SUBMITTED (bước đầu tiên trong vòng đời hồ sơ)
-        ApplicationStatusHistory history = ApplicationStatusHistory.builder()
+        historyRepository.save(ApplicationStatusHistory.builder()
                 .application(application)
                 .oldStatus(null)
                 .newStatus(ApplicationStatus.SUBMITTED)
                 .changedBy(citizen.getUser())
                 .notes("Công dân nộp hồ sơ")
-                .build();
+                .build());
 
-        historyRepository.save(history);
+        // Lưu file đính kèm nếu có (delegate sang DocumentService)
+        documentService.saveDocuments(application, files, citizen.getUser(), false);
 
         return applicationMapper.toResponse(application);
     }
@@ -140,6 +144,10 @@ public class ApplicationService {
         List<ApplicationStatusHistory> histories =
                 historyRepository.findByApplicationIdOrderByChangedAtAsc(applicationId);
         response.setStatusHistory(applicationMapper.toHistoryResponses(histories));
+
+        // Gắn tài liệu: tách citizen docs vs staff response docs
+        response.setCitizenDocuments(documentService.findCitizenDocuments(applicationId));
+        response.setStaffDocuments(documentService.findStaffDocuments(applicationId));
 
         return response;
     }

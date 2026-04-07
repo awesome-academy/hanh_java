@@ -164,6 +164,9 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**")
                     .hasAnyRole("STAFF", "MANAGER", "SUPER_ADMIN")
 
+                // ── File download (session-based, cần đăng nhập) ─────────
+                .requestMatchers("/files/**").authenticated()
+
                 // Tất cả còn lại cần đăng nhập
                 .anyRequest().authenticated()
             )

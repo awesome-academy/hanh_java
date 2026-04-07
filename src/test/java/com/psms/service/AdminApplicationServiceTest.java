@@ -49,6 +49,7 @@ class AdminApplicationServiceTest {
     @Mock ApplicationStatusHistoryRepository historyRepository;
     @Mock StaffRepository staffRepository;
     @Mock ApplicationMapper applicationMapper;
+    @Mock DocumentService documentService;
 
     @InjectMocks AdminApplicationService adminApplicationService;
 

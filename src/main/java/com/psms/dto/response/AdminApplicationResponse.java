@@ -36,6 +36,8 @@ public class AdminApplicationResponse {
     private String notes;
     private String rejectionReason;
     private List<ApplicationStatusHistoryResponse> statusHistory;
+    private List<ApplicationDocumentResponse> citizenDocuments;
+    private List<ApplicationDocumentResponse> staffDocuments;
 
     /**
      * Được tính và set bởi AdminApplicationService.mapToAdminResponse(),

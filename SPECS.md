@@ -152,7 +152,7 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 
 **NotificationType:** `APPLICATION_RECEIVED` · `ADDITIONAL_REQUIRED` · `STATUS_UPDATED` · `APPROVED` · `REJECTED` · `SYSTEM`
 
-**ActivityLog Action:** `LOGIN` · `LOGOUT` · `CREATE_APP` · `UPDATE_STATUS` · `APPROVE` · `REJECT` · `CREATE_SERVICE` · `UPDATE_SERVICE` · `DELETE_SERVICE` · `CREATE_USER` · `UPDATE_USER` · `DELETE_USER` · `LOCK_USER` · `CREATE_DEPT` · `UPDATE_DEPT` · `DELETE_DEPT` · `ASSIGN_STAFF` · `UPLOAD_DOC` · `EXPORT` · `IMPORT`
+**ActivityLog Action:** `LOGIN` · `LOGOUT` · `CREATE_APP` · `UPDATE_STATUS` · `APPROVE` · `REJECT` · `CREATE_SERVICE` · `UPDATE_SERVICE` · `DELETE_SERVICE` · `CREATE_USER` · `UPDATE_USER` · `DELETE_USER` · `LOCK_USER` · `CREATE_DEPT` · `UPDATE_DEPT` · `DELETE_DEPT` · `ASSIGN_STAFF` · `UPLOAD_DOC` · `DELETE_DOC` · `EXPORT` · `IMPORT`
 
 ---
 
@@ -262,6 +262,13 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 - Link download từng file (có kiểm tra quyền truy cập)
 - Nếu có tài liệu phản hồi từ cán bộ (`is_response = true`): hiển thị riêng
 
+**Xóa tài liệu đã nộp** (chỉ khi status = `SUBMITTED`)
+- Citizen chỉ được xóa tài liệu do mình nộp (`is_response = false`)
+- Chỉ được xóa khi hồ sơ đang ở trạng thái `SUBMITTED` (chưa được cán bộ tiếp nhận)
+- Khi hồ sơ chuyển sang `RECEIVED` trở lên → không cho phép xóa (tài liệu trở thành hồ sơ chính thức)
+- Xóa mềm (`is_deleted = true`), giữ file vật lý để đảm bảo audit trail
+- Confirm dialog bắt buộc trước khi xóa
+
 **Upload bổ sung** (chỉ khi status = `ADDITIONAL_REQUIRED`)
 - Hiển thị form upload
 - Sau khi upload → status tự động chuyển `SUBMITTED`
@@ -334,6 +341,11 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 - Timeline lịch sử trạng thái (với người thực hiện + ghi chú)
 - Danh sách tài liệu: xem, download, validate (VALID / INVALID)
 - Form upload tài liệu phản hồi
+- **Xóa tài liệu:**
+  - `STAFF`: chỉ xóa được tài liệu phản hồi do mình upload (`is_response = true`)
+  - `MANAGER` / `SUPER_ADMIN`: xóa bất kỳ tài liệu nào (cả citizen doc lẫn response doc)
+  - Xóa mềm (`is_deleted = true`), giữ file vật lý
+  - Confirm dialog bắt buộc trước khi xóa
 
 **Cập nhật trạng thái (`POST /admin/applications/{id}/status`)**
 - Dropdown chỉ hiện các transition hợp lệ theo state machine
@@ -757,4 +769,4 @@ psms/
 ---
 
 *Tài liệu liên quan: `psms_schema.sql` · `TASKS.md` · `psms_gui_mockup.html`*
-*Cập nhật lần cuối: 2026-03-30 · v1.0*
+*Cập nhật lần cuối: 2026-04-07 · v1.1*

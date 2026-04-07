@@ -73,6 +73,84 @@
                 <h3 class="section-ttl danger">Lý do từ chối</h3>
                 <p class="body-text" th:text="${appDetail.rejectionReason}"></p>
             </div>
+
+            <!-- ── Tài liệu đã nộp ──────────────────────────────────── -->
+            <div class="card card-lg">
+                <h3 class="section-ttl">Tài liệu đã nộp</h3>
+
+                <div th:if="${#lists.isEmpty(appDetail.citizenDocuments)}" class="empty-state">
+                    Chưa có tài liệu nào
+                </div>
+
+                <div th:each="doc : ${appDetail.citizenDocuments}" class="doc-item">
+                    <div class="doc-icon">
+                        <span th:text="${doc.fileType == 'pdf' ? '📄' : (doc.fileType == 'docx' ? '📝' : '🖼️')}">📄</span>
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-name" th:text="${doc.fileName}">file.pdf</div>
+                        <div class="doc-meta"
+                             th:text="${doc.fileSizeDisplay + ' · ' + #temporals.format(doc.uploadedAt,'dd/MM/yyyy')}">
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <span class="doc-badge"
+                              th:classappend="${doc.validationStatus.name().toLowerCase()}"
+                              th:text="${doc.validationLabel}">Đang kiểm tra</span>
+                        <a th:href="${doc.downloadUrl}" target="_blank" class="btn-ico" title="Tải xuống">↓</a>
+                        <!-- Nút xóa: chỉ hiện khi status = SUBMITTED (chưa cán bộ tiếp nhận) -->
+                        <form th:if="${appDetail.status.name() == 'SUBMITTED'}"
+                              method="post"
+                              th:action="@{/applications/{id}/documents/{docId}/delete(id=${appDetail.id},docId=${doc.id})}"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa file này không?')">
+                            <button type="submit" class="btn-ico doc-del" title="Xóa tài liệu">🗑</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Tài liệu phản hồi từ cán bộ ───────────────────────── -->
+            <div class="card card-lg" th:if="${!#lists.isEmpty(appDetail.staffDocuments)}">
+                <h3 class="section-ttl">Tài liệu phản hồi từ cán bộ</h3>
+
+                <div th:each="doc : ${appDetail.staffDocuments}" class="doc-item">
+                    <div class="doc-icon">📋</div>
+                    <div class="doc-info">
+                        <div class="doc-name" th:text="${doc.fileName}">response.pdf</div>
+                        <div class="doc-meta"
+                             th:text="${doc.fileSizeDisplay + ' · ' + #temporals.format(doc.uploadedAt,'dd/MM/yyyy')}">
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <a th:href="${doc.downloadUrl}" target="_blank" class="btn-ico" title="Tải xuống">↓</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Form nộp bổ sung (chỉ khi ADDITIONAL_REQUIRED) ────── -->
+            <div class="card card-lg"
+                 th:if="${appDetail.status.name() == 'ADDITIONAL_REQUIRED'}">
+                <h3 class="section-ttl">Nộp tài liệu bổ sung</h3>
+                <div class="info-box mb-8">
+                    Cán bộ yêu cầu bổ sung tài liệu. Vui lòng upload file và nhấn gửi.
+                </div>
+                <form method="post"
+                      th:action="@{/applications/{id}/documents(id=${appDetail.id})}"
+                      enctype="multipart/form-data">
+                    <div class="file-upload-area mb-8" onclick="document.getElementById('suppFileInput').click()">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-hint">
+                            <strong>Nhấn để chọn file</strong> — PDF, JPG, PNG, DOCX, tối đa 10 MB/file
+                        </div>
+                    </div>
+                    <input type="file" id="suppFileInput" name="files" multiple
+                           accept=".pdf,.jpg,.jpeg,.png,.docx"
+                           onchange="previewFiles(this, document.getElementById('suppPreviewList'))">
+                    <ul class="file-preview-list" id="suppPreviewList"></ul>
+                    <div class="form-actions mt-8">
+                        <button type="submit" class="btn btn-p btn-sm">Gửi tài liệu bổ sung</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- ── Cột phải: Timeline ──────────────────────────────────── -->

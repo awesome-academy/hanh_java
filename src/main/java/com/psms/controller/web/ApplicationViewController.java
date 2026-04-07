@@ -8,16 +8,19 @@ import com.psms.entity.User;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.service.ApplicationService;
+import com.psms.service.DocumentService;
 import com.psms.service.ServiceCatalogService;
 import com.psms.util.PaginationInfo;
 import com.psms.util.PaginationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -36,6 +39,7 @@ public class ApplicationViewController {
 
     private final ApplicationService applicationService;
     private final ServiceCatalogService serviceCatalogService;
+    private final DocumentService documentService;
 
     private static final String DEFAULT_PAGE_SIZE_STR = "10";
 
@@ -61,14 +65,15 @@ public class ApplicationViewController {
     // ─── POST /applications/submit ─────────────────────────────────────
 
     /**
-     * Nộp hồ sơ (PRG).
+     * Nộp hồ sơ.
      * PRG pattern: submit → redirect /applications + flash
      */
-    @PostMapping("/submit")
+    @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String submitApplication(
             @AuthenticationPrincipal User user,
             @RequestParam Long serviceTypeId,
             @RequestParam(required = false) String notes,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             RedirectAttributes ra) {
 
         SubmitApplicationRequest request = SubmitApplicationRequest.builder()
@@ -76,7 +81,7 @@ public class ApplicationViewController {
                 .notes(notes)
                 .build();
 
-        ApplicationResponse response = applicationService.submit(user.getId(), request);
+        ApplicationResponse response = applicationService.submit(user.getId(), request, files);
         ra.addFlashAttribute("success",
                 "Nộp hồ sơ thành công! Mã hồ sơ: " + response.getApplicationCode());
         return "redirect:/applications";
@@ -141,5 +146,56 @@ public class ApplicationViewController {
     public String handleNotFound(ResourceNotFoundException ex, RedirectAttributes ra) {
         ra.addFlashAttribute("error", ex.getMessage());
         return "redirect:/applications";
+    }
+
+    // ─── POST /applications/{id}/documents ────────────────────────────
+
+    /**
+     * Citizen upload tài liệu bổ sung.
+     * Chỉ được phép khi status = ADDITIONAL_REQUIRED.
+     * Sau khi upload → auto-transition ADDITIONAL_REQUIRED → SUBMITTED.
+     */
+    @PostMapping(value = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String uploadSupplementalDocuments(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestParam("files") List<MultipartFile> files,
+            RedirectAttributes ra) {
+
+        try {
+            documentService.uploadSupplementalDocuments(id, user.getId(), files);
+            ra.addFlashAttribute("success", "Nộp bổ sung tài liệu thành công! Hồ sơ đã được chuyển về trạng thái chờ xử lý.");
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/applications/" + id;
+    }
+
+    // ─── POST /applications/{id}/documents/{docId}/delete ─────────────
+
+    /**
+     * Citizen xóa tài liệu (soft delete).
+     *
+     * <p>Business rules
+     * <ul>
+     *   <li>Chỉ xóa được doc của mình (is_response=false)</li>
+     *   <li>Chỉ khi status = SUBMITTED — khi đã RECEIVED trở lên thì không được xóa</li>
+     *   <li>Xóa mềm: is_deleted=true, file vật lý vẫn giữ</li>
+     * </ul>
+     */
+    @PostMapping("/{id}/documents/{docId}/delete")
+    public String deleteDocument(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @PathVariable Long docId,
+            RedirectAttributes ra) {
+
+        try {
+            documentService.deleteDocument(id, docId, user);
+            ra.addFlashAttribute("success", "Đã xóa tài liệu thành công.");
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/applications/" + id;
     }
 }

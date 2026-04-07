@@ -7,6 +7,7 @@ import com.psms.dto.response.ApplicationResponse;
 import com.psms.entity.User;
 import com.psms.enums.ApplicationStatus;
 import com.psms.service.ApplicationService;
+import com.psms.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +15,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * REST controller — Hồ sơ của citizen (cần đăng nhập, role CITIZEN).
@@ -31,32 +36,35 @@ import org.springframework.web.bind.annotation.*;
 public class ClientApplicationController {
 
     private final ApplicationService applicationService;
+    private final DocumentService documentService;
     private static final String DEFAULT_PAGE_SIZE_STR = "10";
 
     // ─── POST /api/client/applications ────────────────────────────────
 
     @Operation(
-        summary = "Nộp hồ sơ mới",
+        summary = "Nộp hồ sơ mới (multipart/form-data)",
         description = """
-            Citizen nộp hồ sơ cho một dịch vụ công.
+            Citizen nộp hồ sơ kèm tài liệu đính kèm.
+
+            **Content-Type:** `multipart/form-data`
 
             **Business rules:**
-            - Citizen phải có profile (bảng citizens) mới nộp được
-            - Dịch vụ phải đang active (`is_active = true`)
-            - Mã HS được sinh tự động: `HS-YYYYMMDD-NNNNN` (thread-safe)
+            - Dịch vụ phải `is_active = true`
+            - File: chỉ PDF/JPG/JPEG/PNG/DOCX, tối đa 10 MB/file
+            - Mã HS sinh tự động: `HS-YYYYMMDD-NNNNN`
             - Trạng thái ban đầu: `SUBMITTED`
-            - Hạn xử lý = ngày nộp + `processing_time_days` của dịch vụ
             - Ghi history: `null → SUBMITTED`
 
             **Output:** ApplicationResponse với applicationCode đã sinh
             """
     )
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ApplicationResponse>> submit(
             @AuthenticationPrincipal User user,
-            @Valid @RequestBody SubmitApplicationRequest request) {
+            @Valid @ModelAttribute SubmitApplicationRequest request,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
-        ApplicationResponse response = applicationService.submit(user.getId(), request);
+        ApplicationResponse response = applicationService.submit(user.getId(), request, files);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Nộp hồ sơ thành công", response));
     }
@@ -67,11 +75,6 @@ public class ClientApplicationController {
         summary = "Danh sách hồ sơ của tôi",
         description = """
             Lấy danh sách hồ sơ của citizen đang đăng nhập, phân trang.
-
-            **Query params:**
-            - `status`  — lọc theo trạng thái (tuỳ chọn)
-            - `page`    — trang hiện tại (0-based, mặc định 0)
-            - `size`    — số bản ghi mỗi trang (mặc định 10)
 
             **Business rules:**
             - Chỉ trả hồ sơ của chính citizen đang đăng nhập
@@ -99,13 +102,14 @@ public class ClientApplicationController {
     @Operation(
         summary = "Chi tiết hồ sơ",
         description = """
-            Lấy chi tiết hồ sơ kèm timeline trạng thái.
+            Lấy chi tiết hồ sơ kèm timeline và danh sách tài liệu.
 
             **Business rules:**
-            - Chỉ xem được hồ sơ của chính mình
-            - Hồ sơ của người khác → 404 (tránh IDOR)
+            - Chỉ xem được hồ sơ của chính mình (IDOR protection)
+            - `citizenDocuments`: tài liệu citizen nộp
+            - `staffDocuments`: tài liệu phản hồi từ cán bộ
 
-            **Output:** ApplicationDetailResponse kèm statusHistory[]
+            **Output:** ApplicationDetailResponse
             """
     )
     @GetMapping("/{id}")
@@ -116,5 +120,31 @@ public class ClientApplicationController {
         ApplicationDetailResponse detail = applicationService.findMyApplicationById(user.getId(), id);
         return ResponseEntity.ok(ApiResponse.success("OK", detail));
     }
-}
 
+    // ─── POST /api/client/applications/{id}/documents ─────────────────
+
+    @Operation(
+        summary = "Upload tài liệu bổ sung",
+        description = """
+            Citizen upload tài liệu bổ sung theo yêu cầu của cán bộ.
+
+            **Business rules:**
+            - Chỉ cho phép khi status = `ADDITIONAL_REQUIRED`
+            - Sau khi upload thành công → status tự động chuyển `SUBMITTED`
+            - Ghi `ApplicationStatusHistory`: `ADDITIONAL_REQUIRED → SUBMITTED`
+            - File: chỉ PDF/JPG/JPEG/PNG/DOCX, tối đa 10 MB/file
+            - Ownership: citizen chỉ upload được hồ sơ của chính mình
+
+            **Output:** 200 OK khi thành công
+            """
+    )
+    @PostMapping(value = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> uploadSupplementalDocuments(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestParam("files") List<MultipartFile> files) {
+
+        documentService.uploadSupplementalDocuments(id, user.getId(), files);
+        return ResponseEntity.ok(ApiResponse.success("Nộp bổ sung tài liệu thành công", null));
+    }
+}

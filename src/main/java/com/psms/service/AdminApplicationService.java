@@ -50,6 +50,7 @@ public class AdminApplicationService {
     private final StaffRepository staffRepository;
     private final ApplicationMapper applicationMapper;
     private final StaffMapper staffMapper;
+    private final DocumentService documentService;
 
     /** Số hồ sơ pending tối đa hiển thị trên dashboard. */
     private static final int RECENT_PENDING_LIMIT = 10;
@@ -251,6 +252,8 @@ public class AdminApplicationService {
         response.setStatusHistory(
                 applicationMapper.toHistoryResponses(
                         historyRepository.findByApplicationIdOrderByChangedAtAsc(app.getId())));
+        response.setCitizenDocuments(documentService.findCitizenDocuments(app.getId()));
+        response.setStaffDocuments(documentService.findStaffDocuments(app.getId()));
         return response;
     }
 

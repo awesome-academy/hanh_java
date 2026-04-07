@@ -1,3 +1,29 @@
+/* Icon-only button, dùng cho cả download và delete để đồng bộ size */
+.btn-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--nav);
+    background: transparent;
+    color: var(--nav);
+    transition: background .15s, border-color .15s, color .15s;
+}
+.btn-ico:hover  { background: var(--nav); color: #fff; }
+.btn-ico:active { transform: scale(.95); }
+
+/* Nút xóa tài liệu — override màu cho danger */
+.doc-del {
+    border-color: #FCA5A5;
+    color: var(--danger);
+}
+.doc-del:hover  { background: var(--danger); border-color: var(--danger); color: #fff; }
 /* =============================================================
    components.css — Reusable UI components
  ============================================================= */
@@ -611,3 +637,86 @@ select.fi2 {
     background: var(--side-ac);
     color: #fff;
 }
+
+/* =============================================================
+   File upload components (#08)
+ ============================================================= */
+
+/* Vùng kéo thả / chọn file */
+.file-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: #FAFBFD;
+}
+.file-upload-area:hover,
+.file-upload-area.drag-over {
+    border-color: var(--info);
+    background: #EFF6FF;
+}
+.file-upload-area input[type="file"] { display: none; }
+.file-upload-area .upload-icon { font-size: 28px; margin-bottom: 8px; }
+.file-upload-area .upload-hint { font-size: 13px; color: var(--muted); }
+.file-upload-area .upload-hint strong { color: var(--info); }
+
+/* Preview list trước khi submit */
+.file-preview-list { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.file-preview-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: #F0F4FA; border-radius: 8px; font-size: 13px; }
+.file-preview-item .fp-name { flex: 1; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-preview-item .fp-size { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+.file-preview-item .fp-rm  { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 16px; line-height: 1; padding: 0 2px; }
+
+/* Document item trong chi tiết hồ sơ */
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.doc-item:last-child { border-bottom: none; }
+.doc-icon { font-size: 22px; flex-shrink: 0; width: 36px; text-align: center; }
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.doc-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/*
+ * form bọc nút xóa phải dùng display:contents để không làm gãy
+ * flexbox của .doc-actions (form mặc định là block → chiếm full width)
+ */
+.doc-actions form { display: contents; }
+
+/*
+ * Nút xóa tài liệu — icon-only, outline danger, hover fill đỏ.
+ * Dùng thay cho btn btn-d btn-sm để gọn hơn và ít aggressive hơn.
+ */
+.doc-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1.5px solid #FCA5A5;   /* danger-300 — nhẹ hơn khi idle */
+    background: transparent;
+    color: var(--danger);
+    transition: background .15s, border-color .15s, color .15s;
+}
+.doc-del:hover  { background: var(--danger); border-color: var(--danger); color: #fff; }
+.doc-del:active { transform: scale(.95); }
+
+/* Validation badge — dùng pill pattern có sẵn nhưng size nhỏ hơn */
+.doc-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.doc-badge.pending  { background: #FEF3C7; color: #92400E; }
+.doc-badge.valid    { background: #DCFCE7; color: #15803D; }
+.doc-badge.invalid  { background: #FEE2E2; color: #B91C1C; }
+

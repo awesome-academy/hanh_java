@@ -28,6 +28,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -141,21 +142,17 @@ class ServiceCatalogControllerTest {
         }
 
         @Test
-        @DisplayName("size > 50 → bị cap xuống 50 (không query quá lớn)")
+        @DisplayName("size > 50 → 400 Bad Request (fail-fast: không cho query quá lớn)")
         void sizeIsCappedAt50() throws Exception {
-            Page<ServiceTypeResponse> page = new PageImpl<>(List.of(), PageRequest.of(0, 50), 0);
-            // Controller cap size=100 → 50 trước khi gọi service
-            given(serviceCatalogService.searchServices(isNull(), isNull(), eq(0), eq(50)))
-                    .willReturn(page);
-
+            // Controller dùng fail-fast: size > 50 → throw IllegalArgumentException → 400
+            // Không silent-clamp vì REST API cần contract rõ ràng (client biết ngay khi gửi sai)
             mockMvc.perform(get("/api/client/services")
                             .param("size", "100")
                             .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true));
+                    .andExpect(status().isBadRequest());
 
-            // Đảm bảo controller KHÔNG forward size=100 xuống service mà phải cap = 50
-            verify(serviceCatalogService).searchServices(isNull(), isNull(), eq(0), eq(50));
+            // Service không được gọi vì controller đã reject trước
+            verify(serviceCatalogService, never()).searchServices(any(), any(), anyInt(), anyInt());
         }
 
         @Test

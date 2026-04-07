@@ -34,6 +34,8 @@ public class ApplicationDetailResponse {
     private String notes;
     private String rejectionReason;
     private List<ApplicationStatusHistoryResponse> statusHistory;
+    private List<ApplicationDocumentResponse> citizenDocuments;  // is_response = false
+    private List<ApplicationDocumentResponse> staffDocuments;    // is_response = true
 
     public String getStatusBadgeClass() {
         return status == null ? null : status.getBadgeClass();
