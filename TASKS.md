@@ -338,7 +338,6 @@
 □ Download → mở được file đúng
 □ File .exe / > 10MB → thấy lỗi rõ ràng
 ```
-
 ---
 
 ### #09 · `feature/client-profile-notification`
