@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout('Chi tiết hồ sơ', ~{:: main}, 'applications', 'Chi tiết hồ sơ')}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1 th:text="${app.applicationCode}">HS-...</h1>
+            <p th:text="${app.serviceTypeName}">Dịch vụ</p>
+        </div>
+        <a th:href="@{/admin/applications}" class="btn btn-o btn-sm">
+            ← Quay lại danh sách
+        </a>
+    </div>
+
+    <!-- ── 2-column grid ──────────────────────────────────────────────── -->
+    <div class="detail-cols">
+
+        <!-- ── Cột trái: thông tin + form thao tác ──────────────────── -->
+        <div>
+
+            <!-- Thông tin hồ sơ -->
+            <div class="card">
+                <div class="card-hd"><strong>📋 Thông tin hồ sơ</strong></div>
+                <div class="detail-grid">
+
+                    <div>
+                        <div class="detail-lbl">Mã hồ sơ</div>
+                        <div th:text="${app.applicationCode}" class="val-mono">HS-...</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Trạng thái</div>
+                        <span class="pill" th:classappend="${app.statusBadgeClass}" th:text="${app.statusLabel}"></span>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Công dân</div>
+                        <div th:text="${app.citizenFullName}">Nguyễn Văn A</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">CCCD</div>
+                        <div th:text="${app.citizenNationalId}">012345678901</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Dịch vụ</div>
+                        <div th:text="${app.serviceTypeName}">Tên dịch vụ</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Cơ quan tiếp nhận</div>
+                        <div th:text="${app.departmentName}">Phòng ban</div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Ngày nộp</div>
+                        <div th:text="${app.submittedAt != null ? #temporals.format(app.submittedAt,'dd/MM/yyyy HH:mm') : '—'}"></div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Hạn xử lý</div>
+                        <!-- th:style giữ nguyên vì là dynamic value -->
+                        <div th:text="${app.processingDeadline != null ? #temporals.format(app.processingDeadline,'dd/MM/yyyy') : '—'}"
+                             th:classappend="${app.overdue} ? 'text-danger fw-bold' : ''"></div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Lệ phí</div>
+                        <div th:text="${T(com.psms.util.MoneyUtils).formatFee(app.fee)}"></div>
+                    </div>
+
+                    <div>
+                        <div class="detail-lbl">Cán bộ phụ trách</div>
+                        <div th:text="${app.assignedStaffName != null ? app.assignedStaffName : '— Chưa phân công'}"></div>
+                    </div>
+
+                    <div th:if="${app.notes}" class="col-full">
+                        <div class="detail-lbl">Ghi chú của công dân</div>
+                        <div th:text="${app.notes}"></div>
+                    </div>
+
+                    <div th:if="${app.rejectionReason}" class="col-full">
+                        <div class="detail-lbl text-danger">Lý do từ chối</div>
+                        <div th:text="${app.rejectionReason}" class="text-danger"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Form cập nhật trạng thái -->
+            <div class="card" th:if="${not allowedTransitions.isEmpty()}">
+                <div class="card-hd"><strong>⚙️ Cập nhật trạng thái</strong></div>
+                <form th:action="@{/admin/applications/{id}/status(id=${app.id})}" method="post"
+                      class="card-body">
+
+                    <div class="fg">
+                        <label class="fl">Trạng thái mới</label>
+                        <select class="fi2" name="newStatus" required id="statusSelect">
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option th:each="s : ${allowedTransitions}"
+                                    th:value="${s.name()}"
+                                    th:text="${s.label}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="fg">
+                        <label class="fl">Ghi chú <span id="notesHint" class="text-danger"></span></label>
+                        <textarea class="fi2" name="notes" rows="3"
+                                  placeholder="Nhập ghi chú (bắt buộc khi Từ chối / Yêu cầu bổ sung)..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-p w-fit">
+                        Cập nhật trạng thái
+                    </button>
+                </form>
+            </div>
+
+            <!-- Form phân công cán bộ — chỉ MANAGER / SUPER_ADMIN -->
+            <div class="card" sec:authorize="hasAnyRole('MANAGER','SUPER_ADMIN')"
+                 th:if="${!availableStaff.isEmpty()}">
+                <div class="card-hd"><strong>👤 Phân công cán bộ</strong></div>
+                <form th:action="@{/admin/applications/{id}/assign(id=${app.id})}" method="post"
+                      class="card-body-row">
+
+                    <div class="fg fg-grow">
+                        <label class="fl">Cán bộ xử lý</label>
+                        <select class="fi2" name="staffId" required>
+                            <option value="">-- Chọn cán bộ --</option>
+                            <option th:each="s : ${availableStaff}"
+                                    th:value="${s.staffId}"
+                                    th:text="${s.fullName + ' (' + s.staffCode + ')'}"
+                                    th:selected="${s.userId == app.assignedStaffId}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-p">
+                        Phân công
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- ── Cột phải: Timeline ─────────────────────────────────────── -->
+        <div class="card">
+            <div class="card-hd"><strong>📍 Lịch sử trạng thái</strong></div>
+            <div class="tl-body">
+
+                <div th:if="${app.statusHistory == null or app.statusHistory.isEmpty()}"
+                     class="empty-state">
+                    Chưa có lịch sử
+                </div>
+
+                <div th:each="h, iter : ${app.statusHistory}" class="tl-item">
+                    <div class="tl-dot-wrap">
+                        <!-- th:style giữ nguyên vì background là dynamic value; dotColor tính sẵn ở backend -->
+                        <div class="tl-dot"
+                             th:style="'background:' + ${h.newStatusDotColor}">
+                        </div>
+                        <div class="tl-line" th:unless="${iter.last}"></div>
+                    </div>
+                    <div class="tl-content">
+                        <div class="tl-ttl" th:text="${h.newStatus.label}">Trạng thái</div>
+                        <div class="tl-dt"
+                             th:text="${h.changedAt != null ? #temporals.format(h.changedAt,'dd/MM HH:mm') : ''}">
+                        </div>
+                        <div class="tl-note" th:if="${h.notes}" th:text="${h.notes}"></div>
+                        <!-- .tl-note đã có color:var(--muted), không cần inline style -->
+                        <div class="tl-note"
+                             th:if="${h.changedByName}" th:text="'Bởi: ' + ${h.changedByName}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hint script: mark notes required khi chon REJECTED / ADDITIONAL_REQUIRED -->
+    <script>
+    (function() {
+        const sel = document.getElementById('statusSelect');
+        const hint = document.getElementById('notesHint');
+        if (!sel || !hint) return;
+        const requireNote = ['REJECTED', 'ADDITIONAL_REQUIRED'];
+        sel.addEventListener('change', function() {
+            hint.textContent = requireNote.includes(sel.value) ? '(Bắt buộc)' : '';
+        });
+    })();
+    </script>
+
+</main>
+</body>
+</html>
+

@@ -47,12 +47,7 @@
     <div class="cats">
         <a class="cat" th:each="cat, iter : ${categories}"
            th:href="@{/services(categoryId=${cat.id})}">
-            <div class="cat-ic"
-                 th:style="${iter.index % 5 == 0 ? 'background:#EFF6FF' :
-                             iter.index % 5 == 1 ? 'background:#F0FDF4' :
-                             iter.index % 5 == 2 ? 'background:#FEF9C3' :
-                             iter.index % 5 == 3 ? 'background:#FEE2E2' :
-                                                   'background:#EDE9FE'}">
+            <div class="cat-ic">
                 <span th:text="${cat.icon} ?: '🏛️'">🏛️</span>
             </div>
             <p th:text="${cat.name}">Hành chính công</p>
@@ -61,23 +56,19 @@
     </div>
 
     <!-- ── Popular services ──────────────────────────────────────── -->
-    <div class="sec-hd" style="margin-top: 8px">
+    <div class="sec-hd mt-8">
         <h2>Dịch vụ nổi bật</h2>
         <a th:href="@{/services}">Xem tất cả →</a>
     </div>
 
     <div class="svc-list">
-        <div th:if="${#lists.isEmpty(popularServices)}"
-             style="padding:24px;text-align:center;color:var(--muted);font-size:13px">
+        <div th:if="${#lists.isEmpty(popularServices)}" class="empty-state">
             Chưa có dịch vụ nào.
         </div>
 
         <a class="svc" th:each="svc, iter : ${popularServices}"
            th:href="@{/services/{id}(id=${svc.id})}">
-            <div class="svc-ic"
-                 th:style="${iter.index % 3 == 0 ? 'background:#EFF6FF' :
-                             iter.index % 3 == 1 ? 'background:#F0FDF4' :
-                                                   'background:#FEF9C3'}">📋</div>
+            <div class="svc-ic">📋</div>
             <div class="svc-info">
                 <div class="svc-name" th:text="${svc.name}">Tên dịch vụ</div>
                 <div class="svc-meta">

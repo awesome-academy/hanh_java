@@ -81,7 +81,7 @@
                 <input id="permanentAddress" type="text" th:field="*{permanentAddress}"
                        class="fi2" placeholder="Số nhà, đường, khu vực...">
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-g2">
                 <div class="fg">
                     <label class="fl" for="ward">Phường/Xã</label>
                     <input id="ward" type="text" th:field="*{ward}" class="fi2" placeholder="Phường Tây Mỗ">
@@ -93,7 +93,7 @@
                     <span th:if="${#fields.hasErrors('province')}" th:errors="*{province}" class="field-error"></span>
                 </div>
             </div>
-            <button type="submit" class="btn btn-p btn-full" style="margin-top:4px">Tạo tài khoản</button>
+            <button type="submit" class="btn btn-p btn-full mt-4">Tạo tài khoản</button>
         </form>
         <hr class="auth-divider">
         <div class="auth-footer">Đã có tài khoản? <a th:href="@{/auth/login}">Đăng nhập</a></div>

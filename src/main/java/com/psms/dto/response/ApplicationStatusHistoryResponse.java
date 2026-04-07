@@ -23,5 +23,10 @@ public class ApplicationStatusHistoryResponse {
     public String getNewStatusLabel() {
         return newStatus == null ? null : newStatus.getLabel();
     }
+
+    /** CSS variable / màu dùng cho dot trong timeline. Delegate sang enum để logic tập trung 1 chỗ. */
+    public String getNewStatusDotColor() {
+        return newStatus == null ? "#F1F5F9" : newStatus.getDotColor();
+    }
 }
 

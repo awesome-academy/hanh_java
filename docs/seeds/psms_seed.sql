@@ -36,14 +36,17 @@ INSERT INTO `departments` (`code`, `name`, `address`, `phone`, `email`) VALUES
 
 
 -- -------------------------------------------------------------
--- 2. Users (password = "Admin@123" BCrypt hash — chỉ để test)
+-- 2. Users (password = "Admin@123" BCrypt(12) hash — chỉ để test)
+--    Hash được generate bằng Spring BCryptPasswordEncoder(12):
+--    new BCryptPasswordEncoder(12).encode("Admin@123")
+--    → $2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO
 -- -------------------------------------------------------------
 INSERT INTO `users` (`email`, `password`, `full_name`, `phone`) VALUES
-  ('superadmin@dvcqg.gov.vn', '$2a$12$K9Z2XVpAnIPV5uyGRCqkMO.B2ZB9f9YdoWX3uv5IJ6fVxbxCmn5Qi', 'Super Admin',    '0900000001'),
-  ('tmkhoa@dvc.gov.vn',       '$2a$12$K9Z2XVpAnIPV5uyGRCqkMO.B2ZB9f9YdoWX3uv5IJ6fVxbxCmn5Qi', 'Trần Minh Khoa', '0900000002'),
-  ('nhduc@dvc.gov.vn',        '$2a$12$K9Z2XVpAnIPV5uyGRCqkMO.B2ZB9f9YdoWX3uv5IJ6fVxbxCmn5Qi', 'Nguyễn Hữu Đức', '0900000003'),
-  ('nguyen.thi.an@email.com', '$2a$12$K9Z2XVpAnIPV5uyGRCqkMO.B2ZB9f9YdoWX3uv5IJ6fVxbxCmn5Qi', 'Nguyễn Thị An',  '0901234567'),
-  ('le.van.minh@email.com',   '$2a$12$K9Z2XVpAnIPV5uyGRCqkMO.B2ZB9f9YdoWX3uv5IJ6fVxbxCmn5Qi', 'Lê Văn Minh',    '0912345678');
+  ('superadmin@dvcqg.gov.vn', '$2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO', 'Super Admin',    '0900000001'),
+  ('tmkhoa@dvc.gov.vn',       '$2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO', 'Trần Minh Khoa', '0900000002'),
+  ('nhduc@dvc.gov.vn',        '$2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO', 'Nguyễn Hữu Đức', '0900000003'),
+  ('nguyen.thi.an@email.com', '$2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO', 'Nguyễn Thị An',  '0901234567'),
+  ('le.van.minh@email.com',   '$2a$12$PZy.T52XtCZ9h13g69xRLuqnk.KVG3ChiR3zUvT81wOt4P14VfMzO', 'Lê Văn Minh',    '0912345678');
 
 
 -- -------------------------------------------------------------

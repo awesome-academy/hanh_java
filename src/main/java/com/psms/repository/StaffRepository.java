@@ -1,6 +1,7 @@
 package com.psms.repository;
 
 import com.psms.entity.Staff;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -13,6 +14,12 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
 
     Optional<Staff> findByStaffCode(String staffCode);
 
+    /**
+     * Load danh sach can bo theo phong ban + available,
+     * eager-fetch user de Thymeleaf co the render s.user.fullName
+     * ma khong bi LazyInitializationException (OSIV = false).
+     */
+    @EntityGraph(attributePaths = "user")
     List<Staff> findAllByDepartmentIdAndIsAvailableTrue(Long departmentId);
 }
 

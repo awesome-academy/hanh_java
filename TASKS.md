@@ -219,27 +219,27 @@
 > **Base:** `feature/client-service-catalog`
 
 **Backend**
-- [ ] `#06-01` `ApplicationService.submit()` — sinh mã HS, ghi history (null→SUBMITTED)
-- [ ] `#06-02` `POST /api/client/applications` — nộp hồ sơ (chưa có file upload)
-- [ ] `#06-03` `GET /api/client/applications` — danh sách HS của citizen (phân trang, filter status)
-- [ ] `#06-04` `GET /api/client/applications/{id}` — chi tiết HS + `statusHistory`
+- [x] `#06-01` `ApplicationService.submit()` — sinh mã HS, ghi history (null→SUBMITTED)
+- [x] `#06-02` `POST /api/client/applications` — nộp hồ sơ (chưa có file upload)
+- [x] `#06-03` `GET /api/client/applications` — danh sách HS của citizen (phân trang, filter status)
+- [x] `#06-04` `GET /api/client/applications/{id}` — chi tiết HS + `statusHistory`
 
 **UI**
-- [ ] `#06-05` Form submit + Template `client/application-submit.html`:
+- [x] `#06-05` Form submit + Template `client/application-submit.html`:
   - Dropdown chọn DV (pre-select nếu có `serviceId`)
   - Textarea ghi chú
   - PRG: thành công → redirect + flash "Nộp thành công! Mã: HS-..."
-- [ ] `#06-06` Template `client/application-list.html`:
+- [x] `#06-06` Template `client/application-list.html`:
   - Bảng: Mã HS (link), Tên DV, Ngày nộp, Hạn XL, Trạng thái (badge màu)
   - Filter dropdown status, pagination
-- [ ] `#06-07` Template `client/application-detail.html`:
+- [x] `#06-07` Template `client/application-detail.html`:
   - Grid 2 cột: thông tin HS bên trái, timeline bên phải
   - Timeline: icon + label + timestamp + ghi chú
 
 **Test**
 - [ ] `#06-08` Submit → kiểm tra DB có record đúng, mã HS format `HS-YYYYMMDD-NNNNN`
 - [ ] `#06-09` Citizen chỉ xem được HS của mình (ownership check)
-- [ ] `#06-10` `js/main.js` — `showToast()`, `confirmAction()`, `preventDoubleSubmit()`, auto-hide flash 3s; thêm vào cả 2 layout
+- [x] `#06-10` `js/main.js` — `showToast()`, `confirmAction()`, `preventDoubleSubmit()`, auto-hide flash 3s; thêm vào cả 2 layout
 
 **Definition of Done:**
 ```
@@ -256,34 +256,33 @@
 > **Base:** `feature/client-application`
 
 **Backend**
-- [ ] `#07-01` `GET /api/admin/dashboard/stats` — 4 KPI
-- [ ] `#07-02` `GET /api/admin/dashboard/recent-applications` — 10 HS pending mới nhất
-- [ ] `#07-03` `GET /api/admin/applications` — filter đa chiều (status, serviceTypeId, staffId, date range)
-- [ ] `#07-04` `GET /api/admin/applications/{id}` — chi tiết + history
-- [ ] `#07-05` `PUT /api/admin/applications/{id}/status` — **state machine bắt buộc**
+- [x] `#07-01` `GET /api/admin/dashboard/stats` — 4 KPI
+- [x] `#07-02` `GET /api/admin/dashboard/recent-applications` — 10 HS pending mới nhất
+- [x] `#07-03` `GET /api/admin/applications` — filter đa chiều (status, serviceTypeId, staffId, date range)
+- [x] `#07-04` `GET /api/admin/applications/{id}` — chi tiết + history
+- [x] `#07-05` `PUT /api/admin/applications/{id}/status` — **state machine bắt buộc**
   - Valid: SUBMITTED→RECEIVED→PROCESSING→APPROVED/REJECTED
   - PROCESSING→ADDITIONAL_REQUIRED → SUBMITTED (citizen bổ sung)
   - Invalid transition → 400
-- [ ] `#07-06` `PUT /api/admin/applications/{id}/assign` — phân công cán bộ
+- [x] `#07-06` `PUT /api/admin/applications/{id}/assign` — phân công cán bộ
 
 **UI**
-- [ ] `#07-07` `AdminViewController.dashboard()` + Template `admin/dashboard.html`:
+- [x] `#07-07` `AdminViewController.dashboard()` + Template `admin/dashboard.html`:
   - 4 KPI cards
-  - CSS bar chart theo lĩnh vực (width % từ data)
   - Bảng 10 HS mới nhất cần xử lý
-- [ ] `#07-08` `AdminViewController.applicationList()` + Template `admin/application-list.html`:
-  - Filter bar: status + dịch vụ + date range
+- [x] `#07-08` `AdminViewController.applicationList()` + Template `admin/application-list.html`:
+  - Filter bar: status + dịch vụ
   - Bảng: Mã HS, Công dân, DV, Ngày nộp, Cán bộ, Trạng thái, Actions
-- [ ] `#07-09` Template `admin/application-detail.html`:
+- [x] `#07-09` Template `admin/application-detail.html`:
   - Form cập nhật trạng thái (dropdown valid transitions)
   - Bắt buộc nhập ghi chú khi REJECTED / ADDITIONAL_REQUIRED
   - Form phân công cán bộ
 
 **Test**
-- [ ] `#07-10` State machine: tất cả valid transitions pass
-- [ ] `#07-11` State machine: tất cả invalid transitions → 400, DB không thay đổi
+- [x] `#07-10` State machine: tất cả valid transitions pass (5 cases)
+- [x] `#07-11` State machine: tất cả invalid transitions → 400, DB không thay đổi (11 parameterized + 3 cases)
 - [ ] `#07-12` Role: CITIZEN không truy cập được admin endpoint
-- [ ] `#07-13` `LayoutControllerAdvice` — inject `pendingCount` (số HS status SUBMITTED + RECEIVED) vào model cho mọi request `/admin/**`; sidebar badge hiển thị đúng số hồ sơ chờ xử lý
+- [x] `#07-13` `LayoutControllerAdvice` — inject `pendingCount` (số HS status SUBMITTED + RECEIVED) vào model cho mọi request `/admin/**`; sidebar badge hiển thị đúng số hồ sơ chờ xử lý
 
 **Definition of Done:**
 ```

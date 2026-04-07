@@ -3,6 +3,7 @@ package com.psms.util;
 import com.psms.entity.Application;
 import com.psms.repository.ApplicationRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -10,7 +11,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,13 +30,16 @@ import static org.mockito.Mockito.when;
 
 class ApplicationCodeGeneratorTest {
 
+    // Tên method mới sau QUALITY-6: dùng JPQL + Pageable thay vì derived query
+    private static final String FIND_LATEST = "findLatestByApplicationCodePrefix";
+
     @Test
     void generatesFirstCodeWhenNoExistingCodeForDay() {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findLatestByCodePrefix("HS-20260331-"))
-                .thenReturn(Optional.empty());
+        when(repository.findLatestByApplicationCodePrefix("HS-20260331-", Pageable.ofSize(1)))
+                .thenReturn(List.of());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
 
@@ -47,14 +51,16 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findLatestByCodePrefix("HS-20260331-"))
-                .thenReturn(Optional.of(applicationWithCode("HS-20260331-00042")));
+        when(repository.findLatestByApplicationCodePrefix("HS-20260331-", Pageable.ofSize(1)))
+                .thenReturn(List.of(applicationWithCode("HS-20260331-00042")));
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
 
         assertEquals("HS-20260331-00043", generator.generate());
         assertEquals("HS-20260331-00044", generator.generate());
-        verify(repository, times(1)).findLatestByCodePrefix("HS-20260331-");
+        // Verify DB chỉ được gọi 1 lần (cache hoạt động đúng)
+        verify(repository, times(1))
+                .findLatestByApplicationCodePrefix("HS-20260331-", Pageable.ofSize(1));
     }
 
     @Test
@@ -62,10 +68,10 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findLatestByCodePrefix("HS-20260331-"))
-                .thenReturn(Optional.of(applicationWithCode("HS-20260331-00007")));
-        when(repository.findLatestByCodePrefix("HS-20260401-"))
-                .thenReturn(Optional.empty());
+        when(repository.findLatestByApplicationCodePrefix("HS-20260331-", Pageable.ofSize(1)))
+                .thenReturn(List.of(applicationWithCode("HS-20260331-00007")));
+        when(repository.findLatestByApplicationCodePrefix("HS-20260401-", Pageable.ofSize(1)))
+                .thenReturn(List.of());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
 
@@ -79,8 +85,8 @@ class ApplicationCodeGeneratorTest {
         ApplicationRepository repository = mock(ApplicationRepository.class);
         MutableClock clock = new MutableClock(LocalDate.of(2026, 3, 31));
 
-        when(repository.findLatestByCodePrefix(anyString()))
-                .thenReturn(Optional.empty());
+        when(repository.findLatestByApplicationCodePrefix(anyString(), eq(Pageable.ofSize(1))))
+                .thenReturn(List.of());
 
         ApplicationCodeGenerator generator = new ApplicationCodeGenerator(repository, clock);
 
@@ -139,4 +145,3 @@ class ApplicationCodeGeneratorTest {
         }
     }
 }
-

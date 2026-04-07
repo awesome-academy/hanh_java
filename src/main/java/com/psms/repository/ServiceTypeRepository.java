@@ -43,5 +43,9 @@ public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long>,
             @Param("keyword") String keyword,
             @Param("categoryId") Integer categoryId,
             Pageable pageable);
+
+    // Lấy toàn bộ DV active, sắp xếp A-Z — dùng cho dropdown form nộp hồ sơ
+    List<ServiceType> findAllByIsActiveTrueOrderByNameAsc();
+
 }
 

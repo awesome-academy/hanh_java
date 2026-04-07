@@ -344,3 +344,34 @@
 /* Full-width row in dashboard grid */
 .dash-g .full { grid-column: 1 / -1; }
 
+/* ── Detail page layout ──────────────────────────────────────── */
+/* NOTE: .detail-cols đã được chuyển sang components.css (dùng chung cho cả client và admin) */
+
+/* 2-col info grid bên trong card admin */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    padding: 16px;
+}
+
+/* Card body — form dọc (flex-column) */
+.card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Card body — form ngang (flex-row, ví dụ assign staff) */
+.card-body-row {
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+/* ── Timeline wrappers ───────────────────────────────────────── */
+.tl-body     { padding: 16px; }
+.tl-dot-wrap { position: relative; margin-right: 10px; }
+.tl-content  { flex: 1; padding-bottom: 16px; }

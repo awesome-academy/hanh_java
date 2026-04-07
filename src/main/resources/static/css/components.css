@@ -132,6 +132,24 @@ select.fi2 {
 .btn-d    { background: var(--danger); color: #fff; }
 .btn-full { width: 100%; }
 
+/* Logout button */
+.btn-logout {
+  background: #fff;
+  color: var(--nav);
+  border: 1.5px solid var(--nav);
+  font-weight: 600;
+  /* Topbar sizing — override .btn default padding */
+  padding: 7px 14px;
+  font-size: 13px;
+}
+.btn-logout:hover {
+  background: var(--gold2);
+  color: var(--nav);
+  border-color: var(--gold2);
+}
+/* Icon thoát trong nút Đăng xuất */
+.btn-logout .icon-esc { font-size: 15px; line-height: 1; }
+
 /* Small buttons (for table actions) */
 .bsm {
     padding: 4px 10px;
@@ -153,6 +171,8 @@ select.fi2 {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
     padding: 16px;
 }
 
@@ -162,6 +182,62 @@ select.fi2 {
     margin-bottom: 12px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
+}
+
+/* Card header row: title + optional action button */
+.card-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--light);
+}
+
+/* ── Timeline ────────────────────────────────────────────────── */
+.tl-item {
+    display: flex;
+    gap: 0;
+}
+
+.tl-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--info);
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+.tl-line {
+    position: absolute;
+    top: 13px;
+    left: 4px;
+    width: 2px;
+    background: var(--border);
+    bottom: -3px;
+}
+
+.tl-ttl {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.tl-dt {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-top: 2px;
+}
+
+.tl-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-style: italic;
 }
 
 /* ── Table ──────────────────────────────────────────────────── */
@@ -337,6 +413,143 @@ select.fi2 {
 .auth-footer a { color: var(--info); font-weight: 600; }
 .auth-footer a:hover { text-decoration: underline; }
 
+/* ── Utility ────────────────────────────────────────────────── */
+/* Detail field label — dùng trong các trang chi tiết (không có uppercase) */
+.detail-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+/* Giá trị monospaced in đậm (mã HS, mã cán bộ, v.v.) */
+.val-mono {
+    font-weight: 700;
+    font-family: var(--mono);
+}
+
+/* Span toàn bộ cột trong 2-col grid */
+.col-full { grid-column: 1 / -1; }
+
+/* Width fit-content */
+.w-fit { width: fit-content; }
+
+/* Font weight */
+.fw-bold { font-weight: 700; }
+
+/* Margin-top utilities bổ sung */
+.mt-6 { margin-top: 6px; }
+
+/* Empty / no-data state nhỏ (inline, ví dụ timeline) */
+.empty-state {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* Empty state lớn — dùng trong danh sách không có dữ liệu */
+.empty-box   { padding: 48px; text-align: center; color: var(--muted); }
+.empty-icon  { font-size: 40px; margin-bottom: 12px; }
+.empty-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.empty-sub   { font-size: 12.5px; margin-top: 6px; }
+
+/* Form group fill — flex:1, reset margin */
+.fg-grow { flex: 1; margin: 0; }
+
+/* Button size modifier */
+.btn-sm     { padding: 8px 16px; font-size: 13px; }
+/* Topbar buttons (client nav — padding nhỏ hơn btn-sm) */
+.btn-topbar { padding: 7px 14px; font-size: 13px; }
+
+/* Empty box small variant (padding 32px) */
+.empty-box.sm { padding: 32px; }
+
+/* Breadcrumb nav */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+/* Flex helpers */
+.flex-col  { display: flex; flex-direction: column; }
+.flex-1    { flex: 1; }
+.ai-start  { align-items: flex-start; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* 2-col detail layout: main (1fr) + sidebar (280px) — dùng chung client + admin */
+.detail-cols {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    align-items: start;
+}
+
+/* Info row — key + value side by side */
+.info-row { display: flex; justify-content: space-between; font-size: 12.5px; }
+
+/* Top divider + spacing */
+.divider-t { border-top: 1px solid var(--border); padding-top: 10px; }
+
+/* ── Card variants ───────────────────────────────────────────── */
+.card-lg     { padding: 24px; }
+.card-xl     { padding: 32px; }
+/* Card với border trái danger — dùng cho lý do từ chối */
+.card-danger { border-left: 4px solid var(--danger); }
+
+/* ── Section title (h3 uppercase trong card) ────────────────── */
+.section-ttl {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 16px;
+}
+.section-ttl.sm     { margin-bottom: 12px; }
+.section-ttl.danger { color: var(--danger); text-transform: none; letter-spacing: 0; }
+
+/* ── Body text ───────────────────────────────────────────────── */
+.body-text { font-size: 13.5px; color: var(--text); line-height: 1.6; }
+
+/* ── Text color ──────────────────────────────────────────────── */
+.text-primary { color: var(--primary); }
+
+/* ── Form helpers ────────────────────────────────────────────── */
+/* Tiêu đề form (h2 trong card form) */
+.form-ttl {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text);
+}
+/* Label trong form — không uppercase (khác .fl) */
+.form-lbl {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+    margin-bottom: 6px;
+}
+/* Container căn giữa cho form đơn lẻ */
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 24px; }
+/* Hàng nút action */
+.form-actions { display: flex; gap: 12px; }
+/* Info/notice box (màu xanh nhạt) */
+.info-box {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 12.5px;
+    color: #1D4ED8;
+}
+
 /* ── Form stacks ────────────────────────────────────────────── */
 .form-stack { display: flex; flex-direction: column; gap: 14px; }
 
@@ -382,7 +595,8 @@ select.fi2 {
 .admin-auth-card .fi2::placeholder { color: rgba(255, 255, 255, .3); }
 .admin-auth-card .fi2:focus        { border-color: var(--side-ac); }
 
-.admin-auth-card .fl        { color: rgba(255, 255, 255, .45); }
+.admin-auth-card .fl           { color: rgba(255, 255, 255, .45); }
+.admin-auth-card .auth-logo-name { color: #fff; }
 .admin-auth-card .auth-title    { color: #fff; }
 .admin-auth-card .auth-subtitle { color: rgba(255, 255, 255, .5); }
 .admin-auth-card .auth-footer   { color: rgba(255, 255, 255, .35); }
@@ -397,4 +611,3 @@ select.fi2 {
     background: var(--side-ac);
     color: #fff;
 }
-

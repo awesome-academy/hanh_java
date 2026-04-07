@@ -124,7 +124,7 @@ public class RefreshTokenService {
                 log.warn("Refresh token reuse detected — cannot extract user, ignoring: {}", e.getMessage());
             }
             throw new AuthenticationCredentialsNotFoundException(
-                    "Refresh token không hợp lệ. Toàn bộ phiên đăng nhập đã bị thu hồi");
+                    "Refresh token đã bị dùng lại (reuse). Toàn bộ phiên đăng nhập đã bị thu hồi");
         }
 
         // delete nếu expired + throw → commit nhờ noRollbackFor

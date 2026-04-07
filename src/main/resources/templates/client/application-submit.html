@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/client :: layout('Nộp hồ sơ', ~{:: main})}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Nộp hồ sơ trực tuyến</h1>
+            <p>Điền thông tin và chọn dịch vụ cần thực hiện</p>
+        </div>
+    </div>
+
+    <div class="form-wrap">
+
+        <div class="card card-xl">
+            <h2 class="form-ttl">Thông tin hồ sơ</h2>
+
+            <form method="post" th:action="@{/applications/submit}" id="submit-form">
+                <!-- CSRF token tự động inject bởi Spring Security -->
+
+                <!-- Chọn dịch vụ -->
+                <div class="form-group mb-16">
+                    <label class="form-lbl">
+                        Dịch vụ công <span class="text-danger">*</span>
+                    </label>
+                    <select name="serviceTypeId" class="fi-s w-full" required>
+                        <option value="">— Chọn dịch vụ —</option>
+                        <option th:each="svc : ${services}"
+                                th:value="${svc.id}"
+                                th:text="${svc.name}"
+                                th:selected="${svc.id == preSelectedServiceId}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Ghi chú -->
+                <div class="form-group mb-16">
+                    <label class="form-lbl">Ghi chú (tuỳ chọn)</label>
+                    <textarea name="notes" class="fi w-full"
+                              style="min-height:100px;resize:vertical"
+                              placeholder="Thông tin bổ sung hoặc yêu cầu đặc biệt..."></textarea>
+                </div>
+
+                <!-- Lưu ý -->
+                <div class="info-box">
+                    <strong>📋 Lưu ý:</strong> Sau khi nộp, hồ sơ sẽ được cơ quan tiếp nhận và xử lý.
+                    Bạn có thể theo dõi trạng thái tại mục <strong>"Hồ sơ của tôi"</strong>.
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-p" id="submit-btn">Nộp hồ sơ</button>
+                    <a th:href="@{/applications}" class="btn btn-o">Hủy</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Đã bỏ inline JS, dùng preventDoubleSubmit('submit-form') từ main.js -->
+
+</main>
+</body>
+</html>
+

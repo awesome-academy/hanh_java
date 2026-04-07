@@ -8,21 +8,21 @@
 <main>
 
     <!-- Breadcrumb -->
-    <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-bottom:16px">
-        <a th:href="@{/}" style="color:var(--info)">Trang chủ</a>
+    <div class="breadcrumb">
+        <a th:href="@{/}" class="text-info">Trang chủ</a>
         <span>/</span>
-        <a th:href="@{/services}" style="color:var(--info)">Dịch vụ công</a>
+        <a th:href="@{/services}" class="text-info">Dịch vụ công</a>
         <span>/</span>
         <span th:text="${service.name}">Chi tiết</span>
     </div>
 
     <!-- ── Service header ─────────────────────────────────────────── -->
     <div class="svc-detail-hd">
-        <div style="display:flex;align-items:flex-start;gap:16px">
-            <div class="svc-ic" style="background:#EFF6FF;width:48px;height:48px;font-size:22px;flex-shrink:0">📋</div>
-            <div style="flex:1">
+        <div class="flex ai-start gap-16">
+            <div class="svc-ic svc-ic-doc svc-ic-lg">📋</div>
+            <div class="flex-1">
                 <h1 th:text="${service.name}">Tên dịch vụ</h1>
-                <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+                <div class="mt-8 flex gap-8 flex-wrap">
                     <span class="pill p-blue" th:text="${service.categoryName}">Lĩnh vực</span>
                     <span class="pill p-gray" th:text="'Mã: ' + ${service.code}">Mã</span>
                 </div>
@@ -34,8 +34,7 @@
                     <div class="svc-meta-item">
                         <span class="lbl">Lệ phí</span>
                         <span class="val"
-                              th:text="${service.fee.signum() == 0 ? 'Miễn phí' : #numbers.formatInteger(service.fee, 0, 'COMMA') + ' VNĐ'}">
-                            Miễn phí
+                              th:text="${T(com.psms.util.MoneyUtils).formatFee(service.fee)}">
                         </span>
                     </div>
                     <div class="svc-meta-item" th:if="${service.feeDescription}">
@@ -52,29 +51,27 @@
     </div>
 
     <!-- ── Main content: 2-col ────────────────────────────────────── -->
-    <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start">
+    <div class="detail-cols">
 
         <!-- Cột trái: mô tả + yêu cầu -->
-        <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="flex-col gap-12">
             <div class="card" th:if="${service.description}">
                 <div class="card-ttl">📝 Mô tả dịch vụ</div>
-                <p style="font-size:13.5px;line-height:1.65;color:var(--text)"
-                   th:text="${service.description}">Mô tả dịch vụ.</p>
+                <p class="body-text" th:text="${service.description}">Mô tả dịch vụ.</p>
             </div>
             <div class="card" th:if="${service.requirements}">
                 <div class="card-ttl">📋 Yêu cầu hồ sơ</div>
-                <p style="font-size:13.5px;line-height:1.65;color:var(--text);white-space:pre-line"
+                <!-- white-space:pre-line là one-off, giữ lại để hiển thị xuống dòng đúng -->
+                <p class="body-text" style="white-space:pre-line"
                    th:text="${service.requirements}">Danh sách giấy tờ.</p>
             </div>
             <div class="card" th:if="${service.description == null and service.requirements == null}">
-                <p style="color:var(--muted);font-size:13px;text-align:center;padding:12px 0">
-                    Chưa có thông tin chi tiết cho dịch vụ này.
-                </p>
+                <p class="empty-state">Chưa có thông tin chi tiết cho dịch vụ này.</p>
             </div>
         </div>
 
         <!-- Cột phải: CTA + thông tin nhanh -->
-        <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="flex-col gap-12">
             <div class="card">
                 <a sec:authorize="isAuthenticated()"
                    th:href="@{/applications/submit(serviceId=${service.id})}"
@@ -86,39 +83,32 @@
                    class="btn btn-p btn-full">
                     🔐 Đăng nhập để nộp hồ sơ
                 </a>
-                <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px">
-                    Nộp hồ sơ trực tuyến 24/7, không cần đến trực tiếp
-                </p>
+                <p class="cta-hint">Nộp hồ sơ trực tuyến 24/7, không cần đến trực tiếp</p>
             </div>
 
             <div class="card">
                 <div class="card-ttl">ℹ️ Thông tin nhanh</div>
-                <div style="display:flex;flex-direction:column;gap:10px">
-                    <div style="display:flex;justify-content:space-between;font-size:12.5px">
-                        <span style="color:var(--muted)">Lĩnh vực</span>
+                <div class="flex-col gap-8">
+                    <div class="info-row">
+                        <span class="text-muted">Lĩnh vực</span>
                         <span class="pill p-blue" th:text="${service.categoryName}">Lĩnh vực</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12.5px">
-                        <span style="color:var(--muted)">Thời gian XL</span>
+                    <div class="info-row">
+                        <span class="text-muted">Thời gian XL</span>
                         <strong th:text="${service.processingTimeDays} + ' ngày'">5 ngày</strong>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12.5px">
-                        <span style="color:var(--muted)">Lệ phí</span>
-                        <strong th:text="${service.fee.signum() == 0 ? 'Miễn phí' : #numbers.formatInteger(service.fee, 0, 'COMMA') + ' VNĐ'}">
-                            Miễn phí
-                        </strong>
+                    <div class="info-row">
+                        <span class="text-muted">Lệ phí</span>
+                        <strong th:text="${T(com.psms.util.MoneyUtils).formatFee(service.fee)}"></strong>
                     </div>
-                    <div style="border-top:1px solid var(--border);padding-top:10px">
-                        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">CƠ QUAN TIẾP NHẬN</div>
-                        <div style="font-size:12.5px;font-weight:600" th:text="${service.departmentName}">Phòng ban</div>
+                    <div class="divider-t">
+                        <div class="detail-lbl">CƠ QUAN TIẾP NHẬN</div>
+                        <div class="font-semibold" th:text="${service.departmentName}">Phòng ban</div>
                     </div>
                 </div>
             </div>
 
-            <a th:href="@{/services}"
-               style="text-align:center;font-size:12.5px;color:var(--info);display:block;padding:8px">
-                ← Quay lại danh sách dịch vụ
-            </a>
+            <a th:href="@{/services}" class="back-link">← Quay lại danh sách dịch vụ</a>
         </div>
     </div>
 

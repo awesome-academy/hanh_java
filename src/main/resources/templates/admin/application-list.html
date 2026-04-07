@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout('Quản lý hồ sơ', ~{:: main}, 'applications', 'Quản lý hồ sơ')}"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="vi">
+<head></head>
+<body>
+<main>
+
+    <div class="pg-hd">
+        <div>
+            <h1>Quản lý hồ sơ</h1>
+            <p>Tiếp nhận, xử lý và cập nhật trạng thái hồ sơ công dân</p>
+        </div>
+    </div>
+
+    <!-- ── Filter bar ─────────────────────────────────────────────────── -->
+    <form class="fbar" method="get" th:action="@{/admin/applications}">
+        <select class="fi-s" name="status">
+            <option value="" th:selected="${status == null}">Tất cả trạng thái</option>
+            <option th:each="s : ${allStatuses}"
+                    th:value="${s.name()}"
+                    th:text="${s.label}"
+                    th:selected="${s == status}">
+            </option>
+        </select>
+
+        <select class="fi-s" name="serviceTypeId">
+            <option value="" th:selected="${serviceTypeId == null}">Tất cả dịch vụ</option>
+            <option th:each="st : ${serviceTypes}"
+                    th:value="${st.id}"
+                    th:text="${st.name}"
+                    th:selected="${st.id == serviceTypeId}">
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-p btn-sm">Lọc</button>
+        <a th:href="@{/admin/applications}" class="btn btn-o btn-sm"
+           th:if="${status != null or serviceTypeId != null}">
+            Xoá filter
+        </a>
+    </form>
+
+    <!-- ── Applications table ─────────────────────────────────────────── -->
+    <div class="card">
+
+        <!-- Summary -->
+        <div class="card-hd" th:if="${applications.totalElements > 0}">
+            <span class="text-muted"
+                  th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${applications.totalElements} + ' hồ sơ'">
+            </span>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${applications.isEmpty()}" class="empty-box">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">Không có hồ sơ nào phù hợp</div>
+        </div>
+
+        <table class="tbl" th:unless="${applications.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Mã hồ sơ</th>
+                    <th>Công dân</th>
+                    <th>Dịch vụ</th>
+                    <th>Ngày nộp</th>
+                    <th>Hạn XL</th>
+                    <th>Cán bộ XL</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="app : ${applications.content}">
+                    <td>
+                        <a class="lnk" th:href="@{/admin/applications/{id}(id=${app.id})}"
+                           th:text="${app.applicationCode}">HS-...</a>
+                    </td>
+                    <td th:text="${app.citizenFullName}">Công dân</td>
+                    <td th:text="${app.serviceTypeName}">Dịch vụ</td>
+                    <td th:text="${app.submittedAt != null ? #temporals.format(app.submittedAt,'dd/MM/yyyy') : '—'}">01/01</td>
+                    <td th:text="${app.processingDeadline != null ? #temporals.format(app.processingDeadline,'dd/MM/yyyy') : '—'}"
+                        th:classappend="${app.overdue} ? 'text-danger font-semibold' : ''">
+                    </td>
+                    <td th:text="${app.assignedStaffName != null ? app.assignedStaffName : '— Chưa phân công'}">
+                    </td>
+                    <td>
+                        <span class="pill" th:classappend="${app.statusBadgeClass}"
+                              th:text="${app.statusLabel}">Trạng thái</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/applications/{id}(id=${app.id})}" class="bsm bv">Xem</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Pagination ──────────────────────────────────────────────────── -->
+    <div class="pager" th:if="${applications.totalPages > 1}">
+        <div class="pg-info"
+             th:text="'Trang ' + (${applications.number + 1}) + ' / ' + ${applications.totalPages}">
+        </div>
+        <div class="pg-btns">
+            <span class="pg on" th:if="${!applications.hasPrevious()}">← Trước</span>
+            <a class="pg" th:unless="${!applications.hasPrevious()}"
+               th:href="@{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number - 1})}">
+                ← Trước
+            </a>
+            <th:block th:each="i : ${#numbers.sequence(pageStart, pageEnd)}">
+                <a class="pg"
+                   th:classappend="${i == applications.number} ? ' on'"
+                   th:href="@{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${i})}"
+                   th:text="${i + 1}">
+                </a>
+            </th:block>
+            <span class="pg on" th:if="${!applications.hasNext()}">Tiếp →</span>
+            <a class="pg" th:unless="${!applications.hasNext()}"
+               th:href="@{/admin/applications(status=${status},serviceTypeId=${serviceTypeId},page=${applications.number + 1})}">
+                Tiếp →
+            </a>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
+

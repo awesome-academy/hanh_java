@@ -1,12 +1,15 @@
 package com.psms.util;
 
+import com.psms.entity.Application;
 import com.psms.repository.ApplicationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,12 +75,10 @@ public class ApplicationCodeGenerator {
     private void initializeSequence(LocalDate date) {
         String prefix = buildPrefix(date);
 
-        // Truy vấn DB: tìm mã hồ sơ có prefix ngày hôm nay, lấy mã lớn nhất (DESC LIMIT 1)
-        // Dùng Optional.map để xử lý trường hợp chưa có mã nào trong ngày → trả về 0
-        int lastSequence = applicationRepository
-                .findLatestByCodePrefix(prefix)
-                .map(existing -> extractSequence(existing.getApplicationCode(), prefix))
-                .orElse(0); // Chưa có mã nào trong ngày → bắt đầu từ sequence 1
+        // Truy vấn DB: tìm mã hồ sơ có prefix ngày hôm nay lớn nhất (theo thứ tự giảm dần) → lấy sequence cuối cùng đã dùng.
+        List<Application> latestList = applicationRepository
+                .findLatestByApplicationCodePrefix(prefix, Pageable.ofSize(1));
+        int lastSequence = latestList.isEmpty() ? 0 : extractSequence(latestList.getFirst().getApplicationCode(), prefix);
 
         // Cập nhật cache — sau bước này không cần truy vấn DB nữa cho đến ngày hôm sau
         cachedDate = date;
@@ -112,4 +113,3 @@ public class ApplicationCodeGenerator {
         return Integer.parseInt(matcher.group(2));
     }
 }
-
