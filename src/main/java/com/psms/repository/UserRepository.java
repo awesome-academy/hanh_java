@@ -15,5 +15,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @EntityGraph(attributePaths = "roles")
     Optional<User> findWithRolesByEmail(String email);
+
+    /**
+     * Tìm user kèm roles theo ID — dùng khi cần đọc / cập nhật roles.
+     * {@code @EntityGraph} eager-fetch roles trong 1 query, tránh N+1.
+     */
+    @EntityGraph(attributePaths = "roles")
+    Optional<User> findWithRolesById(Long id);
 }
 

@@ -14,6 +14,8 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
 
     Optional<Staff> findByStaffCode(String staffCode);
 
+    boolean existsByStaffCode(String staffCode);
+
     /**
      * Load danh sach can bo theo phong ban + available,
      * eager-fetch user de Thymeleaf co the render s.user.fullName
@@ -21,5 +23,12 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
      */
     @EntityGraph(attributePaths = "user")
     List<Staff> findAllByDepartmentIdAndIsAvailableTrue(Long departmentId);
+
+    /**
+     * Tìm Staff kèm Department trong 1 query — dùng trong AdminUserService.mapToResponse()
+     * để tránh lazy-load Department riêng (giảm số query khi render user list).
+     */
+    @EntityGraph(attributePaths = "department")
+    Optional<Staff> findWithDepartmentByUserId(Long userId);
 }
 

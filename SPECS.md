@@ -64,6 +64,14 @@ Hệ thống hướng đến việc số hoá toàn bộ quy trình hành chính
 | `MANAGER` | Quản lý phòng ban | Cổng admin — phê duyệt, chuyển tiếp, trả hồ sơ; xem tất cả hồ sơ trong phòng ban |
 | `SUPER_ADMIN` | Quản trị viên hệ thống | Toàn quyền — CRUD user, service, department, staff; xem logs; purge logs |
 
+> **🔒 Separation of Duties (Bất biến quan trọng):**
+> `CITIZEN` **không được kết hợp** với bất kỳ admin role nào (`STAFF`, `MANAGER`, `SUPER_ADMIN`).
+> Vi phạm sẽ bị từ chối ở cả backend (`AdminUserService`) lẫn UI (warning + block submit).
+>
+> **Lý do:** Nếu một user vừa là CITIZEN vừa là STAFF/MANAGER, họ có thể tự nộp hồ sơ
+> rồi tự xử lý/approve — vi phạm nguyên tắc kiểm soát nội bộ cơ bản của hành chính công.
+> **Giải pháp:** Tạo 2 tài khoản riêng biệt với email khác nhau.
+
 ### 2.2 Bảng quyền chi tiết
 
 | Chức năng | CITIZEN | STAFF | MANAGER | SUPER_ADMIN |
@@ -376,13 +384,20 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 **Khoá / Mở khoá tài khoản**
 - Xác nhận qua confirm dialog trước khi thực hiện
 - Tài khoản bị khoá không thể đăng nhập
+- **[Self-protection]** SUPER_ADMIN không thể khóa chính mình → API trả 400, UI ẩn nút Khóa
 
 **Xoá tài khoản**
 - Soft delete: `is_active = false`
 - Không xoá cứng để giữ lịch sử hồ sơ
+- **[Self-protection]** SUPER_ADMIN không thể xóa chính mình → API trả 400, UI ẩn nút Xóa
 
 **Gán / thu hồi role**
-- Một user có thể có nhiều role
+- Một user có thể có nhiều role trong cùng một nhóm (ví dụ: STAFF + MANAGER)
+- **Không được** kết hợp `CITIZEN` với bất kỳ admin role nào → xem mục 2.1
+- **[Self-protection]** SUPER_ADMIN không thể thay đổi roles của chính mình → API trả 400, UI ẩn nút Roles
+
+> **Nguyên tắc Self-protection:** SUPER_ADMIN không thể thực hiện các thao tác khóa/xóa/đổi role lên chính tài khoản đang đăng nhập.
+> Kiểm tra ở tầng service thông qua `SecurityContextHolder` — áp dụng cho cả REST API lẫn MVC web.
 
 ---
 
