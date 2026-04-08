@@ -16,7 +16,7 @@
     <!-- ── Avatar + info header ─────────────────────────────────────── -->
     <div class="card card-lg mb-16">
         <div class="prof-hd">
-            <div class="prof-ava" th:text="${#strings.substring(profile.fullName, 0, 2)}">NV</div>
+            <div class="prof-ava" th:text="${profile.initials}">NV</div>
             <div>
                 <h2 th:text="${profile.fullName}"></h2>
                 <p th:text="'Tham gia ' + ${#temporals.format(profile.joinedAt, 'dd/MM/yyyy')}"></p>

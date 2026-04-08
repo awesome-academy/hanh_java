@@ -88,7 +88,6 @@ function updateNotifBadge() {
     .then(res => res.ok ? res.json() : null)
     .then(data => {
         if (!data) return;
-        console.log('Unread notifications:', data.count);
         const count = data.count ?? 0;
         if (count > 0) {
             badge.textContent = count > 99 ? '99+' : count;

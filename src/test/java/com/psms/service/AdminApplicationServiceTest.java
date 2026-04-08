@@ -106,6 +106,7 @@ class AdminApplicationServiceTest {
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.RECEIVED);
             assertThat(app.getReceivedAt()).isNotNull();
             verify(historyRepository).save(any(ApplicationStatusHistory.class));
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.RECEIVED, null);
         }
 
         @Test
@@ -122,6 +123,7 @@ class AdminApplicationServiceTest {
             adminApplicationService.updateStatus(10L, req, actingUser());
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.PROCESSING);
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.PROCESSING, null);
         }
 
         @Test
@@ -139,6 +141,7 @@ class AdminApplicationServiceTest {
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.APPROVED);
             assertThat(app.getCompletedAt()).isNotNull();
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.APPROVED, null);
         }
 
         @Test
@@ -159,6 +162,7 @@ class AdminApplicationServiceTest {
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.REJECTED);
             assertThat(app.getRejectionReason()).isEqualTo("Ho so thieu giay to");
             assertThat(app.getCompletedAt()).isNotNull();
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.REJECTED, "Ho so thieu giay to");
         }
 
         @Test
@@ -177,6 +181,7 @@ class AdminApplicationServiceTest {
             adminApplicationService.updateStatus(10L, req, actingUser());
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.ADDITIONAL_REQUIRED);
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.ADDITIONAL_REQUIRED, "Can bo sung CCCD mat sau");
         }
     }
 

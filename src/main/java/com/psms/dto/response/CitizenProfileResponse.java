@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class CitizenProfileResponse {
 
     private Long citizenId;
@@ -25,5 +26,17 @@ public class CitizenProfileResponse {
     private String ward;
     private String province;
     private LocalDateTime joinedAt;
+
+    public String getInitials() {
+        if (fullName == null || fullName.trim().isEmpty()) return "??";
+        String[] words = fullName.trim().split("\\s+");
+        if (words.length == 1) {
+            String w = words[0];
+            return w.length() >= 2 ? w.substring(0, 2).toUpperCase() : (w + "?").toUpperCase();
+        }
+        String first = words[0].substring(0, 1);
+        String second = words[1].substring(0, 1);
+        return (first + second).toUpperCase();
+    }
 }
 

@@ -241,6 +241,36 @@ class ApplicationServiceTest {
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Dịch vụ");
         }
+
+        @Test
+        @DisplayName("submit thành công → gọi notificationService.notifyApplicationSubmitted")
+        void submit_success_callsNotifyApplicationSubmitted() {
+            // Given
+            SubmitApplicationRequest request = SubmitApplicationRequest.builder()
+                    .serviceTypeId(10L)
+                    .notes("Ghi chú test")
+                    .build();
+
+            given(citizenRepository.findByUserId(1L)).willReturn(Optional.of(citizen));
+            given(serviceTypeRepository.findByIdAndIsActiveTrue(10L)).willReturn(Optional.of(serviceType));
+            given(codeGenerator.generate()).willReturn(VALID_CODE);
+
+            Application savedApp = Application.builder()
+                    .applicationCode(VALID_CODE)
+                    .citizen(citizen)
+                    .serviceType(serviceType)
+                    .status(ApplicationStatus.SUBMITTED)
+                    .notes("Ghi chú test")
+                    .build();
+            given(applicationRepository.save(any(Application.class))).willReturn(savedApp);
+            given(applicationMapper.toResponse(savedApp)).willReturn(ApplicationResponse.builder().build());
+
+            // When
+            applicationService.submit(1L, request, null);
+
+            // Then
+            verify(notificationService, times(1)).notifyApplicationSubmitted(savedApp);
+        }
     }
 
     // ─── #06-09: Ownership check ──────────────────────────────────────

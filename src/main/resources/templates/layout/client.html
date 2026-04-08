@@ -50,8 +50,9 @@
                   Luôn render badge trong DOM, nhưng ẩn đi nếu không có thông báo nào chưa đọc.
                 -->
                 <span class="notif-dot" id="notif-badge"
-                      th:style="${unreadCount == null or unreadCount == 0} ? 'display:none'"
-                      th:text="${unreadCount != null and unreadCount > 0} ? ${unreadCount} : ''"></span>
+                      th:if="${unreadCount != null and unreadCount > 0}"
+                      th:text="${unreadCount}"></span>
+
             </button>
             
             <div class="ava" sec:authorize="isAuthenticated()"

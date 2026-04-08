@@ -83,17 +83,4 @@ public class ClientNotificationController {
         notificationService.markAllAsRead(user.getId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
-
-    @Operation(
-        summary = "Cập nhật cài đặt email thông báo",
-        description = "enabled=true: nhận email; enabled=false: tắt email. Lưu vào users.email_notif_enabled"
-    )
-    @PutMapping("/settings")
-    public ResponseEntity<ApiResponse<Void>> updateSettings(
-            @AuthenticationPrincipal User user,
-            @RequestParam boolean emailEnabled) {
-        // Delegate sang ProfileService vì email_notif_enabled nằm trong User entity
-        return ResponseEntity.ok(ApiResponse.success(null));
-    }
 }
-

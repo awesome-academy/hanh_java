@@ -11,8 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import jakarta.validation.Valid;
 
 /**
  * MVC controller — render Thymeleaf pages cho Profile.
@@ -47,8 +50,19 @@ public class ProfileViewController {
     @PostMapping("/profile")
     public String updateProfile(
         @AuthenticationPrincipal User user,
-        @ModelAttribute UpdateProfileRequest request,
+        @Valid @ModelAttribute("updateReq") UpdateProfileRequest request,
+        BindingResult bindingResult,
+        Model model,
         RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            CitizenProfileResponse profile = profileService.getProfile(user.getId());
+            model.addAttribute("profile", profile);
+            model.addAttribute("changePwReq", new ChangePasswordRequest());
+            boolean emailNotifEnabled = profileService.getEmailNotifEnabled(user.getId());
+            model.addAttribute("emailNotifEnabled", emailNotifEnabled);
+            model.addAttribute("activeNav", "profile");
+            return "client/profile";
+        }
         try {
             profileService.updateProfile(user.getId(), request);
             ra.addFlashAttribute("success", "Cập nhật hồ sơ thành công!");
@@ -63,8 +77,19 @@ public class ProfileViewController {
     @PostMapping("/profile/change-password")
     public String changePassword(
         @AuthenticationPrincipal User user,
-        @ModelAttribute ChangePasswordRequest request,
+        @Valid @ModelAttribute("changePwReq") ChangePasswordRequest request,
+        BindingResult bindingResult,
+        Model model,
         RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            CitizenProfileResponse profile = profileService.getProfile(user.getId());
+            model.addAttribute("profile", profile);
+            model.addAttribute("updateReq", toUpdateRequest(profile));
+            boolean emailNotifEnabled = profileService.getEmailNotifEnabled(user.getId());
+            model.addAttribute("emailNotifEnabled", emailNotifEnabled);
+            model.addAttribute("activeNav", "profile");
+            return "client/profile";
+        }
         try {
             profileService.changePassword(user.getId(), request);
             ra.addFlashAttribute("success", "Đổi mật khẩu thành công!");
@@ -102,4 +127,3 @@ public class ProfileViewController {
             .build();
     }
 }
-

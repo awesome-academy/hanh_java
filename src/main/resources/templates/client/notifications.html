@@ -51,7 +51,11 @@
         <div class="notif-list">
             <div th:each="notif : ${notifications.content}"
                  class="notif-item"
-                 th:classappend="${!notif.isRead} ? ' ur'">
+                 th:classappend="${!notif.isRead} ? ' ur'"
+                 role="button"
+                 tabindex="0"
+                 th:onclick="|document.getElementById('nf-${notif.id}').submit()|"
+                 th:onkeydown="|notifKeydownHandler(event, '${notif.id}')|">
 
                 <!-- Icon avatar theo type — bgColor từ NotificationResponse -->
                 <div class="notif-ava"
@@ -115,6 +119,12 @@
             if (form) form.submit();
         });
     });
+    function notifKeydownHandler(event, notifId) {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+            event.preventDefault();
+            document.getElementById('nf-' + notifId).submit();
+        }
+    }
     </script>
 
 </main>
