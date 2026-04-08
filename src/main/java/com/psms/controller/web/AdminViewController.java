@@ -12,18 +12,22 @@ import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.service.AdminApplicationService;
+import com.psms.service.DocumentService;
 import com.psms.service.ServiceCatalogService;
 import com.psms.util.ApplicationStateMachine;
 import com.psms.util.PaginationInfo;
 import com.psms.util.PaginationUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
@@ -37,6 +41,7 @@ import java.util.Set;
  * PRG pattern: POST → redirect GET để tránh double-submit.
  * Controller chỉ phụ thuộc vào Service, không inject Repository trực tiếp.
  */
+@Slf4j
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -45,6 +50,7 @@ public class AdminViewController {
 
     private final AdminApplicationService adminApplicationService;
     private final ServiceCatalogService serviceCatalogService;
+    private final DocumentService documentService;
 
     private static final String DEFAULT_PAGE_SIZE_STR = "20";
 
@@ -170,9 +176,61 @@ public class AdminViewController {
             AssignStaffRequest request = AssignStaffRequest.builder().staffId(staffId).build();
             adminApplicationService.assignStaff(id, request);
             ra.addFlashAttribute("success", "Phân công cán bộ thành công");
-        } catch (BusinessException ex) {
+        } catch (BusinessException | ResourceNotFoundException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
-        } catch (ResourceNotFoundException ex) {
+        }
+        return "redirect:/admin/applications/" + id;
+    }
+
+    // ─── POST /admin/applications/{id}/documents ──────────────────────────────
+
+    /**
+     * Admin upload tài liệu phản hồi cho hồ sơ.
+     *
+     * <p>Dùng /admin/** (MVC chain, session-based) thay vì /api/admin/** (REST chain, JWT-only)
+     * để browser có thể submit multipart form trực tiếp.
+     */
+    @PostMapping(value = "/applications/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String uploadResponseDocuments(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestParam("files") List<MultipartFile> files,
+            RedirectAttributes ra) {
+
+        try {
+            documentService.uploadResponseDocuments(id, files, user);
+            ra.addFlashAttribute("success", "Upload tài liệu phản hồi thành công");
+        } catch (BusinessException | ResourceNotFoundException ex) {
+            log.warn("Upload response docs failed — adminId={}, appId={}: {}", user.getId(), id, ex.getMessage());
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/admin/applications/" + id;
+    }
+
+    // ─── POST /admin/applications/{id}/documents/{docId}/delete ──────────────
+
+    /**
+     * Admin xóa tài liệu (soft delete).
+     *
+     * <p>Business rules:
+     * <ul>
+     *   <li>STAFF — chỉ xóa tài liệu phản hồi (is_response=true)</li>
+     *   <li>MANAGER / SUPER_ADMIN — xóa bất kỳ tài liệu nào</li>
+     *   <li>Xóa mềm: is_deleted=true, file vật lý vẫn giữ</li>
+     * </ul>
+     */
+    @PostMapping("/applications/{id}/documents/{docId}/delete")
+    public String deleteDocument(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @PathVariable Long docId,
+            RedirectAttributes ra) {
+
+        try {
+            documentService.deleteDocument(id, docId, user);
+            ra.addFlashAttribute("success", "Đã xóa tài liệu thành công.");
+        } catch (BusinessException | ResourceNotFoundException ex) {
+            log.warn("Delete document failed — adminId={}, appId={}, docId={}: {}", user.getId(), id, docId, ex.getMessage());
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/admin/applications/" + id;

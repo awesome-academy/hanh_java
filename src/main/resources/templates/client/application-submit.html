@@ -18,7 +18,8 @@
         <div class="card card-xl">
             <h2 class="form-ttl">Thông tin hồ sơ</h2>
 
-            <form method="post" th:action="@{/applications/submit}" id="submit-form">
+            <form method="post" th:action="@{/applications/submit}"
+                  enctype="multipart/form-data" id="submit-form">
                 <!-- CSRF token tự động inject bởi Spring Security -->
 
                 <!-- Chọn dịch vụ -->
@@ -42,6 +43,22 @@
                     <textarea name="notes" class="fi w-full"
                               style="min-height:100px;resize:vertical"
                               placeholder="Thông tin bổ sung hoặc yêu cầu đặc biệt..."></textarea>
+                </div>
+
+                <!-- Upload tài liệu -->
+                <div class="form-group mb-16">
+                    <label class="form-lbl">Tài liệu đính kèm (tuỳ chọn)</label>
+                    <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-hint">
+                            <strong>Nhấn để chọn file</strong> hoặc kéo thả vào đây<br>
+                            PDF, JPG, PNG, DOCX — tối đa 10 MB/file
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" name="files" multiple
+                           accept=".pdf,.jpg,.jpeg,.png,.docx"
+                           onchange="previewFiles(this, document.getElementById('filePreviewList'))">
+                    <ul class="file-preview-list" id="filePreviewList"></ul>
                 </div>
 
                 <!-- Lưu ý -->

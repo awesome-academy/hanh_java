@@ -457,6 +457,7 @@ CREATE TABLE IF NOT EXISTS `applications` (
 --    idx_appdoc_app_valid    [+] → Filter tài liệu theo trạng thái validate:
 --                                   WHERE application_id=? AND validation_status='PENDING'
 --                                   Cán bộ xem danh sách file cần kiểm tra
+--    idx_appdoc_deleted      [+] → Soft-delete filter: thêm AND is_deleted=0 vào mọi query
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `application_documents` (
   `id`                BIGINT       UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -470,6 +471,7 @@ CREATE TABLE IF NOT EXISTS `application_documents` (
   `uploaded_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `is_response`       TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '1 = tài liệu phản hồi từ cán bộ',
   `validation_status` ENUM('PENDING','VALID','INVALID') NOT NULL DEFAULT 'PENDING',
+  `is_deleted`        TINYINT(1)   NOT NULL DEFAULT 0 COMMENT 'Soft delete — giữ file vật lý cho audit trail',
   PRIMARY KEY (`id`),
   KEY `idx_appdoc_app`
     (`application_id`)

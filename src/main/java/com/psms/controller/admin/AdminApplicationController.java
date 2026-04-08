@@ -7,6 +7,7 @@ import com.psms.dto.response.ApiResponse;
 import com.psms.entity.User;
 import com.psms.enums.ApplicationStatus;
 import com.psms.service.AdminApplicationService;
+import com.psms.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,12 +15,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * REST API quan ly ho so danh cho admin.
@@ -36,6 +40,7 @@ import java.time.LocalDateTime;
 public class AdminApplicationController {
 
     private final AdminApplicationService adminApplicationService;
+    private final DocumentService documentService;
 
     private static final String DEFAULT_PAGE_SIZE_STR = "20";
 
@@ -121,6 +126,31 @@ public class AdminApplicationController {
 
         AdminApplicationResponse response = adminApplicationService.assignStaff(id, request);
         return ResponseEntity.ok(ApiResponse.success("Phan cong thanh cong", response));
+    }
+
+    // ─── POST /api/admin/applications/{id}/documents ──────────────────
+
+    @Operation(
+        summary = "Admin upload tài liệu phản hồi",
+        description = """
+            Cán bộ upload tài liệu phản hồi cho hồ sơ (is_response = true).
+
+            **Business rules:**
+            - Không giới hạn trạng thái hồ sơ
+            - File: chỉ PDF/JPG/JPEG/PNG/DOCX, tối đa 10 MB/file
+            - Tài liệu sẽ hiển thị riêng biệt với tài liệu citizen nộp
+
+            **Output:** 200 OK khi thành công
+            """
+    )
+    @PostMapping(value = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> uploadResponseDocuments(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestParam("files") List<MultipartFile> files) {
+
+        documentService.uploadResponseDocuments(id, files, user);
+        return ResponseEntity.ok(ApiResponse.success("Upload tài liệu phản hồi thành công", null));
     }
 }
 

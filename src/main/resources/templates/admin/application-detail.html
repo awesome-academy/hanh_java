@@ -149,37 +149,112 @@
 
         </div>
 
-        <!-- ── Cột phải: Timeline ─────────────────────────────────────── -->
-        <div class="card">
-            <div class="card-hd"><strong>📍 Lịch sử trạng thái</strong></div>
-            <div class="tl-body">
+        <!-- ── Cột phải: Timeline + Tài liệu ───────────────────────────── -->
+        <div>
 
-                <div th:if="${app.statusHistory == null or app.statusHistory.isEmpty()}"
-                     class="empty-state">
-                    Chưa có lịch sử
-                </div>
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-hd"><strong>📍 Lịch sử trạng thái</strong></div>
+                <div class="tl-body">
 
-                <div th:each="h, iter : ${app.statusHistory}" class="tl-item">
-                    <div class="tl-dot-wrap">
-                        <!-- th:style giữ nguyên vì background là dynamic value; dotColor tính sẵn ở backend -->
-                        <div class="tl-dot"
-                             th:style="'background:' + ${h.newStatusDotColor}">
-                        </div>
-                        <div class="tl-line" th:unless="${iter.last}"></div>
+                    <div th:if="${app.statusHistory == null or app.statusHistory.isEmpty()}"
+                         class="empty-state">
+                        Chưa có lịch sử
                     </div>
-                    <div class="tl-content">
-                        <div class="tl-ttl" th:text="${h.newStatus.label}">Trạng thái</div>
-                        <div class="tl-dt"
-                             th:text="${h.changedAt != null ? #temporals.format(h.changedAt,'dd/MM HH:mm') : ''}">
+
+                    <div th:each="h, iter : ${app.statusHistory}" class="tl-item">
+                        <div class="tl-dot-wrap">
+                            <div class="tl-dot"
+                                 th:style="'background:' + ${h.newStatusDotColor}">
+                            </div>
+                            <div class="tl-line" th:unless="${iter.last}"></div>
                         </div>
-                        <div class="tl-note" th:if="${h.notes}" th:text="${h.notes}"></div>
-                        <!-- .tl-note đã có color:var(--muted), không cần inline style -->
-                        <div class="tl-note"
-                             th:if="${h.changedByName}" th:text="'Bởi: ' + ${h.changedByName}">
+                        <div class="tl-content">
+                            <div class="tl-ttl" th:text="${h.newStatus.label}">Trạng thái</div>
+                            <div class="tl-dt"
+                                 th:text="${h.changedAt != null ? #temporals.format(h.changedAt,'dd/MM HH:mm') : ''}">
+                            </div>
+                            <div class="tl-note" th:if="${h.notes}" th:text="${h.notes}"></div>
+                            <div class="tl-note"
+                                 th:if="${h.changedByName}" th:text="'Bởi: ' + ${h.changedByName}">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Tài liệu citizen nộp -->
+            <div class="card mt-8">
+                <div class="card-hd"><strong>📎 Tài liệu hồ sơ</strong></div>
+
+                <div th:if="${#lists.isEmpty(app.citizenDocuments)}" class="empty-state">
+                    Chưa có tài liệu nào
+                </div>
+
+                <div th:each="doc : ${app.citizenDocuments}" class="doc-item">
+                    <div class="doc-icon">
+                        <span th:text="${doc.fileType == 'pdf' ? '📄' : (doc.fileType == 'docx' ? '📝' : '🖼️')}">📄</span>
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-name" th:text="${doc.fileName}">file.pdf</div>
+                        <div class="doc-meta" th:text="${doc.fileSizeDisplay}"></div>
+                    </div>
+                    <div class="doc-actions">
+                        <span class="doc-badge"
+                              th:classappend="${doc.validationStatus.name().toLowerCase()}"
+                              th:text="${doc.validationLabel}">Đang KT</span>
+                        <a th:href="${doc.downloadUrl}" target="_blank" class="btn-ico" title="Tải xuống">↓</a>
+                        <!-- MANAGER/SUPER_ADMIN xóa được bất kỳ doc nào -->
+                        <form sec:authorize="hasAnyRole('MANAGER','SUPER_ADMIN')"
+                              method="post"
+                              th:action="@{/admin/applications/{id}/documents/{docId}/delete(id=${app.id},docId=${doc.id})}"
+                              onsubmit="return confirm('Xóa file này khỏi hồ sơ?')">
+                            <button type="submit" class="doc-del" title="Xóa tài liệu">🗑</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tài liệu phản hồi cán bộ đã gửi -->
+            <div class="card mt-8" th:if="${!#lists.isEmpty(app.staffDocuments)}">
+                <div class="card-hd"><strong>📋 Tài liệu phản hồi đã gửi</strong></div>
+                <div th:each="doc : ${app.staffDocuments}" class="doc-item">
+                    <div class="doc-icon">📋</div>
+                    <div class="doc-info">
+                        <div class="doc-name" th:text="${doc.fileName}">response.pdf</div>
+                        <div class="doc-meta" th:text="${doc.fileSizeDisplay}"></div>
+                    </div>
+                    <div class="doc-actions">
+                        <a th:href="${doc.downloadUrl}" target="_blank" class="btn-ico" title="Tải xuống">↓</a>
+                        <!-- STAFF/MANAGER/SUPER_ADMIN đều xóa được response doc -->
+                        <form method="post"
+                              th:action="@{/admin/applications/{id}/documents/{docId}/delete(id=${app.id},docId=${doc.id})}"
+                              onsubmit="return confirm('Xóa tài liệu phản hồi này?')">
+                            <button type="submit" class="doc-del" title="Xóa tài liệu phản hồi">🗑</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload phản hồi (admin) -->
+            <div class="card mt-8">
+                <div class="card-hd"><strong>📤 Upload tài liệu phản hồi</strong></div>
+                <form th:action="@{/admin/applications/{id}/documents(id=${app.id})}"
+                      method="post" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <div class="file-upload-area" onclick="document.getElementById('adminFileInput').click()">
+                            <div class="upload-icon">📎</div>
+                            <div class="upload-hint">
+                                <strong>Nhấn để chọn file</strong> — PDF, JPG, PNG, DOCX, tối đa 10 MB
+                            </div>
+                        </div>
+                        <input type="file" id="adminFileInput" name="files" multiple
+                               accept=".pdf,.jpg,.jpeg,.png,.docx">
+                        <button type="submit" class="btn btn-p btn-sm w-fit mt-8">Gửi tài liệu</button>
+                    </div>
+                </form>
+            </div>
+
         </div>
 
     </div>

@@ -299,28 +299,37 @@
 > **Base:** `feature/admin-dashboard-application`
 
 **Schema**
-- [ ] `#08-01` Entity `ApplicationDocument` + Enum `ValidationStatus` + Repository + Mapper
-- [ ] `#08-02` Verify entity mapping khớp với bảng `application_documents` trong `psms_schema.sql`
+- [x] `#08-01` Entity `ApplicationDocument` + Enum `ValidationStatus` + Repository + Mapper
+- [x] `#08-02` Verify entity mapping khớp với bảng `application_documents` trong `psms_schema.sql`
 
 **Backend**
-- [ ] `#08-04` `FileStorageService` interface + `LocalFileStorageService`
-  - Validate: `.pdf/.jpg/.jpeg/.png/.docx`, max 10MB, sanitize filename
-- [ ] `#08-05` `GET /api/files/{filename}` — serve file (kiểm tra quyền)
-- [ ] `#08-06` Update `POST /api/client/applications` — xử lý `List<MultipartFile>`
-- [ ] `#08-07` `POST /api/client/applications/{id}/documents` — bổ sung (chỉ khi ADDITIONAL_REQUIRED)
-- [ ] `#08-08` `POST /api/admin/applications/{id}/documents` — phản hồi (`is_response=true`)
+- [x] `#08-04` `FileStorageService` interface + `LocalFileStorageService`
+  - Validate: `.pdf/.jpg/.jpeg/.png/.docx`, max 10MB, sanitize filename, path traversal protection
+- [x] `#08-05` `GET /api/files/**` — serve file (kiểm tra quyền citizen/staff)
+- [x] `#08-06` Update `POST /api/client/applications` — xử lý `List<MultipartFile>` (multipart/form-data)
+- [x] `#08-07` `POST /api/client/applications/{id}/documents` — bổ sung (chỉ khi ADDITIONAL_REQUIRED, auto-transition → SUBMITTED + ghi history)
+- [x] `#08-08` `POST /api/admin/applications/{id}/documents` — phản hồi (`is_response=true`)
 
 **UI**
-- [ ] `#08-09` CSS: thêm `.file-upload-area`, `.doc-item`, `.doc-badge` vào `components.css`
-- [ ] `#08-10` Update `client/application-submit.html` — thêm file input + JS preview
-- [ ] `#08-11` `js/client.js` — `previewFiles()`: hiển thị tên + size trước khi submit
-- [ ] `#08-12` Update `client/application-detail.html` — danh sách tài liệu + download link + form upload bổ sung
-- [ ] `#08-13` Update `admin/application-detail.html` — xem tài liệu + validate (VALID/INVALID) + upload phản hồi
+- [x] `#08-09` CSS: thêm `.file-upload-area`, `.doc-item`, `.doc-badge`, `.file-preview-list` vào `components.css`
+- [x] `#08-10` Update `client/application-submit.html` — thêm file input + JS preview
+- [x] `#08-11` `js/client.js` — `previewFiles()`, `removeFilePreview()`: hiển thị tên + size + xoá trước khi submit
+- [x] `#08-12` Update `client/application-detail.html` — danh sách tài liệu + download link + form upload bổ sung (chỉ khi ADDITIONAL_REQUIRED)
+- [x] `#08-13` Update `admin/application-detail.html` — xem tài liệu + upload phản hồi
 
 **Test**
-- [ ] `#08-14` Upload PDF 5MB → OK; upload .exe → 400; file > 10MB → 400
-- [ ] `#08-15` Upload khi status sai → 403/400 có message
-- [ ] `#08-16` Download → đúng file, đúng quyền
+- [x] `#08-14` Upload PDF 5MB → OK; upload .exe → 400; file > 10MB → 400 (`DocumentServiceTest`)
+- [x] `#08-15` Upload khi status sai → BusinessException; IDOR → ResourceNotFoundException (`DocumentServiceTest`)
+- [x] `#08-16` isResponse flag được lưu đúng khi admin upload (`DocumentServiceTest`)
+
+**Delete file (soft delete) — thêm vào #08**
+- [x] `#08-17` Schema: thêm `is_deleted TINYINT(1) NOT NULL DEFAULT 0` vào `application_documents`; Repository: cập nhật tất cả query method thêm `AndIsDeletedFalse` filter
+- [x] `#08-18` `DocumentService.deleteDocument(appId, docId, user)` — soft delete + permission matrix: CITIZEN (chỉ khi SUBMITTED, chỉ doc của mình), STAFF (chỉ response doc), MANAGER/SUPER_ADMIN (full access); IDOR check (doc phải thuộc đúng appId)
+- [x] `#08-19` MVC endpoint `POST /applications/{id}/documents/{docId}/delete` (citizen) — PRG pattern
+- [x] `#08-20` MVC endpoint `POST /admin/applications/{id}/documents/{docId}/delete` (admin) — PRG pattern
+- [x] `#08-21` UI: nút "🗑 Xóa" + confirm dialog; citizen template chỉ hiện khi `status=SUBMITTED`; admin citizen-doc chỉ hiện với MANAGER/SUPER_ADMIN; response doc hiện với mọi admin role
+- [x] `#08-22` SPECS 4.6 + 5.3: thêm delete rules; `DELETE_DOC` vào ActivityLog action list
+- [x] `#08-23` Tests: deleteDocument permission matrix — 8 test cases (citizen success, citizen wrong status, citizen delete response doc, staff success, staff wrong doc type, manager full access, superadmin full access, IDOR protection)
 
 **Definition of Done:**
 ```

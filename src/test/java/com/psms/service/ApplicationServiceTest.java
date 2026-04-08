@@ -60,6 +60,7 @@ class ApplicationServiceTest {
     @Mock ServiceTypeRepository              serviceTypeRepository;
     @Mock ApplicationCodeGenerator           codeGenerator;
     @Mock ApplicationMapper                  applicationMapper;
+    @Mock DocumentService                    documentService;
 
     @InjectMocks
     ApplicationService applicationService;
@@ -125,7 +126,7 @@ class ApplicationServiceTest {
             given(applicationMapper.toResponse(savedApp)).willReturn(expectedResponse);
 
             // When
-            ApplicationResponse result = applicationService.submit(1L, request);
+            ApplicationResponse result = applicationService.submit(1L, request, null);
 
             // Then — mã HS đúng format HS-YYYYMMDD-NNNNN
             assertThat(result.getApplicationCode()).matches(CODE_PATTERN);
@@ -156,7 +157,7 @@ class ApplicationServiceTest {
             given(applicationMapper.toResponse(any())).willReturn(new ApplicationResponse());
 
             // When
-            applicationService.submit(1L, request);
+            applicationService.submit(1L, request, null);
 
             // Then — capture argument passed to save() và kiểm tra
             ArgumentCaptor<Application> captor = ArgumentCaptor.forClass(Application.class);
@@ -195,7 +196,7 @@ class ApplicationServiceTest {
             given(applicationMapper.toResponse(any())).willReturn(new ApplicationResponse());
 
             // When
-            applicationService.submit(1L, request);
+            applicationService.submit(1L, request, null);
 
             // Then — capture history và kiểm tra null → SUBMITTED
             ArgumentCaptor<ApplicationStatusHistory> captor =
@@ -217,7 +218,7 @@ class ApplicationServiceTest {
             // When / Then
             assertThatThrownBy(() ->
                     applicationService.submit(99L, SubmitApplicationRequest.builder()
-                            .serviceTypeId(10L).build()))
+                            .serviceTypeId(10L).build(), null))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("công dân");
         }
@@ -232,7 +233,7 @@ class ApplicationServiceTest {
             // When / Then
             assertThatThrownBy(() ->
                     applicationService.submit(1L, SubmitApplicationRequest.builder()
-                            .serviceTypeId(99L).build()))
+                            .serviceTypeId(99L).build(), null))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Dịch vụ");
         }

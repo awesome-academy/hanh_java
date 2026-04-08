@@ -7,12 +7,12 @@ import com.psms.entity.RefreshToken;
 import com.psms.entity.Role;
 import com.psms.entity.User;
 import com.psms.enums.RoleName;
-import com.psms.exception.BusinessException;
 import com.psms.repository.CitizenRepository;
 import com.psms.repository.RefreshTokenRepository;
 import com.psms.repository.RevokedAccessTokenRepository;
 import com.psms.repository.RoleRepository;
 import com.psms.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import com.psms.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
@@ -250,7 +250,7 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("#03-21b: Service — Reuse Detection: rotate token cũ lần 2 → BusinessException")
+    @DisplayName("#03-21b: Service — Reuse Detection: rotate token cũ lần 2 → AuthenticationCredentialsNotFoundException")
     void tokenRotation_service_reuseOldToken_throwsBusinessException() {
         // Tạo user trực tiếp qua repository (tránh HTTP layer để test service thuần túy)
         User user = buildTestUser("service-rotate@example.com");
@@ -266,10 +266,11 @@ class AuthControllerIntegrationTest {
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotEqualTo(originalValue);
 
-        // Rotate lần 2 với token cũ → Reuse Detection → BusinessException
-        assertThrows(BusinessException.class,
+        // Rotate lần 2 với token cũ → Reuse Detection → AuthenticationCredentialsNotFoundException
+        // (không phải BusinessException — service dùng Spring Security exception để trigger 401)
+        assertThrows(AuthenticationCredentialsNotFoundException.class,
                 () -> refreshTokenService.rotate(originalValue),
-                "Dùng lại refresh token cũ phải ném BusinessException");
+                "Dùng lại refresh token cũ phải ném AuthenticationCredentialsNotFoundException");
     }
 
     @Test
