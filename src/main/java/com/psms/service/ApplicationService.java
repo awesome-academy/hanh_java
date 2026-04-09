@@ -47,6 +47,7 @@ public class ApplicationService {
     private final ApplicationCodeGenerator codeGenerator;
     private final ApplicationMapper applicationMapper;
     private final DocumentService documentService;
+    private final NotificationService notificationService;
 
     // ─── Submit ───────────────────────────────────────────────────────
 
@@ -99,6 +100,9 @@ public class ApplicationService {
 
         //6. Lưu file đính kèm - nếu throw, transaction ở bước 5 sẽ rollback → không có Application nửa vời nếu file lỗi.
         documentService.saveDocuments(application, files, citizen.getUser(), false);
+
+        // 7. Tạo notification xác nhận nộp hồ sơ thành công
+        notificationService.notifyApplicationSubmitted(application);
 
         return applicationMapper.toResponse(application);
     }

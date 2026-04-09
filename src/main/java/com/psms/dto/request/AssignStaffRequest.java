@@ -13,6 +13,6 @@ import lombok.*;
 @Builder
 public class AssignStaffRequest {
 
-    @NotNull(message = "Cán bộ không được để trống")
+    @NotNull(message = "{validation.staff.required}")
     private Long staffId;
 }

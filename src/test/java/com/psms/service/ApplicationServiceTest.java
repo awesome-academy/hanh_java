@@ -17,6 +17,9 @@ import com.psms.repository.ApplicationStatusHistoryRepository;
 import com.psms.repository.CitizenRepository;
 import com.psms.repository.ServiceTypeRepository;
 import com.psms.util.ApplicationCodeGenerator;
+import com.psms.service.ApplicationService;
+import com.psms.service.DocumentService;
+import com.psms.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -61,6 +64,7 @@ class ApplicationServiceTest {
     @Mock ApplicationCodeGenerator           codeGenerator;
     @Mock ApplicationMapper                  applicationMapper;
     @Mock DocumentService                    documentService;
+    @Mock NotificationService                notificationService;
 
     @InjectMocks
     ApplicationService applicationService;
@@ -236,6 +240,36 @@ class ApplicationServiceTest {
                             .serviceTypeId(99L).build(), null))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Dịch vụ");
+        }
+
+        @Test
+        @DisplayName("submit thành công → gọi notificationService.notifyApplicationSubmitted")
+        void submit_success_callsNotifyApplicationSubmitted() {
+            // Given
+            SubmitApplicationRequest request = SubmitApplicationRequest.builder()
+                    .serviceTypeId(10L)
+                    .notes("Ghi chú test")
+                    .build();
+
+            given(citizenRepository.findByUserId(1L)).willReturn(Optional.of(citizen));
+            given(serviceTypeRepository.findByIdAndIsActiveTrue(10L)).willReturn(Optional.of(serviceType));
+            given(codeGenerator.generate()).willReturn(VALID_CODE);
+
+            Application savedApp = Application.builder()
+                    .applicationCode(VALID_CODE)
+                    .citizen(citizen)
+                    .serviceType(serviceType)
+                    .status(ApplicationStatus.SUBMITTED)
+                    .notes("Ghi chú test")
+                    .build();
+            given(applicationRepository.save(any(Application.class))).willReturn(savedApp);
+            given(applicationMapper.toResponse(savedApp)).willReturn(ApplicationResponse.builder().build());
+
+            // When
+            applicationService.submit(1L, request, null);
+
+            // Then
+            verify(notificationService, times(1)).notifyApplicationSubmitted(savedApp);
         }
     }
 

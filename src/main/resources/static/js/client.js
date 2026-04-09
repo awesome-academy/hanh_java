@@ -69,3 +69,40 @@ function escHtml(str) {
     return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/**
+ * Cập nhật notification badge trên topbar bằng cách poll mỗi 30 giây.
+ *
+ * Gọi MVC endpoint /notifications/unread-count (session auth) thay vì REST /api/client/** (JWT Bearer)
+ * Browser tự gửi session cookie, không cần token trong DOM.
+ */
+function updateNotifBadge() {
+    console.log('Polling unread notifications...');
+    const badge = document.getElementById('notif-badge');
+    if (!badge) return;
+
+    fetch('/notifications/unread-count', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+        if (!data) return;
+        const count = data.count ?? 0;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
+        }
+    })
+    .catch(() => {}); // Silent fail — badge không cập nhật, không crash
+}
+
+// Khởi động poll khi DOM ready
+(function initNotifPolling() {
+    // Poll ngay lần đầu sau 1 giây (tránh chặn render)
+    setTimeout(updateNotifBadge, 1000);
+    // Poll định kỳ mỗi 30 giây
+    setInterval(updateNotifBadge, 30_000);
+})();

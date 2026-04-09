@@ -8,6 +8,10 @@ import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.mapper.ApplicationMapper;
+import com.psms.mapper.StaffMapper;
+import com.psms.service.AdminApplicationService;
+import com.psms.service.DocumentService;
+import com.psms.service.NotificationService;
 import com.psms.util.ApplicationStateMachine;
 import com.psms.repository.ApplicationRepository;
 import com.psms.repository.ApplicationStatusHistoryRepository;
@@ -49,7 +53,9 @@ class AdminApplicationServiceTest {
     @Mock ApplicationStatusHistoryRepository historyRepository;
     @Mock StaffRepository staffRepository;
     @Mock ApplicationMapper applicationMapper;
+    @Mock StaffMapper staffMapper;
     @Mock DocumentService documentService;
+    @Mock NotificationService notificationService;
 
     @InjectMocks AdminApplicationService adminApplicationService;
 
@@ -100,6 +106,7 @@ class AdminApplicationServiceTest {
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.RECEIVED);
             assertThat(app.getReceivedAt()).isNotNull();
             verify(historyRepository).save(any(ApplicationStatusHistory.class));
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.RECEIVED, null);
         }
 
         @Test
@@ -116,6 +123,7 @@ class AdminApplicationServiceTest {
             adminApplicationService.updateStatus(10L, req, actingUser());
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.PROCESSING);
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.PROCESSING, null);
         }
 
         @Test
@@ -133,6 +141,7 @@ class AdminApplicationServiceTest {
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.APPROVED);
             assertThat(app.getCompletedAt()).isNotNull();
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.APPROVED, null);
         }
 
         @Test
@@ -153,6 +162,7 @@ class AdminApplicationServiceTest {
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.REJECTED);
             assertThat(app.getRejectionReason()).isEqualTo("Ho so thieu giay to");
             assertThat(app.getCompletedAt()).isNotNull();
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.REJECTED, "Ho so thieu giay to");
         }
 
         @Test
@@ -171,6 +181,7 @@ class AdminApplicationServiceTest {
             adminApplicationService.updateStatus(10L, req, actingUser());
 
             assertThat(app.getStatus()).isEqualTo(ApplicationStatus.ADDITIONAL_REQUIRED);
+            verify(notificationService).notifyStatusChange(app, ApplicationStatus.ADDITIONAL_REQUIRED, "Can bo sung CCCD mat sau");
         }
     }
 

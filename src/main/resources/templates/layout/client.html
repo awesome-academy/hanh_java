@@ -46,15 +46,15 @@
             <button class="notif-btn" sec:authorize="isAuthenticated()"
                     onclick="window.location='/notifications'" title="Thông báo">
                 🔔
+                <!--
+                  Luôn render badge trong DOM, nhưng ẩn đi nếu không có thông báo nào chưa đọc.
+                -->
                 <span class="notif-dot" id="notif-badge"
                       th:if="${unreadCount != null and unreadCount > 0}"
                       th:text="${unreadCount}"></span>
-            </button>
 
-            <!--
-              Dùng sec:authentication="principal.username" thay vì #authentication
-              để tránh lỗi khi anonymous user truy cập trang public
-            -->
+            </button>
+            
             <div class="ava" sec:authorize="isAuthenticated()"
                  title="Tài khoản">
                 <span sec:authentication="principal.username"
@@ -101,6 +101,7 @@
         }
     });
 </script>
+
 </body>
 </html>
 
