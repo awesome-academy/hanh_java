@@ -56,6 +56,8 @@ public class AdminUserViewController {
     private final AdminUserService adminUserService;
     private final DepartmentRepository departmentRepository;
 
+    private static final String DEFAULT_PAGE_SIZE_STR = "10";
+
     // ─── GET /admin/users — SSR page ───────────────────────────────────────────
 
     @GetMapping
@@ -64,7 +66,7 @@ public class AdminUserViewController {
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size,
             @AuthenticationPrincipal User currentUser,
             Model model) {
 

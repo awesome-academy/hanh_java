@@ -32,19 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * Service quản lý người dùng — chỉ SUPER_ADMIN có quyền truy cập.
- *
- * <p>Business rules (SPECS 5.4):
- * <ul>
- *   <li>Soft delete: {@code is_active=false}, dữ liệu lịch sử vẫn giữ nguyên</li>
- *   <li>Lock: {@code is_locked=true} → không thể đăng nhập</li>
- *   <li>Create: nếu roles chứa CITIZEN → tạo thêm Citizen record</li>
- *   <li>Create: nếu roles chứa STAFF/MANAGER → tạo thêm Staff record</li>
- *   <li>SUPER_ADMIN không cần citizen/staff record</li>
- *   <li><strong>Separation of Duties:</strong> CITIZEN không được kết hợp với
- *       STAFF/MANAGER/SUPER_ADMIN. Vi phạm → {@link BusinessException} (400).</li>
- *   <li><strong>Self-protection:</strong> SUPER_ADMIN không thể khóa, xóa hoặc
- *       thay đổi roles của chính mình. Vi phạm → {@link BusinessException} (400).</li>
- * </ul>
  */
 @Slf4j
 @Service
@@ -76,11 +63,12 @@ public class AdminUserService {
      */
     public Page<AdminUserResponse> findAll(RoleName role, Boolean isActive, String keyword,
                                            int page, int size) {
-        Specification<User> spec = Specification.allOf(
-                UserSpecifications.hasRole(role),
-                UserSpecifications.isActive(isActive),
-                UserSpecifications.keywordLike(keyword)
-        );
+        // Khởi tạo một Specification<User> rỗng, sau đó AND thêm các filter nếu có
+        Specification<User> spec = (root, q, cb) -> null;
+        if (role != null)                          spec = spec.and(UserSpecifications.hasRole(role));
+        if (isActive != null)                      spec = spec.and(UserSpecifications.isActive(isActive));
+        if (keyword != null && !keyword.isBlank()) spec = spec.and(UserSpecifications.keywordLike(keyword));
+
         Pageable pageable = PageRequest.of(page, size,
                 Sort.by(Sort.Direction.DESC, "createdAt"));
 

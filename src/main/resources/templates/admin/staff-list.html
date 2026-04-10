@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout(
+        title      = 'Quản lý cán bộ',
+        content    = ~{::content},
+        activePage = 'staff',
+        breadcrumbLabel = 'Quản lý cán bộ')}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<body>
+<th:block th:fragment="content">
+
+<!-- ── Page header ──────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text)">Quản lý cán bộ</h2>
+        <p style="margin:4px 0 0;color:var(--muted);font-size:13px">
+            Tổng cộng <strong th:text="${staffPage.totalElements}">0</strong> cán bộ
+        </p>
+    </div>
+    <!-- Workload legend -->
+    <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)">
+        <span>Workload:</span>
+        <span class="pill p-green">0–4 HS</span>
+        <span class="pill p-amber">5–7 HS</span>
+        <span class="pill p-red">≥ 8 HS</span>
+    </div>
+</div>
+
+<!-- ── Filter bar ────────────────────────────────────────────────────── -->
+<form class="fbar" method="get" th:action="@{/admin/staff}">
+    <select class="fi-s" name="departmentId">
+        <option value="">Tất cả phòng ban</option>
+        <option th:each="dept : ${departments}"
+                th:value="${dept.id}" th:text="${dept.name}"
+                th:selected="${dept.id == departmentId}">
+        </option>
+    </select>
+
+    <select class="fi-s" name="isAvailable">
+        <option value="">Tất cả trạng thái</option>
+        <option value="true"  th:selected="${isAvailable == true}">Sẵn sàng</option>
+        <option value="false" th:selected="${isAvailable == false}">Đang nghỉ phép</option>
+    </select>
+
+    <button type="submit" class="btn btn-p" style="height:36px;padding:0 14px">Lọc</button>
+    <a th:href="@{/admin/staff}" class="btn btn-o" style="height:36px;padding:0 14px;display:inline-flex;align-items:center">Reset</a>
+</form>
+
+<!-- ── Staff table ───────────────────────────────────────────────────── -->
+<div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+        <thead>
+        <tr>
+            <th>Mã CB / Họ tên</th>
+            <th>Email</th>
+            <th>Phòng ban</th>
+            <th>Chức vụ</th>
+            <th>Workload</th>
+            <th>Trạng thái</th>
+            <th style="width:80px">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(staffPage.content)}">
+            <td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">
+                Không tìm thấy cán bộ nào
+            </td>
+        </tr>
+        <tr th:each="s : ${staffPage.content}" th:id="'staff-row-' + ${s.staffId}">
+            <td>
+                <div style="font-weight:600;color:var(--text)" th:text="${s.fullName}">Nguyễn Văn A</div>
+                <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" th:text="${s.staffCode}">CB-001</div>
+            </td>
+            <td style="font-size:13px;color:var(--muted)" th:text="${s.email}">email@example.com</td>
+            <td style="font-size:13px" th:text="${s.departmentName} ?: '—'">Phòng ban</td>
+            <td style="font-size:13px" th:text="${s.position} ?: '—'">Chuyên viên</td>
+            <td>
+                <!-- Workload badge: xanh=0-4, vàng=5-7, đỏ=≥8 -->
+                <span class="pill"
+                      th:classappend="${s.workloadClass}"
+                      th:text="${s.activeApplicationCount} + ' HS'">0 HS</span>
+            </td>
+            <td>
+                <span th:if="${s.available}" class="pill p-green">Sẵn sàng</span>
+                <span th:unless="${s.available}" class="pill p-amber">Nghỉ phép</span>
+            </td>
+            <td>
+                <button class="bsm be"
+                        th:data-staff-id="${s.staffId}"
+                        th:data-full-name="${s.fullName}"
+                        th:data-department-id="${s.departmentId}"
+                        th:data-position="${s.position}"
+                        th:data-available="${s.available}"
+                        onclick="openEditStaffModal(this)">Sửa</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ── Pagination ────────────────────────────────────────────────────── -->
+<div class="pg-bar" th:if="${staffPage.totalPages > 1}">
+    <span class="pg-info"
+          th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${staffPage.totalElements}">
+    </span>
+    <div class="pg-btns">
+        <span class="pg on" th:if="${!staffPage.hasPrevious()}">← Trước</span>
+        <a class="pg" th:unless="${!staffPage.hasPrevious()}"
+           th:href="@{/admin/staff(departmentId=${departmentId},isAvailable=${isAvailable},page=${staffPage.number - 1})}">
+            ← Trước
+        </a>
+        <a class="pg" th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
+           th:classappend="${i == staffPage.number} ? ' on'"
+           th:href="@{/admin/staff(departmentId=${departmentId},isAvailable=${isAvailable},page=${i})}"
+           th:text="${i + 1}">1</a>
+        <span class="pg on" th:if="${!staffPage.hasNext()}">Tiếp →</span>
+        <a class="pg" th:unless="${!staffPage.hasNext()}"
+           th:href="@{/admin/staff(departmentId=${departmentId},isAvailable=${isAvailable},page=${staffPage.number + 1})}">
+            Tiếp →
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: Cập nhật cán bộ
+     ═══════════════════════════════════════════════════════════ -->
+<div id="editStaffModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:480px">
+        <div class="modal-hd">
+            <h3>Cập nhật cán bộ: <span id="editStaffName" style="font-weight:400"></span></h3>
+            <button class="modal-close" onclick="closeModal('editStaffModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="editStaffForm" onsubmit="submitEditStaff(event)">
+                <input type="hidden" id="editStaffId">
+                <div class="fg full">
+                    <label class="fl">Phòng ban *</label>
+                    <select class="fi2" id="editStaffDeptId" required>
+                        <option value="">-- Chọn phòng ban --</option>
+                        <option th:each="dept : ${departments}"
+                                th:value="${dept.id}" th:text="${dept.name}">Phòng ban</option>
+                    </select>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Chức vụ</label>
+                    <input class="fi2" id="editStaffPosition" maxlength="100" placeholder="VD: Chuyên viên, Phó phòng...">
+                </div>
+                <div class="fg full">
+                    <label class="fl">Trạng thái</label>
+                    <select class="fi2" id="editStaffAvailable">
+                        <option value="true">Sẵn sàng nhận hồ sơ</option>
+                        <option value="false">Đang nghỉ phép / Bận</option>
+                    </select>
+                </div>
+                <div id="editStaffError" class="modal-error"></div>
+                <div class="modal-ft">
+                    <button type="button" class="btn btn-o" onclick="closeModal('editStaffModal')">Hủy</button>
+                    <button type="submit" class="btn btn-p">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ── Page JS ───────────────────────────────────────────────────────── -->
+<script th:src="@{/js/admin-staff.js}"></script>
+
+</th:block>
+</body>
+</html>
+

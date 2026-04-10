@@ -169,7 +169,7 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 > **Ghi chú kiến trúc dual-layer:**
 > Các route trong tài liệu này mô tả **MVC form** (dùng `GET/POST` — HTML form chỉ hỗ trợ 2 verb này).
 > REST API tương ứng nằm ở `/api/` prefix và sử dụng HTTP verb chuẩn (`PUT`, `DELETE`).
-> Cả hai layer gọi cùng Service — xem TASKS.md để biết REST endpoint cụ thể.
+> Cả hai layer gọi cùng Service .
 
 ### 4.1 Đăng ký / Đăng nhập
 
@@ -700,7 +700,6 @@ psms/
 ├── docker-compose.prod.yml
 ├── Dockerfile
 ├── psms_schema.sql
-├── TASKS.md
 ├── SPECS.md
 └── README.md
 ```
@@ -783,5 +782,5 @@ psms/
 
 ---
 
-*Tài liệu liên quan: `psms_schema.sql` · `TASKS.md` · `psms_gui_mockup.html`*
+*Tài liệu liên quan: `psms_schema.sql` · `psms_gui_mockup.html`*
 *Cập nhật lần cuối: 2026-04-07 · v1.1*

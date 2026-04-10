@@ -1,9 +1,12 @@
 package com.psms.repository;
 
 import com.psms.entity.User;
+import com.psms.enums.RoleName;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,5 +35,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @EntityGraph(attributePaths = "roles")
     List<User> findWithRolesByIdIn(Collection<Long> ids);
+
+    /**
+     * Danh sách users có role cụ thể — dùng cho dropdown chọn trưởng phòng.
+     */
+    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName AND u.isActive = true ORDER BY u.fullName ASC")
+    List<User> findAllByRoleName(@Param("roleName") RoleName roleName);
+
 }
 
