@@ -38,7 +38,7 @@ public class CreateUserRequest {
     @Size(max = 20, message = "{validation.phone.size}")
     private String phone;
 
-    @NotEmpty(message = "{validation.roles.required}")
+    @NotEmpty(message = "{validation.role.required}")
     private Set<RoleName> roles;
 
     // ── Citizen-specific (bắt buộc nếu roles chứa CITIZEN) ───────────────────

@@ -6,14 +6,12 @@ import com.psms.dto.request.UpdateUserRolesRequest;
 import com.psms.dto.response.AdminUserResponse;
 import com.psms.dto.response.ApiResponse;
 import com.psms.entity.Department;
+import com.psms.entity.User;
 import com.psms.enums.RoleName;
-import com.psms.exception.BusinessException;
-import com.psms.exception.ResourceNotFoundException;
 import com.psms.repository.DepartmentRepository;
 import com.psms.service.AdminUserService;
 import com.psms.util.PaginationInfo;
 import com.psms.util.PaginationUtils;
-import com.psms.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +35,8 @@ import java.util.List;
  * </ol>
  * <p>Tất cả route yêu cầu role SUPER_ADMIN.
  * <p>POST/PUT/DELETE trả JSON để JS xử lý cập nhật UI động mà không cần reload page. GET trả HTML để render server-side.
+ * <p>Exception handling được delegate hoàn toàn cho {@link com.psms.exception.GlobalExceptionHandler}
+ * — bao gồm BusinessException, ResourceNotFoundException, MethodArgumentNotValidException.
  * <p>Business rules:
  * <ul>
  *   <li>Chỉ SUPER_ADMIN có quyền truy cập</li>
@@ -55,7 +55,6 @@ public class AdminUserViewController {
 
     private final AdminUserService adminUserService;
     private final DepartmentRepository departmentRepository;
-
 
     // ─── GET /admin/users — SSR page ───────────────────────────────────────────
 
@@ -82,7 +81,6 @@ public class AdminUserViewController {
         model.addAttribute("role", role);
         model.addAttribute("isActive", isActive);
         model.addAttribute("keyword", keyword);
-
         model.addAttribute("pageStart", pageInfo.pageStart());
         model.addAttribute("pageEnd", pageInfo.pageEnd());
         model.addAttribute("displayFrom", pageInfo.displayFrom());
@@ -152,19 +150,4 @@ public class AdminUserViewController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật quyền thành công",
                 adminUserService.updateRoles(id, request)));
     }
-
-    // ─── Exception handlers cho JSON endpoints ─────────────────────────────────
-
-    @ExceptionHandler(BusinessException.class)
-    @ResponseBody
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    @ResponseBody
-    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
-    }
 }
-

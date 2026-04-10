@@ -145,8 +145,8 @@ class AdminUserServiceTest {
         }
 
         @Test
-        @DisplayName("Xóa SUPER_ADMIN duy nhất → BusinessException")
-        void softDelete_lastSuperAdmin_throwsBusinessException() {
+        @DisplayName("Xóa chính tài khoản hiện tại → BusinessException")
+        void softDelete_currentAuthenticatedUser_throwsBusinessException() {
             // Target = current user (ID 999) → self-protection guard kích hoạt
             User self = makeUserWithRole(999L, RoleName.SUPER_ADMIN);
             given(userRepository.findWithRolesById(999L)).willReturn(Optional.of(self));
@@ -157,8 +157,8 @@ class AdminUserServiceTest {
         }
 
         @Test
-        @DisplayName("Xóa SUPER_ADMIN khác (không phải mình) → cho phép")
-        void softDelete_superAdminWithOthersExisting_succeeds() {
+        @DisplayName("Tự khóa chính tài khoản của mình → BusinessException")
+        void lockUser_self_throwsBusinessException() {
             // Target ID 5L ≠ current user ID 999L → không bị chặn
             User otherAdmin = makeUserWithRole(5L, RoleName.SUPER_ADMIN);
             given(userRepository.findWithRolesById(5L)).willReturn(Optional.of(otherAdmin));

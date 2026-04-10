@@ -134,17 +134,21 @@ function handleCreateRoleChange() {
     document.getElementById('createStaffFields')?.classList.toggle('visible', hasStaffRole);
     document.getElementById('createCitizenFields')?.classList.toggle('visible', hasCitizen);
 
-    // Disable conflicting checkboxes (UX: mutual exclusion thay vì chỉ warn)
+    // Disable only unchecked conflicting checkboxes so checked ones can still be unselected
     allChecks.forEach(cb => {
         const label = cb.closest('label');
-        if (hasCitizen && ADMIN_ROLES.includes(cb.value)) {
-            cb.disabled = true;
-            if (label) { label.style.opacity = '0.4'; label.title = 'Không thể kết hợp với CITIZEN'; }
-        } else if (hasAdmin && cb.value === 'CITIZEN') {
-            cb.disabled = true;
-            if (label) { label.style.opacity = '0.4'; label.title = 'Không thể kết hợp với admin roles'; }
+        const conflictsWithCitizen = hasCitizen && ADMIN_ROLES.includes(cb.value);
+        const conflictsWithAdmin = hasAdmin && cb.value === 'CITIZEN';
+        const isConflicting = conflictsWithCitizen || conflictsWithAdmin;
+        cb.disabled = isConflicting && !cb.checked;
+        if (cb.disabled) {
+            if (label) {
+                label.style.opacity = '0.4';
+                label.title = conflictsWithCitizen
+                    ? 'Không thể kết hợp với CITIZEN'
+                    : 'Không thể kết hợp với admin roles';
+            }
         } else {
-            cb.disabled = false;
             if (label) { label.style.opacity = '1'; label.title = ''; }
         }
     });
@@ -284,7 +288,8 @@ async function submitEditUser(e) {
         const row = document.getElementById(`user-row-${userId}`);
         if (row) {
             row.querySelector('.cell-fullname').textContent = u.fullName;
-            row.querySelector('.cell-phone')?.setAttribute('title', u.phone || '');
+            const phoneEl = row.querySelector('.cell-phone');
+            if (phoneEl) phoneEl.textContent = u.phone || '';
         }
         showPageFlash('Cập nhật thành công!');
     } catch (err) {
@@ -422,4 +427,3 @@ async function deleteUser(userId, fullName) {
         showPageFlash('Lỗi kết nối. Vui lòng thử lại.', 'error');
     }
 }
-

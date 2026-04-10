@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,6 +64,15 @@ public class AdminUserService {
 
     /**
      * Danh sách user có filter + phân trang.
+     *
+     * <p>Query strategy: batch-load tất cả profiles trong 4-5 queries cố định,
+     * bất kể page size — tránh N+1 (+2N) pattern của .map(mapToResponse):
+     * <ol>
+     *   <li>findAll(spec, pageable) — 1 query lấy users (+ 1 count query)</li>
+     *   <li>findWithRolesByIdIn — 1 query batch roles cho toàn page</li>
+     *   <li>findByUserIdIn — 1 query batch citizen profiles</li>
+     *   <li>findWithDepartmentByUserIdIn — 1 query batch staff + department</li>
+     * </ol>
      */
     public Page<AdminUserResponse> findAll(RoleName role, Boolean isActive, String keyword,
                                            int page, int size) {
@@ -73,7 +84,37 @@ public class AdminUserService {
         Pageable pageable = PageRequest.of(page, size,
                 Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return userRepository.findAll(spec, pageable).map(this::mapToResponse);
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+        if (userPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> userIds = userPage.getContent().stream().map(User::getId).toList();
+
+        // Batch load #1: roles — JOIN FETCH user_roles trong 1 query
+        Map<Long, Set<RoleName>> rolesMap = userRepository.findWithRolesByIdIn(userIds).stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        u -> u.getRoles().stream()
+                                .map(Role::getName)
+                                .collect(Collectors.toCollection(LinkedHashSet::new))
+                ));
+
+        // Batch load #2: citizen profiles — WHERE user_id IN (...)
+        Map<Long, Citizen> citizenMap = citizenRepository.findByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(c -> c.getUser().getId(), c -> c));
+
+        // Batch load #3: staff profiles kèm department — JOIN FETCH department trong 1 query
+        Map<Long, Staff> staffMap = staffRepository.findWithDepartmentByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(s -> s.getUser().getId(), s -> s));
+
+        // Map to DTOs từ in-memory maps — zero additional queries
+        return userPage.map(user -> mapToResponse(
+                user,
+                rolesMap.getOrDefault(user.getId(), Set.of()),
+                citizenMap.get(user.getId()),
+                staffMap.get(user.getId())
+        ));
     }
 
     // ─── Get by ID ─────────────────────────────────────────────────────────────
@@ -334,13 +375,14 @@ public class AdminUserService {
                 || roles.contains(RoleName.SUPER_ADMIN);
         if (hasCitizen && hasAdminRole) {
             throw new BusinessException(
-                "Vai trò CITIZEN không thể kết hợp với STAFF/MANAGER/SUPER_ADMIN và ngược lại. Vui lòng chọn vai trò phù hợp."
+                "Separation of Duties: Vai trò CITIZEN không thể kết hợp với STAFF/MANAGER/SUPER_ADMIN và ngược lại."
             );
         }
     }
 
     /**
-     * Map User entity → AdminUserResponse DTO.
+     * Map User entity → AdminUserResponse DTO (single-user path).
+     * Dùng cho findById, createUser, updateUser... — queries citizen/staff individually.
      */
     private AdminUserResponse mapToResponse(User user) {
         Set<RoleName> roleNames = user.getRoles().stream()
@@ -360,11 +402,9 @@ public class AdminUserService {
                 .citizen(roleNames.contains(RoleName.CITIZEN))
                 .build();
 
-        // Citizen profile
         citizenRepository.findByUserId(user.getId()).ifPresent(c ->
                 dto.setNationalId(c.getNationalId()));
 
-        // Staff profile (eager-fetch department trong 1 query)
         staffRepository.findWithDepartmentByUserId(user.getId()).ifPresent(s -> {
             dto.setStaffCode(s.getStaffCode());
             dto.setPosition(s.getPosition());
@@ -374,6 +414,44 @@ public class AdminUserService {
             }
         });
 
+        return dto;
+    }
+
+    /**
+     * Map User entity → AdminUserResponse DTO với pre-loaded profiles (batch-load path).
+     * Dùng cho findAll() — nhận citizen/staff đã được batch-load sẵn, không phát sinh thêm query nào.
+     *
+     * @param user     user entity (roles đã được batch-load vào rolesMap)
+     * @param roleNames roles đã resolve từ batch query
+     * @param citizen  citizen profile (null nếu không có)
+     * @param staff    staff profile kèm department (null nếu không có)
+     */
+    private AdminUserResponse mapToResponse(User user, Set<RoleName> roleNames,
+                                            Citizen citizen, Staff staff) {
+        AdminUserResponse dto = AdminUserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .active(user.isActive())
+                .locked(user.isLocked())
+                .createdAt(user.getCreatedAt())
+                .lastLoginAt(user.getLastLoginAt())
+                .roles(roleNames)
+                .citizen(roleNames.contains(RoleName.CITIZEN))
+                .build();
+
+        if (citizen != null) {
+            dto.setNationalId(citizen.getNationalId());
+        }
+        if (staff != null) {
+            dto.setStaffCode(staff.getStaffCode());
+            dto.setPosition(staff.getPosition());
+            if (staff.getDepartment() != null) {
+                dto.setDepartmentId(staff.getDepartment().getId());
+                dto.setDepartmentName(staff.getDepartment().getName());
+            }
+        }
         return dto;
     }
 }

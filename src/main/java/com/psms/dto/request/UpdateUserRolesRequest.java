@@ -16,7 +16,7 @@ import java.util.Set;
 @Builder
 public class UpdateUserRolesRequest {
 
-    @NotEmpty(message = "{validation.roles.required}")
+    @NotEmpty(message = "{validation.role.required}")
     private Set<RoleName> roles;
 }
 

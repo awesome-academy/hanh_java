@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,5 +31,13 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
      */
     @EntityGraph(attributePaths = "department")
     Optional<Staff> findWithDepartmentByUserId(Long userId);
+
+    /**
+     * Batch-fetch staff profiles kèm department theo danh sách userId.
+     * Dùng trong findAll() pagination để tránh N+1.
+     * 1 query duy nhất thay vì N query.
+     */
+    @EntityGraph(attributePaths = "department")
+    List<Staff> findWithDepartmentByUserIdIn(Collection<Long> userIds);
 }
 
