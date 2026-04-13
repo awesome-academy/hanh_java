@@ -34,9 +34,7 @@ build/
 ### VS Code ###
 .vscode/
 .history
-
-# Claude local notes (không commit)
-
+.DS_Store
 
 #Uploaded files (không commit)
 uploads/

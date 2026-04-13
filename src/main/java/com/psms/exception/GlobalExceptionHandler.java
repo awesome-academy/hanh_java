@@ -17,7 +17,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
-@RestControllerAdvice(basePackages = {"com.psms.controller.client", "com.psms.controller.admin"})
+@RestControllerAdvice(basePackages = {
+        "com.psms.controller.client",
+        "com.psms.controller.admin",
+        "com.psms.controller.web"
+})
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

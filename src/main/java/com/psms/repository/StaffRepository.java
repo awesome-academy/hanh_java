@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,8 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
 
     Optional<Staff> findByStaffCode(String staffCode);
 
+    boolean existsByStaffCode(String staffCode);
+
     /**
      * Load danh sach can bo theo phong ban + available,
      * eager-fetch user de Thymeleaf co the render s.user.fullName
@@ -21,5 +24,20 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
      */
     @EntityGraph(attributePaths = "user")
     List<Staff> findAllByDepartmentIdAndIsAvailableTrue(Long departmentId);
+
+    /**
+     * Tìm Staff kèm Department trong 1 query — dùng trong AdminUserService.mapToResponse()
+     * để tránh lazy-load Department riêng (giảm số query khi render user list).
+     */
+    @EntityGraph(attributePaths = "department")
+    Optional<Staff> findWithDepartmentByUserId(Long userId);
+
+    /**
+     * Batch-fetch staff profiles kèm department theo danh sách userId.
+     * Dùng trong findAll() pagination để tránh N+1.
+     * 1 query duy nhất thay vì N query.
+     */
+    @EntityGraph(attributePaths = "department")
+    List<Staff> findWithDepartmentByUserIdIn(Collection<Long> userIds);
 }
 

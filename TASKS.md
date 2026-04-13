@@ -382,27 +382,27 @@
 > **Base:** `feature/admin-dashboard-application`
 
 **Backend**
-- [ ] `#10-01` `GET /api/admin/users` — filter role, isActive, keyword (FULLTEXT)
-- [ ] `#10-02` `GET /api/admin/users/{id}`
-- [ ] `#10-03` `POST /api/admin/users` — tạo tài khoản (staff/citizen)
-- [ ] `#10-04` `PUT /api/admin/users/{id}` — cập nhật
-- [ ] `#10-05` `PUT /api/admin/users/{id}/lock` + `/unlock`
-- [ ] `#10-06` `DELETE /api/admin/users/{id}` — soft delete (`is_active=false`)
-- [ ] `#10-07` `PUT /api/admin/users/{id}/roles` — gán/thu hồi role
+- [x] `#10-01` `GET /api/admin/users` — filter role, isActive, keyword (FULLTEXT)
+- [x] `#10-02` `GET /api/admin/users/{id}`
+- [x] `#10-03` `POST /api/admin/users` — tạo tài khoản (staff/citizen)
+- [x] `#10-04` `PUT /api/admin/users/{id}` — cập nhật
+- [x] `#10-05` `PUT /api/admin/users/{id}/lock` + `/unlock`
+- [x] `#10-06` `DELETE /api/admin/users/{id}` — soft delete (`is_active=false`)
+- [x] `#10-07` `PUT /api/admin/users/{id}/roles` — gán/thu hồi role
 
 **UI**
-- [ ] `#10-08` CSS: thêm `.modal-overlay`, `.modal-box` vào `components.css`
-- [ ] `#10-09` `js/admin.js` — `openModal()`, `closeModal()`, confirm delete pattern
-- [ ] `#10-10` Template `admin/user-list.html`:
+- [x] `#10-08` CSS: thêm `.modal-overlay`, `.modal-box` vào `components.css`
+- [x] `#10-09` `js/admin.js` — `openModal()`, `closeModal()`, confirm delete pattern
+- [x] `#10-10` Template `admin/user-list.html`:
   - Filter bar (role + status + search)
   - Bảng: Họ tên, Email, CCCD/Mã CB, Vai trò badge, Trạng thái, Actions
   - Modal tạo/sửa tài khoản (form + validation)
   - Confirm dialog cho khóa/xóa
 
 **Test**
-- [ ] `#10-11` Chỉ SUPER_ADMIN truy cập được `/api/admin/users`
-- [ ] `#10-12` Xóa user → `is_active=false`, data vẫn còn trong DB
-- [ ] `#10-13` Lock user → không thể login
+- [x] `#10-11` Chỉ SUPER_ADMIN truy cập được `/api/admin/users`
+- [x] `#10-12` Xóa user → `is_active=false`, data vẫn còn trong DB
+- [x] `#10-13` Lock user → không thể login
 
 **Definition of Done:**
 ```
