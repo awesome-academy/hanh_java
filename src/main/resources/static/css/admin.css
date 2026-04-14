@@ -131,9 +131,9 @@
 
 .log-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 10px 16px;
     border-bottom: 1px solid var(--border);
     transition: background .12s;
 }
@@ -145,23 +145,36 @@
     font-size: 11px;
     font-family: var(--mono);
     color: var(--muted);
-    width: 120px;
+    width: 108px;
     flex-shrink: 0;
-    padding-top: 2px;
 }
 
-/* Action type tag */
+/* Action type tag — fixed width để các dòng thẳng hàng */
 .log-tag {
     display: inline-block;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 5px;
     font-size: 10.5px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .05em;
     flex-shrink: 0;
+    min-width: 115px;
+    text-align: center;
+    white-space: nowrap;
 }
 
+/* Badge colors — new naming (log-* prefix) */
+.log-tag.log-login   { background: #DBEAFE; color: #1D4ED8; }
+.log-tag.log-submit  { background: #DCFCE7; color: #15803D; }
+.log-tag.log-approve { background: #D1FAE5; color: #047857; }
+.log-tag.log-reject  { background: #FEE2E2; color: #B91C1C; }
+.log-tag.log-create  { background: #CFFAFE; color: #0E7490; }
+.log-tag.log-update  { background: #FEF9C3; color: #92400E; }
+.log-tag.log-delete  { background: #FEE2E2; color: #B91C1C; }
+.log-tag.log-assign  { background: #EDE9FE; color: #5B21B6; }
+
+/* Legacy tag classes — giữ để tương thích nếu còn dùng chỗ khác */
 .log-tag.login     { background: #DBEAFE; color: #1D4ED8; }
 .log-tag.submit    { background: #DCFCE7; color: #15803D; }
 .log-tag.update    { background: #FEF9C3; color: #92400E; }
@@ -169,21 +182,28 @@
 .log-tag.assign    { background: #EDE9FE; color: #5B21B6; }
 .log-tag.export    { background: #F1F5F9; color: #475569; }
 
-.log-body { flex: 1; min-width: 0; }
+/* Inline actor + description — một dòng, truncate khi quá dài */
+.log-inline {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .log-actor {
-    font-size: 12.5px;
     font-weight: 600;
     color: var(--text);
 }
 
-.log-desc {
-    font-size: 12px;
+.log-sep {
     color: var(--muted);
-    margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: 0 5px;
+}
+
+.log-desc {
+    color: var(--muted);
 }
 
 /* ── Notification feed (client /notifications) ──────────────── */

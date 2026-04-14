@@ -5,6 +5,7 @@ import com.psms.dto.request.UpdateUserRequest;
 import com.psms.dto.request.UpdateUserRolesRequest;
 import com.psms.dto.response.AdminUserResponse;
 import com.psms.entity.*;
+import com.psms.enums.ActionType;
 import com.psms.enums.RoleName;
 import com.psms.exception.BusinessException;
 import com.psms.exception.ResourceNotFoundException;
@@ -130,6 +131,11 @@ public class AdminUserService {
      *   <li>Nếu STAFF/MANAGER role → tạo Staff record (validate staffCode unique)</li>
      * </ol>
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.CREATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#result.id",
+        description = "'Tạo tài khoản ' + #result.fullName + ' (' + #result.email + ')'")
     @Transactional
     public AdminUserResponse createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -174,6 +180,12 @@ public class AdminUserService {
      *   <li>STAFF/MANAGER: được cập nhật thêm departmentId, position.</li>
      * </ul>
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật tài khoản ' + #result.fullName + ' (' + #result.email + ')'")
+
     @Transactional
     public AdminUserResponse updateUser(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
@@ -208,6 +220,12 @@ public class AdminUserService {
      *
      * <p>Guard: SUPER_ADMIN không thể khóa chính mình.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.LOCK_USER,
+        entityType = "users",
+        entityIdSpEL = "#p0",
+        description = "(#result.locked ? 'Khóa' : 'Mở khóa') + ' tài khoản ' + #result.fullName + ' (' + #result.email + ')'")
+
     @Transactional
     public AdminUserResponse lockUser(Long id) {
         User user = userRepository.findWithRolesById(id)
@@ -222,6 +240,11 @@ public class AdminUserService {
     /**
      * Mở khóa tài khoản — reset is_locked, failed_login_count, locked_until.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UNLOCK_USER,
+        entityType = "users",
+        entityIdSpEL = "#p0",
+        description = "(#result.locked ? 'Khóa' : 'Mở khóa') + ' tài khoản ' + #result.fullName + ' (' + #result.email + ')'")
     @Transactional
     public AdminUserResponse unlockUser(Long id) {
         User user = userRepository.findById(id)
@@ -241,6 +264,12 @@ public class AdminUserService {
      *
      * <p>Guard: SUPER_ADMIN không thể xóa chính mình.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.DELETE_USER,
+        entityType = "users",
+        entityIdSpEL = "#p0",
+        description = "'Xóa tài khoản ID #' + #p0")
+
     @Transactional
     public void softDeleteUser(Long id) {
         User user = userRepository.findWithRolesById(id)
@@ -260,6 +289,11 @@ public class AdminUserService {
      *
      * <p>Guard: SUPER_ADMIN không thể thay đổi roles của chính mình.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật roles tài khoản ' + #result.fullName + ' (' + #result.email + ')'")
     @Transactional
     public AdminUserResponse updateRoles(Long id, UpdateUserRolesRequest request) {
         User user = userRepository.findWithRolesById(id)

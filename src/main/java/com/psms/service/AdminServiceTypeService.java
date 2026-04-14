@@ -6,6 +6,7 @@ import com.psms.dto.response.AdminServiceTypeResponse;
 import com.psms.entity.Department;
 import com.psms.entity.ServiceCategory;
 import com.psms.entity.ServiceType;
+import com.psms.enums.ActionType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.BusinessException;
 import com.psms.exception.ResourceNotFoundException;
@@ -100,6 +101,11 @@ public class AdminServiceTypeService {
      *
      * @throws BusinessException nếu code đã tồn tại
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.CREATE_SERVICE,
+        entityType = "service_types",
+        entityIdSpEL = "#result.id",
+        description = "'Tạo mới dịch vụ ' + #result.code + ' — ' + #result.name")
     @Transactional
     public AdminServiceTypeResponse create(CreateServiceTypeRequest request) {
         if (serviceTypeRepository.existsByCode(request.getCode())) {
@@ -137,6 +143,11 @@ public class AdminServiceTypeService {
     /**
      * Cập nhật dịch vụ (không được đổi code).
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_SERVICE,
+        entityType = "service_types",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật dịch vụ ' + #result.code + ' — ' + #result.name")
     @Transactional
     public AdminServiceTypeResponse update(Long id, UpdateServiceTypeRequest request) {
         ServiceType svc = serviceTypeRepository.findById(id)
@@ -166,6 +177,11 @@ public class AdminServiceTypeService {
      * Bật/tắt trạng thái hoạt động của dịch vụ.
      * Dịch vụ tắt không hiển thị cho công dân trên portal.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.TOGGLE_SERVICE,
+        entityType = "service_types",
+        entityIdSpEL = "#p0",
+        description = "(#result.active ? 'Kích hoạt' : 'Tắt') + ' dịch vụ ' + #result.code + ' — ' + #result.name")
     @Transactional
     public AdminServiceTypeResponse toggleActive(Long id) {
         ServiceType svc = serviceTypeRepository.findById(id)
@@ -186,6 +202,11 @@ public class AdminServiceTypeService {
      *
      * @throws BusinessException nếu dịch vụ đang có hồ sơ đang xử lý
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.DELETE_SERVICE,
+        entityType = "service_types",
+        entityIdSpEL = "#p0",
+        description = "'Xóa dịch vụ #' + #p0")
     @Transactional
     public void delete(Long id) {
         ServiceType svc = serviceTypeRepository.findById(id)

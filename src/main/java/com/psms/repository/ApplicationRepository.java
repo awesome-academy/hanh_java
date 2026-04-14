@@ -108,4 +108,27 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
             @Param("citizenId") Long citizenId,
             @Param("status") ApplicationStatus status,
             Pageable pageable);
+
+    /**
+     * Phân bố hồ sơ theo lĩnh vực dịch vụ (dashboard bar chart).
+     * Trả về List<Object[]>: [categoryName, count]
+     */
+    @Query("""
+        SELECT a.serviceType.category.name, COUNT(a)
+        FROM Application a
+        GROUP BY a.serviceType.category.name
+        ORDER BY COUNT(a) DESC
+        """)
+    List<Object[]> countGroupByCategory();
+
+    /**
+     * Phân bố hồ sơ theo trạng thái (dashboard donut chart).
+     * Trả về List<Object[]>: [status, count]
+     */
+    @Query("""
+        SELECT a.status, COUNT(a)
+        FROM Application a
+        GROUP BY a.status
+        """)
+    List<Object[]> countGroupByStatus();
 }

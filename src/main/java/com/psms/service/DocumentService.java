@@ -1,10 +1,12 @@
 package com.psms.service;
 
+import com.psms.annotation.LogActivity;
 import com.psms.dto.response.ApplicationDocumentResponse;
 import com.psms.entity.Application;
 import com.psms.entity.ApplicationDocument;
 import com.psms.entity.ApplicationStatusHistory;
 import com.psms.entity.User;
+import com.psms.enums.ActionType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.enums.ValidationStatus;
 import com.psms.exception.BusinessException;
@@ -88,6 +90,12 @@ public class DocumentService {
      *   <li>Ownership: citizen chỉ upload được HS của mình</li>
      * </ul>
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPLOAD_DOC,
+        entityType = "applications",
+        entityIdSpEL = "#applicationId",
+        description = "'Nộp bổ sung tài liệu cho hồ sơ #' + #applicationId"
+    )
     @Transactional
     public void uploadSupplementalDocuments(Long applicationId, Long userId,
                                              List<MultipartFile> files) {
@@ -130,6 +138,12 @@ public class DocumentService {
     /**
      * Cán bộ upload tài liệu phản hồi cho hồ sơ (is_response = true).
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPLOAD_DOC,
+        entityType = "applications",
+        entityIdSpEL = "#applicationId",
+        description = "'Cán bộ upload tài liệu phản hồi cho hồ sơ #' + #applicationId"
+    )
     @Transactional
     public void uploadResponseDocuments(Long applicationId, List<MultipartFile> files, User admin) {
         Application app = applicationRepository.findById(applicationId)
@@ -178,6 +192,12 @@ public class DocumentService {
      * </ul>
      */
 
+    @com.psms.annotation.LogActivity(
+        action = ActionType.DELETE_DOC,
+        entityType = "application_documents",
+        entityIdSpEL = "#docId",
+        description = "'Xóa tài liệu upload của hồ sơ #' + #applicationId"
+    )
     @Transactional
     public void deleteDocument(Long applicationId, Long docId, User currentUser) {
         ApplicationDocument doc = findDocumentOrThrow(docId);

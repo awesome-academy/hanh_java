@@ -42,6 +42,50 @@
 
     </div>
 
+    <!-- ── Charts grid ───────────────────────────────────────────────── -->
+    <div class="dash-g" style="margin-bottom:20px">
+
+        <!-- By-category bar chart -->
+        <div class="chart-wrap">
+            <div class="chart-ttl">📊 Hồ sơ theo lĩnh vực</div>
+
+            <div th:if="${byCategory.isEmpty()}" class="text-muted" style="font-size:13px;padding:8px 0">
+                Chưa có dữ liệu
+            </div>
+
+            <div th:each="item : ${byCategory}" class="bar-r">
+                <div class="bar-lbl" th:text="${item.label}" th:title="${item.label}">Lĩnh vực</div>
+                <div class="bar-trk">
+                    <div class="bar-fill" th:style="'width:' + ${item.percent} + '%'"></div>
+                </div>
+                <div class="bar-num" th:text="${item.count}">0</div>
+            </div>
+        </div>
+
+        <!-- By-status distribution -->
+        <div class="chart-wrap">
+            <div class="chart-ttl">🗂 Phân bố theo trạng thái</div>
+
+            <div th:if="${byStatus.isEmpty()}" class="text-muted" style="font-size:13px;padding:8px 0">
+                Chưa có dữ liệu
+            </div>
+
+            <div th:each="item : ${byStatus}" class="bar-r">
+                <div style="width:160px;flex-shrink:0">
+                    <span class="pill" th:classappend="${item.cssClass}" th:text="${item.label}">Trạng thái</span>
+                </div>
+                <div class="bar-trk">
+                    <div class="bar-fill"
+                         th:style="'width:' + ${item.percent} + '%;background:var(--side-ac)'"
+                         th:classappend="${item.cssClass == 'p-red'} ? 'bar-fill-red'
+                                       : (${item.cssClass == 'p-green'} ? 'bar-fill-green' : '')"></div>
+                </div>
+                <div class="bar-num" th:text="${item.count}">0</div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- ── Recent applications table ─────────────────────────────────── -->
     <div class="card">
         <div class="card-hd">

@@ -5,6 +5,7 @@ import com.psms.dto.request.UpdateProfileRequest;
 import com.psms.dto.response.CitizenProfileResponse;
 import com.psms.entity.Citizen;
 import com.psms.entity.User;
+import com.psms.enums.ActionType;
 import com.psms.exception.BusinessException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.repository.CitizenRepository;
@@ -73,6 +74,11 @@ public class ProfileService {
      * @return CitizenProfileResponse sau khi cập nhật
      * @throws BusinessException nếu email đã tồn tại hoặc có lỗi validate khác
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#result.id",
+        description = "'Cập nhật thông tin tài khoản cá nhân: ' + #result.fullName + ' (' + #result.email + ')'")
     @Transactional
     public CitizenProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
         Citizen citizen = citizenRepository.findByUserId(userId)
@@ -117,6 +123,12 @@ public class ProfileService {
      *   <li>Mật khẩu mới phải ≥ 8 ký tự </li>
      * </ul>
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#userId",
+        description = "Cập nhật mật khẩu tài khoản cá nhân"
+    )
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
         User user = userRepository.findById(userId)
@@ -141,6 +153,12 @@ public class ProfileService {
     /**
      * Bật/tắt nhận email thông báo.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_USER,
+        entityType = "users",
+        entityIdSpEL = "#userId",
+        description = "'Cập nhật trạng thái nhận email thông báo: ' + (#enabled ? 'BẬT' : 'TẮT')"
+    )
     @Transactional
     public void updateEmailNotifSetting(Long userId, boolean enabled) {
         User user = userRepository.findById(userId)
