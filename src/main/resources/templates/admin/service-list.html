@@ -67,7 +67,7 @@
         </tr>
         <tr th:each="svc : ${services.content}" th:id="'svc-row-' + ${svc.id}">
             <td>
-                <div style="font-weight:600;color:var(--text)" th:text="${svc.name}">Tên DV</div>
+                <div class="svc-name" style="font-weight:600;color:var(--text)" th:text="${svc.name}">Tên DV</div>
                 <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" th:text="${svc.code}">DV-001</div>
             </td>
             <td>

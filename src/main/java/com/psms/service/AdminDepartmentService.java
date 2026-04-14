@@ -108,15 +108,25 @@ public class AdminDepartmentService {
         dept.setActive(true);
 
         if (request.getLeaderId() != null) {
-            User leader = userRepository.findById(request.getLeaderId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Trưởng phòng không tồn tại: id=" + request.getLeaderId()));
-            dept.setLeader(leader);
+            validUserManager(dept, request.getLeaderId());
         }
 
         departmentRepository.save(dept);
         log.info("Admin created department: code={}, name={}", dept.getCode(), dept.getName());
         return mapToResponse(dept);
     }
+
+    private void validUserManager(Department dept, Long leaderId) {
+        User leader = userRepository.findById(leaderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Trưởng phòng không tồn tại: id=" + leaderId));
+        boolean isManager = leader.getRoles().stream()
+            .anyMatch(role -> role.getName() == com.psms.enums.RoleName.MANAGER);
+        if (!isManager) {
+            throw new BusinessException("Chỉ có thể chọn user có vai trò 'MANAGER' làm trưởng phòng.");
+        }
+        dept.setLeader(leader);
+    }
+
 
     // ─── Update ────────────────────────────────────────────────────────────────
 
@@ -134,9 +144,7 @@ public class AdminDepartmentService {
         dept.setEmail(request.getEmail());
 
         if (request.getLeaderId() != null) {
-            User leader = userRepository.findById(request.getLeaderId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Trưởng phòng không tồn tại: id=" + request.getLeaderId()));
-            dept.setLeader(leader);
+            validUserManager(dept, request.getLeaderId());
         } else {
             // leaderId = null → xóa trưởng phòng
             dept.setLeader(null);
@@ -167,6 +175,13 @@ public class AdminDepartmentService {
             throw new BusinessException(
                     "Không thể xóa phòng ban \"" + dept.getName() + "\" vì còn "
                     + staffCount + " cán bộ đang thuộc phòng ban này. Hãy chuyển cán bộ trước.");
+        }
+
+        long  serviceCount = departmentRepository.countServicesByDepartmentId(id);
+        if (serviceCount > 0) {
+            throw new BusinessException(
+                    "Không thể xóa phòng ban \"" + dept.getName() + "\" vì còn "
+                    + serviceCount + " dịch vụ đang thuộc phòng ban này. Hãy chuyển dịch vụ trước.");
         }
         departmentRepository.delete(dept);
         log.info("Admin deleted department: id={}, code={}", id, dept.getCode());

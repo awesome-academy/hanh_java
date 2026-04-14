@@ -73,7 +73,7 @@ async function submitEditDept(e) {
         if (row) {
             const s = json.data;
             // Col 1: tên phòng ban
-            const nameEl = row.querySelector('div[style*="font-weight:600"]');
+            const nameEl = row.querySelector('.dept-name');
             if (nameEl) nameEl.textContent = s.name || '';
             // Col 2: SĐT + email
             const phoneDivs = row.cells[1]?.querySelectorAll('div');
@@ -81,9 +81,25 @@ async function submitEditDept(e) {
             if (phoneDivs?.[1]) phoneDivs[1].textContent = s.email || '';
             // Col 3: trưởng phòng
             if (row.cells[2]) {
-                row.cells[2].innerHTML = s.leaderName
-                    ? `<span><div>${s.leaderName}</div><div style="font-size:12px;color:var(--muted)">${s.leaderEmail || ''}</div></span>`
-                    : `<span style="color:var(--muted)">Chưa có</span>`;
+                const leaderCell = row.cells[2];
+                leaderCell.textContent = '';
+                if (s.leaderName) {
+                    const wrapper = document.createElement('span');
+                    const leaderNameDiv = document.createElement('div');
+                    const leaderEmailDiv = document.createElement('div');
+                    leaderNameDiv.textContent = s.leaderName;
+                    leaderEmailDiv.textContent = s.leaderEmail || '';
+                    leaderEmailDiv.style.fontSize = '12px';
+                    leaderEmailDiv.style.color = 'var(--muted)';
+                    wrapper.appendChild(leaderNameDiv);
+                    wrapper.appendChild(leaderEmailDiv);
+                    leaderCell.appendChild(wrapper);
+                } else {
+                    const emptyLeader = document.createElement('span');
+                    emptyLeader.style.color = 'var(--muted)';
+                    emptyLeader.textContent = 'Chưa có';
+                    leaderCell.appendChild(emptyLeader);
+                }
             }
             // Sync data-* trên nút Sửa
             const editBtn = row.querySelector('.bsm.be');
@@ -103,8 +119,13 @@ async function deleteDept(btn) {
     const deptId     = btn.dataset.deptId;
     const name       = btn.dataset.name;
     const staffCount = parseInt(btn.dataset.staffCount || '0');
+    const serviceCount = parseInt(btn.dataset.serviceCount || '0');
     if (staffCount > 0) {
         alert(`Không thể xóa phòng ban "${name}".\nCòn ${staffCount} cán bộ thuộc phòng ban này.\nHãy chuyển cán bộ sang phòng ban khác trước.`);
+        return;
+    }
+    if (serviceCount > 0) {
+        alert(`Không thể xóa phòng ban "${name}".\nCòn ${serviceCount} dịch vụ thuộc phòng ban này.\nHãy chuyển dịch vụ sang phòng ban khác trước.`);
         return;
     }
     if (!confirm(`Xóa phòng ban "${name}"?\nHành động này không thể hoàn tác.`)) return;

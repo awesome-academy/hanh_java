@@ -80,7 +80,7 @@ async function submitEditService(e) {
         if (row) {
             const s = json.data;
             // Col 1: tên dịch vụ
-            const nameEl = row.querySelector('div[style*="font-weight:600"]');
+            const nameEl = row.querySelector('.svc-name');
             if (nameEl) nameEl.textContent = s.name || '';
             // Col 2: lĩnh vực badge
             const catBadge = row.cells[1]?.querySelector('.pill');

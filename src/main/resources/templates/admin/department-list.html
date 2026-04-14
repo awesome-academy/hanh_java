@@ -58,7 +58,7 @@
         </tr>
         <tr th:each="dept : ${departments.content}" th:id="'dept-row-' + ${dept.id}">
             <td>
-                <div style="font-weight:600;color:var(--text)" th:text="${dept.name}">Phòng ban</div>
+                <div class="dept-name" style="font-weight:600;color:var(--text)" th:text="${dept.name}">Phòng ban</div>
                 <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" th:text="${dept.code}">PB-001</div>
             </td>
             <td style="font-size:13px">
@@ -98,6 +98,7 @@
                             th:data-dept-id="${dept.id}"
                             th:data-name="${dept.name}"
                             th:data-staff-count="${dept.staffCount}"
+                            th:data-service-count="${dept.serviceCount}"
                             onclick="deleteDept(this)">Xóa</button>
                 </div>
             </td>
