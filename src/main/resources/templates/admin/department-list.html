@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout(
+        title      = 'Quản lý phòng ban',
+        content    = ~{::content},
+        activePage = 'departments',
+        breadcrumbLabel = 'Quản lý phòng ban')}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<body>
+<th:block th:fragment="content">
+
+<!-- ── Page header ──────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text)">Quản lý phòng ban</h2>
+        <p style="margin:4px 0 0;color:var(--muted);font-size:13px">
+            Tổng cộng <strong th:text="${departments.totalElements}">0</strong> phòng ban
+        </p>
+    </div>
+    <button class="btn btn-p" onclick="openCreateDeptModal()">+ Thêm phòng ban</button>
+</div>
+
+<!-- ── Filter bar ────────────────────────────────────────────────────── -->
+<form class="fbar" method="get" th:action="@{/admin/departments}">
+    <input class="fi" type="text" name="keyword"
+           th:value="${keyword}" placeholder="Tìm tên phòng ban...">
+
+    <select class="fi-s" name="isActive">
+        <option value="">Tất cả trạng thái</option>
+        <option value="true"  th:selected="${isActive == true}">Đang hoạt động</option>
+        <option value="false" th:selected="${isActive == false}">Tạm dừng</option>
+    </select>
+
+    <button type="submit" class="btn btn-p" style="height:36px;padding:0 14px">Tìm kiếm</button>
+    <a th:href="@{/admin/departments}" class="btn btn-o" style="height:36px;padding:0 14px;display:inline-flex;align-items:center">Reset</a>
+</form>
+
+<!-- ── Department table ──────────────────────────────────────────────── -->
+<div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+        <thead>
+        <tr>
+            <th>Mã / Tên phòng ban</th>
+            <th>SĐT / Email</th>
+            <th>Trưởng phòng</th>
+            <th>Số CB</th>
+            <th>Số DV</th>
+            <th>Trạng thái</th>
+            <th style="width:120px">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(departments.content)}">
+            <td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">
+                Không tìm thấy phòng ban nào
+            </td>
+        </tr>
+        <tr th:each="dept : ${departments.content}" th:id="'dept-row-' + ${dept.id}">
+            <td>
+                <div class="dept-name" style="font-weight:600;color:var(--text)" th:text="${dept.name}">Phòng ban</div>
+                <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" th:text="${dept.code}">PB-001</div>
+            </td>
+            <td style="font-size:13px">
+                <div th:text="${dept.phone} ?: '—'">—</div>
+                <div style="color:var(--muted);font-size:12px" th:text="${dept.email} ?: ''"></div>
+            </td>
+            <td style="font-size:13px">
+                <span th:if="${dept.leaderName != null}">
+                    <div th:text="${dept.leaderName}">Nguyễn Văn A</div>
+                    <div style="font-size:12px;color:var(--muted)" th:text="${dept.leaderEmail}"></div>
+                </span>
+                <span th:unless="${dept.leaderName != null}" style="color:var(--muted)">Chưa có</span>
+            </td>
+            <td>
+                <span class="pill p-blue" th:text="${dept.staffCount}">0</span>
+            </td>
+            <td>
+                <span class="pill p-gray" th:text="${dept.serviceCount}">0</span>
+            </td>
+            <td>
+                <span th:if="${dept.active}" class="pill p-green">Hoạt động</span>
+                <span th:unless="${dept.active}" class="pill p-gray">Tạm dừng</span>
+            </td>
+            <td>
+                <div style="display:flex;gap:4px">
+                    <button class="bsm be"
+                            th:data-dept-id="${dept.id}"
+                            th:data-name="${dept.name}"
+                            th:data-code="${dept.code}"
+                            th:data-address="${dept.address}"
+                            th:data-phone="${dept.phone}"
+                            th:data-email="${dept.email}"
+                            th:data-leader-id="${dept.leaderId}"
+                            onclick="openEditDeptModal(this)">Sửa</button>
+
+                    <button class="bsm bd"
+                            th:data-dept-id="${dept.id}"
+                            th:data-name="${dept.name}"
+                            th:data-staff-count="${dept.staffCount}"
+                            th:data-service-count="${dept.serviceCount}"
+                            onclick="deleteDept(this)">Xóa</button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ── Pagination ────────────────────────────────────────────────────── -->
+<div class="pg-bar" th:if="${departments.totalPages > 1}">
+    <span class="pg-info"
+          th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${departments.totalElements}">
+    </span>
+    <div class="pg-btns">
+        <span class="pg on" th:if="${!departments.hasPrevious()}">← Trước</span>
+        <a class="pg" th:unless="${!departments.hasPrevious()}"
+           th:href="@{/admin/departments(keyword=${keyword},isActive=${isActive},page=${departments.number - 1})}">
+            ← Trước
+        </a>
+        <a class="pg" th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
+           th:classappend="${i == departments.number} ? ' on'"
+           th:href="@{/admin/departments(keyword=${keyword},isActive=${isActive},page=${i})}"
+           th:text="${i + 1}">1</a>
+        <span class="pg on" th:if="${!departments.hasNext()}">Tiếp →</span>
+        <a class="pg" th:unless="${!departments.hasNext()}"
+           th:href="@{/admin/departments(keyword=${keyword},isActive=${isActive},page=${departments.number + 1})}">
+            Tiếp →
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: Tạo phòng ban
+     ═══════════════════════════════════════════════════════════ -->
+<div id="createDeptModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px">
+        <div class="modal-hd">
+            <h3>Thêm phòng ban mới</h3>
+            <button class="modal-close" onclick="closeModal('createDeptModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="createDeptForm" onsubmit="submitCreateDept(event)">
+                <div class="form-g2">
+                    <div class="fg">
+                        <label class="fl">Mã phòng ban *</label>
+                        <input class="fi2" name="code" placeholder="VD: PB-001" required maxlength="20">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Số điện thoại</label>
+                        <input class="fi2" name="phone" placeholder="0912 345 678" maxlength="20">
+                    </div>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Tên phòng ban *</label>
+                    <input class="fi2" name="name" placeholder="Nhập tên phòng ban..." required maxlength="200">
+                </div>
+                <div class="fg full">
+                    <label class="fl">Email liên hệ</label>
+                    <input class="fi2" type="email" name="email" placeholder="pb@example.gov.vn" maxlength="180">
+                </div>
+                <div class="fg full">
+                    <label class="fl">Địa chỉ</label>
+                    <textarea class="fi2" name="address" rows="2" placeholder="Địa chỉ trụ sở..."></textarea>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Trưởng phòng</label>
+                    <select class="fi2" name="leaderId">
+                        <option value="">-- Chưa chỉ định --</option>
+                        <option th:each="mgr : ${managers}"
+                                th:value="${mgr.id}" th:text="${mgr.fullName} + ' (' + ${mgr.email} + ')'">
+                            Nguyễn Văn A
+                        </option>
+                    </select>
+                </div>
+                <div id="createDeptError" class="modal-error"></div>
+                <div class="modal-ft">
+                    <button type="button" class="btn btn-o" onclick="closeModal('createDeptModal')">Hủy</button>
+                    <button type="submit" class="btn btn-p">Tạo phòng ban</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: Sửa phòng ban
+     ═══════════════════════════════════════════════════════════ -->
+<div id="editDeptModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px">
+        <div class="modal-hd">
+            <h3>Cập nhật phòng ban</h3>
+            <button class="modal-close" onclick="closeModal('editDeptModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="editDeptForm" onsubmit="submitEditDept(event)">
+                <input type="hidden" id="editDeptId">
+                <div class="fg full">
+                    <label class="fl">Mã phòng ban</label>
+                    <input class="fi2 dis" id="editDeptCode" disabled>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Tên phòng ban *</label>
+                    <input class="fi2" id="editDeptName" required maxlength="200">
+                </div>
+                <div class="form-g2">
+                    <div class="fg">
+                        <label class="fl">Số điện thoại</label>
+                        <input class="fi2" id="editDeptPhone" maxlength="20">
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Email liên hệ</label>
+                        <input class="fi2" type="email" id="editDeptEmail" maxlength="180">
+                    </div>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Địa chỉ</label>
+                    <textarea class="fi2" id="editDeptAddress" rows="2"></textarea>
+                </div>
+                <div class="fg full">
+                    <label class="fl">Trưởng phòng</label>
+                    <select class="fi2" id="editDeptLeaderId">
+                        <option value="">-- Chưa chỉ định --</option>
+                        <option th:each="mgr : ${managers}"
+                                th:value="${mgr.id}" th:text="${mgr.fullName} + ' (' + ${mgr.email} + ')'">
+                            Nguyễn Văn A
+                        </option>
+                    </select>
+                </div>
+                <div id="editDeptError" class="modal-error"></div>
+                <div class="modal-ft">
+                    <button type="button" class="btn btn-o" onclick="closeModal('editDeptModal')">Hủy</button>
+                    <button type="submit" class="btn btn-p">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ── Page JS ───────────────────────────────────────────────────────── -->
+<script th:src="@{/js/admin-dept.js}"></script>
+
+</th:block>
+</body>
+</html>
+

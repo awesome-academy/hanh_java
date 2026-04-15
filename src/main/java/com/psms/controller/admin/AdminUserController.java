@@ -33,7 +33,7 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    private static final String DEFAULT_SIZE = "10";
+    private static final String DEFAULT_PAGE_SIZE_STR = "10";
 
     // ─── GET list ──────────────────────────────────────────────────────────────
 
@@ -54,7 +54,7 @@ public class AdminUserController {
             @Parameter(description = "Filter theo trạng thái active") @RequestParam(required = false) Boolean isActive,
             @Parameter(description = "Từ khoá tìm kiếm (fullName, email)") @RequestParam(required = false) String keyword,
             @Parameter(description = "Trang (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size (1-100)") @RequestParam(defaultValue = DEFAULT_SIZE) int size) {
+            @Parameter(description = "Page size (1-100)") @RequestParam(defaultValue = DEFAULT_PAGE_SIZE_STR) int size) {
 
         if (page < 0) throw new IllegalArgumentException("'page' phải >= 0");
         if (size < 1 || size > 100) throw new IllegalArgumentException("'size' phải trong khoảng 1-100");

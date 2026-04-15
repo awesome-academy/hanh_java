@@ -283,13 +283,21 @@ async function submitEditUser(e) {
             return;
         }
         closeModal('editUserModal');
-        // Cập nhật DOM không reload trang
+        // Cập nhật DOM + data-* attributes để modal Sửa hiển thị đúng data lần sau
         const u = json.data;
         const row = document.getElementById(`user-row-${userId}`);
         if (row) {
             row.querySelector('.cell-fullname').textContent = u.fullName;
             const phoneEl = row.querySelector('.cell-phone');
             if (phoneEl) phoneEl.textContent = u.phone || '';
+            // Cập nhật data-* trên nút Sửa để openEditModal đọc đúng data mới
+            const editBtn = row.querySelector('.bsm.be');
+            if (editBtn) {
+                editBtn.dataset.fullName     = u.fullName     || '';
+                editBtn.dataset.phone        = u.phone        || '';
+                editBtn.dataset.departmentId = u.departmentId != null ? u.departmentId : '';
+                editBtn.dataset.position     = u.position     || '';
+            }
         }
         showPageFlash('Cập nhật thành công!');
     } catch (err) {

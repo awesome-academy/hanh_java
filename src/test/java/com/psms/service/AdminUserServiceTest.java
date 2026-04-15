@@ -359,7 +359,7 @@ class AdminUserServiceTest {
 
             assertThatThrownBy(() -> service.createUser(req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("Separation of Duties");
+                    .hasMessageContaining("CITIZEN");
         }
 
         @Test
@@ -375,7 +375,7 @@ class AdminUserServiceTest {
 
             assertThatThrownBy(() -> service.createUser(req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("Separation of Duties");
+                    .hasMessageContaining("CITIZEN");
         }
 
         @Test
@@ -391,7 +391,7 @@ class AdminUserServiceTest {
 
             assertThatThrownBy(() -> service.createUser(req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("Separation of Duties");
+                    .hasMessageContaining("CITIZEN");
         }
 
         @Test
@@ -405,7 +405,7 @@ class AdminUserServiceTest {
 
             assertThatThrownBy(() -> service.updateRoles(1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("Separation of Duties");
+                    .hasMessageContaining("CITIZEN");
 
             verify(userRepository, never()).save(any());
         }

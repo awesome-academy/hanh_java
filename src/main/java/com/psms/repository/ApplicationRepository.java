@@ -38,13 +38,39 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
 
     long countByAssignedStaffIdAndStatusIn(Long assignedStaffId, Collection<ApplicationStatus> statuses);
 
+    /** Đếm hồ sơ đang xử lý theo dịch vụ — dùng để chặn xóa dịch vụ */
+    long countByServiceTypeIdAndStatusIn(Long serviceTypeId, Collection<ApplicationStatus> statuses);
+
+    /**
+     * Batch count active applications grouped by serviceTypeId.
+     */
+    @Query("""
+        SELECT a.serviceType.id, COUNT(a) FROM Application a
+        WHERE a.serviceType.id IN :serviceTypeIds AND a.status IN :statuses
+        GROUP BY a.serviceType.id
+        """)
+    List<Object[]> countActiveByServiceTypeIdIn(
+            @Param("serviceTypeIds") Collection<Long> serviceTypeIds,
+            @Param("statuses") Collection<ApplicationStatus> statuses);
+
+    /**
+     * Batch count active applications grouped by assignedStaff (User) ID.
+     */
+    @Query("""
+        SELECT a.assignedStaff.id, COUNT(a) FROM Application a
+        WHERE a.assignedStaff.id IN :userIds AND a.status IN :statuses
+        GROUP BY a.assignedStaff.id
+        """)
+    List<Object[]> countActiveByAssignedStaffIdIn(
+            @Param("userIds") Collection<Long> userIds,
+            @Param("statuses") Collection<ApplicationStatus> statuses);
+
     long countByCitizenIdAndSubmittedAtBetween(Long citizenId, LocalDateTime from, LocalDateTime to);
 
     long countByStatusIn(Collection<ApplicationStatus> statuses);
 
     /**
      * Đếm hồ sơ quá hạn: chưa hoàn thành và đã qua processingDeadline.
-     * Dùng tham số enum thay vì string literal để tránh silent bug khi đổi tên enum.
      */
     @Query("""
         SELECT COUNT(a) FROM Application a
@@ -56,7 +82,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
 
     /**
      * Lấy danh sách hồ sơ pending mới nhất (dashboard).
-     * Dùng tham số enum thay vì string literal.
      */
     @Query("""
         SELECT a FROM Application a
@@ -68,8 +93,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
 
     /**
      * Danh sách hồ sơ của citizen, filter status tuỳ chọn, phân trang.
-     * countQuery tường minh để Spring Data không tự generate (và loại bỏ ORDER BY issue).
-     * Sort được xử lý hoàn toàn bởi Pageable.
      */
     @Query(value = """
         SELECT a FROM Application a

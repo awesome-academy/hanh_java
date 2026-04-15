@@ -3,6 +3,8 @@ package com.psms.repository;
 import com.psms.entity.ServiceType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -13,14 +15,19 @@ import java.util.Optional;
 
 public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long>, JpaSpecificationExecutor<ServiceType> {
 
+    /**
+     * Override JpaSpecificationExecutor.findAll để eager-fetch category + department trong 1 query.
+     * Tránh N+1 lazy load khi pagination trong AdminServiceTypeService.findAll().
+     */
+    @Override
+    @EntityGraph(attributePaths = {"category", "department"})
+    Page<ServiceType> findAll(Specification<ServiceType> spec, Pageable pageable);
+
     Optional<ServiceType> findByCode(String code);
 
     Optional<ServiceType> findByIdAndIsActiveTrue(Long id);
 
     boolean existsByCode(String code);
-
-    // Đếm DV active theo từng lĩnh vực — dùng cho category grid (serviceCount)
-    long countByCategory_IdAndIsActiveTrue(Integer categoryId);
 
     // Đếm tổng DV active — dùng cho hero stats
     long countByIsActiveTrue();
