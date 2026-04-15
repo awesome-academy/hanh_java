@@ -65,5 +65,11 @@ public interface StaffRepository extends JpaRepository<Staff, Long>, JpaSpecific
     /** Tìm Staff kèm user+department theo ID */
     @EntityGraph(attributePaths = {"user", "department"})
     Optional<Staff> findWithDetailsById(Long id);
+
+    /**
+     * Fetch toàn bộ staff kèm user + department trong 1 query — dùng cho CSV export.
+     */
+    @Query("SELECT s FROM Staff s JOIN FETCH s.user JOIN FETCH s.department ORDER BY s.id")
+    List<Staff> findAllForExport();
 }
 

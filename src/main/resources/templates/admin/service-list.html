@@ -18,7 +18,13 @@
             Tổng cộng <strong th:text="${services.totalElements}">0</strong> dịch vụ
         </p>
     </div>
-    <button class="btn btn-p" onclick="openCreateServiceModal()">+ Thêm dịch vụ</button>
+    <div th:replace="~{layout/action-btn-group :: actionBtnGroup(~{::buttons})}">
+        <th:block th:fragment="buttons">
+            <button class="btn btn-p" onclick="openCreateServiceModal()">+ Thêm dịch vụ</button>
+            <a href="/admin/export/services" class="btn btn-export">↓ Export CSV</a>
+            <button class="btn btn-o" onclick="openImportModal('services')" style="height:36px;padding:0 14px">↑ Import CSV</button>
+        </th:block>
+    </div>
 </div>
 
 <!-- ── Filter bar ────────────────────────────────────────────────────── -->
@@ -288,6 +294,9 @@
 
 <!-- ── Page JS ───────────────────────────────────────────────────────── -->
 <script th:src="@{/js/admin-service.js}"></script>
+
+<!-- ── Import CSV Modal ───────────────────────────────────────────────── -->
+<div th:insert="~{admin/import-modal :: importModal('services')}"></div>
 
 </th:block>
 </body>

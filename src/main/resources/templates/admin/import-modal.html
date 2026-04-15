@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!--
+  import-modal.html — Shared Thymeleaf fragment cho Import CSV.
+
+  Cách dùng trong template:
+    <div th:insert="~{admin/import-modal :: importModal('citizens')}"></div>
+
+  Param: type — loại import: citizens | services | departments | staff
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+
+<!--
+  Fragment importModal(type):
+  - type: string, VD "citizens", "services", "departments", "staff"
+  - Modal ID: import-modal-{type}
+-->
+<th:block th:fragment="importModal(type)">
+
+<div th:id="'import-modal-' + ${type}" class="modal-overlay">
+    <div class="modal-box">
+
+        <!-- Header -->
+        <div class="modal-hd">
+            <h3>
+                ↑ Import CSV —
+                <span th:switch="${type}">
+                    <span th:case="'citizens'">Công dân</span>
+                    <span th:case="'services'">Dịch vụ</span>
+                    <span th:case="'departments'">Phòng ban</span>
+                    <span th:case="*">Cán bộ</span>
+                </span>
+            </h3>
+            <button type="button" class="modal-close"
+                    th:attr="data-modal-id='import-modal-' + ${type}"
+                    onclick="closeModal(this.dataset.modalId)">✕</button>
+        </div>
+
+        <!-- Hướng dẫn -->
+        <div class="import-guide">
+            <p class="import-guide-ttl">Hướng dẫn:</p>
+            <ol class="import-guide-list">
+                <li>Tải file CSV mẫu bên dưới</li>
+                <li>Điền dữ liệu (không sửa header row)</li>
+                <li>Upload file và nhấn Import</li>
+            </ol>
+            <a th:href="'/admin/import/templates/' + ${type}" class="import-guide-link">
+               ↓ Tải file CSV mẫu
+            </a>
+        </div>
+
+        <!-- Form upload -->
+        <div class="modal-body">
+            <label class="form-lbl">Chọn file CSV</label>
+            <input type="file"
+                   th:id="'csv-file-' + ${type}"
+                   accept=".csv"
+                   class="import-file-input">
+
+            <!-- Giới hạn -->
+            <p class="import-file-hint">Tối đa 1.000 rows · Chỉ file .csv · Encoding UTF-8</p>
+        </div>
+
+        <!-- Error message -->
+        <div th:id="'import-error-' + ${type}" class="modal-error"></div>
+
+        <!-- Import result (hiển thị sau khi submit) -->
+        <div th:id="'import-result-' + ${type}" class="import-result"></div>
+
+        <!-- Actions — dùng data-type và data-modal-id để tránh th:onclick -->
+        <div class="modal-ft">
+            <button type="button" class="btn btn-o"
+                    th:attr="data-modal-id='import-modal-' + ${type}"
+                    onclick="closeModal(this.dataset.modalId)">Đóng</button>
+            <button type="button" class="btn btn-p"
+                    th:id="'import-btn-' + ${type}"
+                    th:attr="data-type=${type}"
+                    onclick="importCsv(this.dataset.type)">
+                ↑ Import
+            </button>
+        </div>
+
+    </div>
+</div>
+
+</th:block>
+
+</body>
+</html>
+
+
+

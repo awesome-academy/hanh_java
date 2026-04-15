@@ -1,0 +1,7 @@
+<!-- layout/action-btn-group.html -->
+<div th:fragment="actionBtnGroup(buttons)">
+    <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end">
+        <th:block th:replace="${buttons}" />
+    </div>
+</div>
+

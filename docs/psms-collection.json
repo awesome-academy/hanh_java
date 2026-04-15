@@ -1,0 +1,591 @@
+{
+  "info": {
+    "_postman_id": "psms-api-collection-v1",
+    "name": "PSMS — Public Service Management System",
+    "description": "API collection cho PSMS. Cần tạo Environment với biến: base_url, citizen_token, admin_token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "citizen_token", "value": "" },
+    { "key": "admin_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth — Citizen",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@123456\",\n  \"fullName\": \"Nguyễn Văn Test\",\n  \"phone\": \"0901234567\",\n  \"nationalId\": \"123456789012\",\n  \"address\": \"123 Đường Test, Quận 1, TP.HCM\",\n  \"dateOfBirth\": \"1990-01-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Citizen)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('citizen_token', json.data.accessToken);",
+                  "  console.log('citizen_token set:', json.data.accessToken.substring(0, 20) + '...');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"citizen@psms.local\",\n  \"password\": \"Citizen@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/auth/refresh-token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth — Admin",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('admin_token', json.data.accessToken);",
+                  "  console.log('admin_token set');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/admin/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@psms.local\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client — Service Catalog",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/client/service-categories"
+          }
+        },
+        {
+          "name": "Search Services",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/client/services?keyword=hộ&categoryId=1&page=0&size=10",
+              "query": [
+                { "key": "keyword", "value": "hộ" },
+                { "key": "categoryId", "value": "1" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/client/services/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client — Applications",
+      "item": [
+        {
+          "name": "Submit Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{citizen_token}}" }
+            ],
+            "url": "{{base_url}}/api/client/applications",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "serviceTypeId", "value": "1", "type": "text" },
+                { "key": "notes", "value": "Ghi chú test", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List My Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/client/applications?page=0&size=10",
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Application Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/client/applications/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client — Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/client/profile"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{citizen_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/client/profile",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyễn Văn Cập Nhật\",\n  \"phone\": \"0909876543\",\n  \"address\": \"456 Đường Mới\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{citizen_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/client/profile/change-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Citizen@123\",\n  \"newPassword\": \"NewPassword@123\",\n  \"confirmPassword\": \"NewPassword@123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client — Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/client/notifications"
+          }
+        },
+        {
+          "name": "Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/client/notifications/unread-count"
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{citizen_token}}" }],
+            "url": "{{base_url}}/api/client/notifications/read-all"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Dashboard",
+      "item": [
+        {
+          "name": "Get Stats (KPI)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/dashboard/stats"
+          }
+        },
+        {
+          "name": "Recent Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/dashboard/recent-applications"
+          }
+        },
+        {
+          "name": "Chart — By Category",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/dashboard/by-category"
+          }
+        },
+        {
+          "name": "Chart — By Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/dashboard/by-status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Applications",
+      "item": [
+        {
+          "name": "List Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/applications?page=0&size=20",
+              "query": [
+                { "key": "status", "value": "SUBMITTED", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Application Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/applications/1"
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/admin/applications/1/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newStatus\": \"RECEIVED\",\n  \"notes\": \"Đã tiếp nhận hồ sơ\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/admin/applications/1/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"staffId\": 1\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Users (SUPER_ADMIN)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users?page=0&size=20",
+              "query": [
+                { "key": "keyword", "value": "", "disabled": true },
+                { "key": "role", "value": "", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/admin/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newstaff@psms.local\",\n  \"password\": \"Staff@123\",\n  \"fullName\": \"Nhân Viên Mới\",\n  \"phone\": \"0912345678\",\n  \"roles\": [\"STAFF\"],\n  \"departmentId\": 1,\n  \"position\": \"Chuyên viên\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Lock User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/users/5/lock"
+          }
+        },
+        {
+          "name": "Unlock User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/users/5/unlock"
+          }
+        },
+        {
+          "name": "Delete User (soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/users/5"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/services"
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/admin/services",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cấp giấy phép xây dựng\",\n  \"description\": \"Mô tả dịch vụ\",\n  \"categoryId\": 1,\n  \"departmentId\": 1,\n  \"processingDays\": 15,\n  \"fee\": 50000,\n  \"requirements\": \"Giấy tờ cần thiết\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Toggle Active",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/services/1/toggle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/departments"
+          }
+        },
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/admin/departments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"PB-010\",\n  \"name\": \"Phòng Quản lý Đô thị\",\n  \"phone\": \"02812345678\",\n  \"email\": \"pb010@psms.local\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Staff",
+      "item": [
+        {
+          "name": "List Staff",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/staff?page=0&size=20",
+              "query": [
+                { "key": "departmentId", "value": "", "disabled": true },
+                { "key": "isAvailable", "value": "", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Activity Log",
+      "item": [
+        {
+          "name": "Get Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/logs?page=0&size=50",
+              "query": [
+                { "key": "action", "value": "", "disabled": true },
+                { "key": "userId", "value": "", "disabled": true },
+                { "key": "from", "value": "", "disabled": true },
+                { "key": "to", "value": "", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Purge Old Logs (SUPER_ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/logs/purge?days=90",
+              "query": [{ "key": "days", "value": "90" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — CSV Import/Export",
+      "item": [
+        {
+          "name": "Export Citizens CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/export/citizens"
+          }
+        },
+        {
+          "name": "Export Applications CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/export/applications"
+          }
+        },
+        {
+          "name": "Download Import Template — Citizens",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/import/templates/citizens"
+          }
+        },
+        {
+          "name": "Import Citizens CSV",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/admin/import/citizens",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rate Limit Test",
+      "item": [
+        {
+          "name": "Brute Force Login (expect 429)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"wrong\"\n}"
+            },
+            "description": "Gửi request này nhiều lần (>10 lần trong 1 phút) → expect 429 Too Many Requests với header Retry-After"
+          }
+        }
+      ]
+    }
+  ]
+}
+
