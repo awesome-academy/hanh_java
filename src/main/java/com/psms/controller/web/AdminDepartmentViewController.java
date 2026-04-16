@@ -56,7 +56,7 @@ public class AdminDepartmentViewController {
             Model model) {
 
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<AdminDepartmentResponse> departments =
                 adminDepartmentService.findAll(keyword, isActive, safePage, safeSize);

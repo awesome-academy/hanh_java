@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
  * <p>Design choice — tại sao dùng {@link Propagation#REQUIRES_NEW} cho {@code log()}:
  * <ul>
  *   <li>Log phải được commit <em>ngay lập tức</em>, độc lập với transaction của caller.</li>
- *   <li>Nếu caller rollback (vd: exception sau khi log), log vẫn tồn tại → agit sudit trail đầy đủ.</li>
+ *   <li>Nếu caller rollback (vd: exception sau khi log), log vẫn tồn tại → audit trail đầy đủ.</li>
  *   <li>Trade-off: mỗi log call mở thêm 1 connection DB ngắn — chấp nhận được vì
  *       log chỉ được ghi sau khi business logic thành công (Aspect không log khi exception).</li>
  * </ul>
@@ -75,7 +75,7 @@ public class ActivityLogService {
                                               int page, int size) {
         Specification<ActivityLog> spec = buildSpec(keyword, userId, action, from, to);
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+            Sort.by(Sort.Direction.DESC, "createdAt"));
         return repository.findAll(spec, pageable).map(this::toResponse);
     }
 

@@ -1,5 +1,7 @@
 package com.psms.dto.response;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 
@@ -42,8 +44,9 @@ public class ActivityLogResponse {
 
     /**
      * CSS class cho action badge — computed từ action, dùng trực tiếp trong Thymeleaf.
-     * Không persist, không serialize JSON (chỉ dùng ở MVC template).
+     * Không persist, không expose qua JSON API (đã annotate @JsonIgnore, chỉ dùng ở MVC template).
      */
+    @JsonIgnore
     public String getTagClass() {
         if (action == null) return "log-update";
         return switch (action) {

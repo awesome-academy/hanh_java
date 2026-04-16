@@ -77,7 +77,7 @@ public class ProfileService {
     @com.psms.annotation.LogActivity(
         action = ActionType.UPDATE_USER,
         entityType = "users",
-        entityIdSpEL = "#result.id",
+        entityIdSpEL = "#result.userId",
         description = "'Cập nhật thông tin tài khoản cá nhân: ' + #result.fullName + ' (' + #result.email + ')'")
     @Transactional
     public CitizenProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
@@ -156,8 +156,8 @@ public class ProfileService {
     @com.psms.annotation.LogActivity(
         action = ActionType.UPDATE_USER,
         entityType = "users",
-        entityIdSpEL = "#userId",
-        description = "'Cập nhật trạng thái nhận email thông báo: ' + (#enabled ? 'BẬT' : 'TẮT')"
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật trạng thái nhận email thông báo: ' + (#p1 ? 'BẬT' : 'TẮT')"
     )
     @Transactional
     public void updateEmailNotifSetting(Long userId, boolean enabled) {

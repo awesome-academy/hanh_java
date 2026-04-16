@@ -53,8 +53,9 @@ public class AdminLogViewController {
         LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
         LocalDateTime to   = toDate   != null ? toDate.atTime(23, 59, 59) : null;
 
+
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<ActivityLogResponse> logs = activityLogService.findLogs(keyword, null, action, from, to, safePage, safeSize);
         PaginationInfo pageInfo = PaginationUtils.calculate(logs);

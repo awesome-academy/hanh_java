@@ -4,6 +4,7 @@ import com.psms.annotation.LogActivity;
 import com.psms.dto.response.ActivityLogResponse;
 import com.psms.entity.ActivityLog;
 import com.psms.entity.User;
+import com.psms.enums.ActionType;
 import com.psms.repository.ActivityLogRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -65,7 +66,7 @@ class ActivityLogServiceTest {
             LogActivity ann = updateStatus.getAnnotation(LogActivity.class);
 
             assertThat(ann).as("@LogActivity phải có mặt trên updateStatus").isNotNull();
-            assertThat(ann.action()).isEqualTo("UPDATE_STATUS");
+            assertThat(ann.action()).isEqualTo(ActionType.UPDATE_STATUS);
             assertThat(ann.entityType()).isEqualTo("applications");
             assertThat(ann.entityIdSpEL()).isEqualTo("#p0");
         }
@@ -81,7 +82,7 @@ class ActivityLogServiceTest {
             LogActivity ann = assignStaff.getAnnotation(LogActivity.class);
 
             assertThat(ann).isNotNull();
-            assertThat(ann.action()).isEqualTo("ASSIGN_STAFF");
+            assertThat(ann.action()).isEqualTo(ActionType.ASSIGN_STAFF);
             assertThat(ann.entityType()).isEqualTo("applications");
         }
 
@@ -95,7 +96,7 @@ class ActivityLogServiceTest {
             LogActivity ann = createUser.getAnnotation(LogActivity.class);
 
             assertThat(ann).isNotNull();
-            assertThat(ann.action()).isEqualTo("CREATE_USER");
+            assertThat(ann.action()).isEqualTo(ActionType.CREATE_USER);
             assertThat(ann.entityType()).isEqualTo("users");
         }
     }
@@ -169,7 +170,7 @@ class ActivityLogServiceTest {
             given(activityLogRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .willReturn(page);
 
-            Page<ActivityLogResponse> result = activityLogService.findLogs(null, null, null, null, 0, 0);
+            Page<ActivityLogResponse> result = activityLogService.findLogs(null, null, null, null, 0, 10);
 
             assertThat(result.getTotalElements()).isEqualTo(1);
             ActivityLogResponse dto = result.getContent().get(0);
@@ -194,7 +195,7 @@ class ActivityLogServiceTest {
             given(activityLogRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .willReturn(page);
 
-            Page<ActivityLogResponse> result = activityLogService.findLogs(null, null, null, null, 0, 0);
+            Page<ActivityLogResponse> result = activityLogService.findLogs(null, null, null, null, 0, 10);
 
             ActivityLogResponse dto = result.getContent().get(0);
             assertThat(dto.getUserFullName()).isEqualTo("System");

@@ -93,8 +93,8 @@ public class DocumentService {
     @com.psms.annotation.LogActivity(
         action = ActionType.UPLOAD_DOC,
         entityType = "applications",
-        entityIdSpEL = "#applicationId",
-        description = "'Nộp bổ sung tài liệu cho hồ sơ #' + #applicationId"
+        entityIdSpEL = "#p0",
+        description = "'Nộp bổ sung tài liệu cho hồ sơ #' + #p0"
     )
     @Transactional
     public void uploadSupplementalDocuments(Long applicationId, Long userId,
@@ -141,8 +141,8 @@ public class DocumentService {
     @com.psms.annotation.LogActivity(
         action = ActionType.UPLOAD_DOC,
         entityType = "applications",
-        entityIdSpEL = "#applicationId",
-        description = "'Cán bộ upload tài liệu phản hồi cho hồ sơ #' + #applicationId"
+        entityIdSpEL = "#p0",
+        description = "'Cán bộ upload tài liệu phản hồi cho hồ sơ #' + #p0"
     )
     @Transactional
     public void uploadResponseDocuments(Long applicationId, List<MultipartFile> files, User admin) {
@@ -196,7 +196,7 @@ public class DocumentService {
         action = ActionType.DELETE_DOC,
         entityType = "application_documents",
         entityIdSpEL = "#docId",
-        description = "'Xóa tài liệu upload của hồ sơ #' + #applicationId"
+        description = "'Xóa tài liệu upload của hồ sơ #' + #p0"
     )
     @Transactional
     public void deleteDocument(Long applicationId, Long docId, User currentUser) {

@@ -55,7 +55,7 @@ public class AdminStaffViewController {
             Model model) {
 
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<AdminStaffResponse> staffPage =
                 adminStaffService.findAll(departmentId, isAvailable, safePage, safeSize);

@@ -84,7 +84,7 @@ public class AdminViewController {
 
         // Giới hạn page không âm và size trong khoảng 1..100 để tránh PageRequest.of(...) ném lỗi
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<AdminApplicationResponse> applications = adminApplicationService
                 .findAll(status, serviceTypeId, staffId, from, to, safePage, safeSize);

@@ -3,6 +3,8 @@ package com.psms.repository;
 import com.psms.entity.ActivityLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,5 +30,11 @@ public interface ActivityLogRepository
     @Modifying
     @Query("DELETE FROM ActivityLog l WHERE l.createdAt < :cutoff")
     int deleteOlderThan(@Param("cutoff") LocalDateTime cutoff);
-}
 
+    /**
+     * Paged query with Specification, always fetches user relation to avoid N+1.
+     */
+    @Override
+    @EntityGraph(attributePaths = "user")
+    Page<ActivityLog> findAll(Specification<ActivityLog> spec, Pageable pageable);
+}
