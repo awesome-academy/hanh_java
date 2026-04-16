@@ -96,6 +96,7 @@ class AuthControllerIntegrationTest {
     @BeforeEach
     void cleanupUsers() {
         // Xóa theo thứ tự FK dependency
+        // activity_logs phải xóa trước users (user_id FK ON DELETE SET NULL không áp dụng cho H2)
         refreshTokenRepository.deleteAll();
         revokedTokenRepository.deleteAll();
         citizenRepository.deleteAll();

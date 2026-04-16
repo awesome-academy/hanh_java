@@ -80,6 +80,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- ═══ AOP — ActivityLogAspect ═══ -->
+		<!-- aspectjweaver cần thiết cho @Aspect / @Around; spring-aop đã có sẵn qua JPA/Security -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+		</dependency>
+
 		<!-- ═══ MapStruct ═══ -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
@@ -111,6 +118,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>1.18.44</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -156,10 +164,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
+					<path>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok</artifactId>
+						<version>1.18.44</version>
+					</path>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok-mapstruct-binding</artifactId>

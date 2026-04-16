@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/admin :: layout(
+        title      = 'Activity Log',
+        content    = ~{::content},
+        activePage = 'logs',
+        breadcrumbLabel = 'Activity Log')}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<body>
+<th:block th:fragment="content">
+
+<!-- ── Page header ──────────────────────────────────────────────────── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text)">📜 Nhật ký hoạt động</h2>
+        <p class="text-muted" style="margin:4px 0 0;font-size:13px">
+            Tổng cộng <strong th:text="${logs.totalElements}">0</strong> bản ghi
+        </p>
+    </div>
+    <button sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-danger-sm"
+            onclick="openModal('purge-modal')">🗑 Xóa log cũ</button>
+</div>
+
+<!-- ── Filter bar ────────────────────────────────────────────────────── -->
+<form class="fbar" method="get" th:action="@{/admin/logs}" id="log-filter-form">
+
+    <!-- Free-text search: action OR actor name -->
+    <div style="position:relative;flex:2;min-width:220px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);
+                     color:var(--muted);pointer-events:none;font-size:13px">🔍</span>
+        <input class="fi" type="text" name="keyword" th:value="${keyword}"
+               placeholder="Tìm hành động, người thực hiện..."
+               style="padding-left:32px;width:100%;box-sizing:border-box">
+    </div>
+
+    <!-- Exact action filter -->
+    <select class="fi-s" name="action"
+            onchange="document.getElementById('log-filter-form').submit()">
+        <option value="">Tất cả hành động</option>
+        <option th:each="act : ${allActions}"
+                th:value="${act.name()}"
+                th:text="${act}"
+                th:selected="${act.name() == action}"></option>
+    </select>
+
+    <!-- Date range -->
+    <input class="fi" type="date" name="fromDate" th:value="${fromDate}"
+           title="Từ ngày" style="min-width:140px;flex:0 0 auto"
+           onchange="document.getElementById('log-filter-form').submit()">
+    <input class="fi" type="date" name="toDate" th:value="${toDate}"
+           title="Đến ngày" style="min-width:140px;flex:0 0 auto"
+           onchange="document.getElementById('log-filter-form').submit()">
+
+    <!-- Xóa filter — chỉ show khi có filter đang active -->
+    <a class="btn bv" th:href="@{/admin/logs}"
+       th:if="${keyword != null or action != null or fromDate != null or toDate != null}">✕ Xóa lọc</a>
+
+    <!-- Submit ẩn — kích hoạt bằng Enter trong text input -->
+    <button type="submit" style="display:none">Lọc</button>
+</form>
+
+<!-- ── Log feed ──────────────────────────────────────────────────────── -->
+<div class="log-list" th:if="${!logs.isEmpty()}">
+    <div class="log-item" th:each="log : ${logs.content}">
+
+        <!-- Timestamp -->
+        <div class="log-ts"
+             th:text="${log.createdAt != null ? #temporals.format(log.createdAt,'dd/MM HH:mm:ss') : '—'}">
+            30/03 09:42:11
+        </div>
+
+        <!-- Action badge — màu từ log.tagClass (computed ở DTO) -->
+        <span class="log-tag" th:classappend="${log.tagClass}" th:text="${log.action}">ACTION</span>
+
+        <!-- Actor + description inline, một dòng -->
+        <div class="log-inline">
+            <span class="log-actor"
+                  th:text="${log.userFullName != null ? log.userFullName : 'System'}">Actor</span>
+            <span class="log-sep">—</span>
+            <span class="log-desc" th:text="${log.description}">Mô tả hành động</span>
+        </div>
+
+    </div>
+</div>
+
+<!-- Empty state -->
+<div th:if="${logs.isEmpty()}" class="empty-box">
+    📋 Không có bản ghi log nào phù hợp với điều kiện lọc
+</div>
+
+<!-- ── Pagination ────────────────────────────────────────────────────── -->
+<div class="pg-bar" th:if="${logs.totalPages > 1}">
+    <span class="pg-info"
+          th:text="'Hiển thị ' + ${displayFrom} + '–' + ${displayTo} + ' / ' + ${logs.totalElements}">
+    </span>
+    <div class="pg-btns">
+        <span class="pg on" th:if="${!logs.hasPrevious()}">← Trước</span>
+        <a class="pg" th:unless="${!logs.hasPrevious()}"
+           th:href="@{/admin/logs(page=${logs.number - 1}, keyword=${keyword}, action=${action}, fromDate=${fromDate}, toDate=${toDate})}">
+            ← Trước
+        </a>
+        <a class="pg" th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
+           th:classappend="${i == logs.number} ? ' on'"
+           th:href="@{/admin/logs(page=${i}, keyword=${keyword}, action=${action}, fromDate=${fromDate}, toDate=${toDate})}"
+           th:text="${i + 1}">1</a>
+        <span class="pg on" th:if="${!logs.hasNext()}">Tiếp →</span>
+        <a class="pg" th:unless="${!logs.hasNext()}"
+           th:href="@{/admin/logs(page=${logs.number + 1}, keyword=${keyword}, action=${action}, fromDate=${fromDate}, toDate=${toDate})}">
+            Tiếp →
+        </a>
+    </div>
+</div>
+
+<!-- ── Purge modal (SUPER_ADMIN) ─────────────────────────────────────── -->
+<div sec:authorize="hasRole('SUPER_ADMIN')">
+    <div id="purge-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width:400px">
+            <div class="modal-hd">
+                <h3>🗑 Xóa log cũ</h3>
+                <button class="modal-close" onclick="closeModal('purge-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin:0 0 12px;font-size:13px;color:var(--text)">
+                    Xóa tất cả bản ghi log cũ hơn số ngày được chỉ định.
+                    <strong>Hành động không thể hoàn tác.</strong>
+                </p>
+                <div class="form-group">
+                    <label class="form-label">Xóa log cũ hơn (ngày)</label>
+                    <input id="purge-days" class="form-input" type="number"
+                           min="1" value="90" style="width:120px">
+                </div>
+            </div>
+            <div class="modal-ft">
+                <button class="btn bv" onclick="closeModal('purge-modal')">Hủy</button>
+                <button class="btn btn-danger" onclick="doPurge()">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+async function doPurge() {
+    const days = parseInt(document.getElementById('purge-days').value, 10);
+    if (isNaN(days) || days < 1) { alert('Vui lòng nhập số ngày hợp lệ.'); return; }
+    try {
+        // Gọi MVC endpoint (session-based, CSRF) thay vì REST /api/** (cần Bearer token)
+        const res = await fetch(`/admin/logs/purge?days=${days}`, {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            headers: getHeaders(false)
+        });
+        const json = await res.json();
+        closeModal('purge-modal');
+        showPageFlash(json.message || 'Xóa thành công!');
+        setTimeout(() => location.reload(), 1500);
+    } catch (e) {
+        alert('Có lỗi xảy ra: ' + e.message);
+    }
+}
+</script>
+
+<style>
+.btn-danger    { background: #EF4444; color: #fff; border: none; }
+.btn-danger:hover { background: #DC2626; }
+.btn-danger-sm { background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5;
+                 padding: 6px 12px; border-radius: 6px; font-size: 12px;
+                 font-weight: 600; cursor: pointer; }
+.btn-danger-sm:hover { background: #FECACA; }
+</style>
+
+</th:block>
+</body>
+</html>
+
+

@@ -5,6 +5,7 @@ import com.psms.dto.request.UpdateDepartmentRequest;
 import com.psms.dto.response.AdminDepartmentResponse;
 import com.psms.entity.Department;
 import com.psms.entity.User;
+import com.psms.enums.ActionType;
 import com.psms.exception.BusinessException;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.repository.DepartmentRepository;
@@ -93,6 +94,11 @@ public class AdminDepartmentService {
      *
      * @throws BusinessException nếu code đã tồn tại
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.CREATE_DEPT,
+        entityType = "departments",
+        entityIdSpEL = "#result.id",
+        description = "'Tạo mới phòng ban ' + #result.code + ' — ' + #result.name")
     @Transactional
     public AdminDepartmentResponse create(CreateDepartmentRequest request) {
         if (departmentRepository.existsByCode(request.getCode())) {
@@ -133,6 +139,11 @@ public class AdminDepartmentService {
     /**
      * Cập nhật phòng ban (không được đổi code).
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_DEPT,
+        entityType = "departments",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật phòng ban ' + #result.code + ' — ' + #result.name")
     @Transactional
     public AdminDepartmentResponse update(Long id, UpdateDepartmentRequest request) {
         Department dept = departmentRepository.findById(id)
@@ -165,6 +176,11 @@ public class AdminDepartmentService {
      *
      * @throws BusinessException nếu còn cán bộ trong phòng ban
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.DELETE_DEPT,
+        entityType = "departments",
+        entityIdSpEL = "#p0",
+        description = "'Xóa phòng ban #' + #p0")
     @Transactional
     public void delete(Long id) {
         Department dept = departmentRepository.findById(id)

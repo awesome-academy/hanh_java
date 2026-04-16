@@ -58,7 +58,7 @@ public class AdminServiceViewController {
             Model model) {
 
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<AdminServiceTypeResponse> services =
                 adminServiceTypeService.findAll(keyword, categoryId, isActive, safePage, safeSize);

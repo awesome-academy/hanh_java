@@ -7,6 +7,7 @@ import com.psms.entity.Application;
 import com.psms.entity.ApplicationStatusHistory;
 import com.psms.entity.Citizen;
 import com.psms.entity.ServiceType;
+import com.psms.enums.ActionType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.mapper.ApplicationMapper;
@@ -59,6 +60,12 @@ public class ApplicationService {
      * @param files   danh sách file đính kèm (nullable)
      * @return ApplicationResponse với applicationCode đã sinh
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.SUBMIT_APP,
+        entityType = "applications",
+        entityIdSpEL = "#result.id",
+        description = "'Nộp hồ sơ mới ' + #result.applicationCode + ' — ' + #result.serviceTypeName"
+    )
     @Transactional
     public ApplicationResponse submit(Long userId, SubmitApplicationRequest request,
                                       List<MultipartFile> files) {

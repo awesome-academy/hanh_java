@@ -4,6 +4,7 @@ import com.psms.dto.request.UpdateStaffRequest;
 import com.psms.dto.response.AdminStaffResponse;
 import com.psms.entity.Department;
 import com.psms.entity.Staff;
+import com.psms.enums.ActionType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.ResourceNotFoundException;
 import com.psms.repository.ApplicationRepository;
@@ -92,6 +93,12 @@ public class AdminStaffService {
     /**
      * Cập nhật thông tin cán bộ: chuyển phòng ban, đổi chức vụ, thay đổi trạng thái.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_STAFF,
+        entityType = "staff",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật cán bộ ' + #result.fullName + ' — ' + #result.departmentName")
+
     @Transactional
     public AdminStaffResponse update(Long id, UpdateStaffRequest request) {
         Staff staff = staffRepository.findById(id)

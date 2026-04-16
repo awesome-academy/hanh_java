@@ -3,12 +3,14 @@ package com.psms.service;
 import com.psms.dto.request.AssignStaffRequest;
 import com.psms.dto.request.UpdateStatusRequest;
 import com.psms.dto.response.AdminApplicationResponse;
+import com.psms.dto.response.DashboardChartResponse;
 import com.psms.dto.response.DashboardStatsResponse;
 import com.psms.dto.response.StaffSummaryResponse;
 import com.psms.entity.Application;
 import com.psms.entity.ApplicationStatusHistory;
 import com.psms.entity.Staff;
 import com.psms.entity.User;
+import com.psms.enums.ActionType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý nghiệp vụ admin: dashboard, quản lý hồ sơ, state machine, phân công.
@@ -108,6 +111,55 @@ public class AdminApplicationService {
         return applicationRepository.countByStatusIn(PENDING_STATUSES);
     }
 
+    // ─── Dashboard Charts (#13-03 / #13-04) ──────────────────────────────
+
+    /**
+     * Phân bố hồ sơ theo lĩnh vực dịch vụ — bar chart.
+     * Trả về list đã tính percent để CSS trực tiếp dùng width:${item.percent}%.
+     */
+    public List<DashboardChartResponse> getByCategory() {
+        List<Object[]> raw = applicationRepository.countGroupByCategory();
+        List<DashboardChartResponse> items = raw.stream()
+                .map(r -> DashboardChartResponse.builder()
+                        .label(r[0] != null ? r[0].toString() : "Khác")
+                        .count((Long) r[1])
+                        .build())
+                .collect(Collectors.toList());
+        return DashboardChartResponse.withPercent(items);
+    }
+
+    /**
+     * Phân bố hồ sơ theo trạng thái — donut/stat chart.
+     * Mỗi item có cssClass tương ứng với pill color trong CSS.
+     */
+    public List<DashboardChartResponse> getByStatus() {
+        List<Object[]> raw = applicationRepository.countGroupByStatus();
+        List<DashboardChartResponse> items = raw.stream()
+                .map(r -> {
+                    ApplicationStatus status = (ApplicationStatus) r[0];
+                    return DashboardChartResponse.builder()
+                            .label(status.getLabel())
+                            .count((Long) r[1])
+                            .cssClass(statusCssClass(status))
+                            .build();
+                })
+                .collect(Collectors.toList());
+        return DashboardChartResponse.withPercent(items);
+    }
+
+    /** Map ApplicationStatus → CSS class tương ứng pill trong components.css. */
+    private String statusCssClass(ApplicationStatus status) {
+        return switch (status) {
+            case SUBMITTED         -> "p-blue";
+            case RECEIVED          -> "p-blue";
+            case PROCESSING        -> "p-orange";
+            case ADDITIONAL_REQUIRED -> "p-yellow";
+            case APPROVED          -> "p-green";
+            case REJECTED          -> "p-red";
+            default                -> "p-gray";
+        };
+    }
+
     // ─── Admin list / detail ──────────────────────────────────────────────
 
     /**
@@ -152,6 +204,12 @@ public class AdminApplicationService {
      *   <li>Cập nhật receivedAt khi → RECEIVED, completedAt khi → APPROVED/REJECTED</li>
      * </ul>
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.UPDATE_STATUS,
+        entityType = "applications",
+        entityIdSpEL = "#p0",
+        description = "'Cập nhật trạng thái HS-' + #result.applicationCode + ': ' + #result.status.label"
+    )
     @Transactional
     public AdminApplicationResponse updateStatus(Long id, UpdateStatusRequest request, User actingUser) {
         Application app = applicationRepository.findById(id)
@@ -212,6 +270,12 @@ public class AdminApplicationService {
     /**
      * Phân công cán bộ xử lý hồ sơ. Chỉ cán bộ is_available=true mới được chọn.
      */
+    @com.psms.annotation.LogActivity(
+        action = ActionType.ASSIGN_STAFF,
+        entityType = "applications",
+        entityIdSpEL = "#p0",
+        description = "'Phân công HS-' + #result.applicationCode + ' cho ' + (#result.assignedStaffName ?: 'chưa phân công')"
+    )
     @Transactional
     public AdminApplicationResponse assignStaff(Long id, AssignStaffRequest request) {
         Application app = applicationRepository.findById(id)

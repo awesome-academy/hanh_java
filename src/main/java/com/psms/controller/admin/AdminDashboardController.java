@@ -2,6 +2,7 @@ package com.psms.controller.admin;
 
 import com.psms.dto.response.AdminApplicationResponse;
 import com.psms.dto.response.ApiResponse;
+import com.psms.dto.response.DashboardChartResponse;
 import com.psms.dto.response.DashboardStatsResponse;
 import com.psms.service.AdminApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,6 +51,24 @@ public class AdminDashboardController {
     @GetMapping("/recent-applications")
     public ResponseEntity<ApiResponse<List<AdminApplicationResponse>>> getRecentApplications() {
         return ResponseEntity.ok(ApiResponse.success("OK", adminApplicationService.getRecentPendingApplications()));
+    }
+
+    @Operation(
+        summary = "Phân bố hồ sơ theo lĩnh vực",
+        description = "Trả về danh sách {label, count, percent} sắp xếp theo count DESC. Dùng cho CSS bar chart."
+    )
+    @GetMapping("/by-category")
+    public ResponseEntity<ApiResponse<List<DashboardChartResponse>>> getByCategory() {
+        return ResponseEntity.ok(ApiResponse.success("OK", adminApplicationService.getByCategory()));
+    }
+
+    @Operation(
+        summary = "Phân bố hồ sơ theo trạng thái",
+        description = "Trả về danh sách {label, count, percent, cssClass} cho từng trạng thái. Dùng cho status donut chart."
+    )
+    @GetMapping("/by-status")
+    public ResponseEntity<ApiResponse<List<DashboardChartResponse>>> getByStatus() {
+        return ResponseEntity.ok(ApiResponse.success("OK", adminApplicationService.getByStatus()));
     }
 }
 

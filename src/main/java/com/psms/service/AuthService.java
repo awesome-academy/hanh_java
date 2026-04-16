@@ -150,6 +150,7 @@ public class AuthService {
                               List<RoleName> requiredRoles,
                               HttpServletResponse httpResponse,
                               HttpSession session) {
+        log.info("Login attempt: email={}, requiredRoles={}", request.getEmail(), requiredRoles);
         // Authenticate — ném BadCredentialsException nếu sai (GlobalExceptionHandler xử lý)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));

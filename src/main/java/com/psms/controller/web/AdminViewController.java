@@ -3,6 +3,7 @@ package com.psms.controller.web;
 import com.psms.dto.request.AssignStaffRequest;
 import com.psms.dto.request.UpdateStatusRequest;
 import com.psms.dto.response.AdminApplicationResponse;
+import com.psms.dto.response.DashboardChartResponse;
 import com.psms.dto.response.DashboardStatsResponse;
 import com.psms.dto.response.ServiceTypeResponse;
 import com.psms.dto.response.StaffSummaryResponse;
@@ -58,11 +59,10 @@ public class AdminViewController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        DashboardStatsResponse stats = adminApplicationService.getDashboardStats();
-        List<AdminApplicationResponse> recentApps = adminApplicationService.getRecentPendingApplications();
-
-        model.addAttribute("stats", stats);
-        model.addAttribute("recentApps", recentApps);
+        model.addAttribute("stats",      adminApplicationService.getDashboardStats());
+        model.addAttribute("recentApps", adminApplicationService.getRecentPendingApplications());
+        model.addAttribute("byCategory", adminApplicationService.getByCategory());
+        model.addAttribute("byStatus",   adminApplicationService.getByStatus());
         model.addAttribute("activePage", "dashboard");
         return "admin/dashboard";
     }
@@ -84,7 +84,7 @@ public class AdminViewController {
 
         // Giới hạn page không âm và size trong khoảng 1..100 để tránh PageRequest.of(...) ném lỗi
         int safePage = Math.max(page, 0);
-        int safeSize = Math.clamp(size, 1, 100);
+        int safeSize = Math.min(100, Math.max(size, 1));
 
         Page<AdminApplicationResponse> applications = adminApplicationService
                 .findAll(status, serviceTypeId, staffId, from, to, safePage, safeSize);
