@@ -162,6 +162,16 @@ select.fi2 {
 .btn-o    { background: transparent; color: var(--nav); border: 1.5px solid var(--nav); }
 .btn-d    { background: var(--danger); color: #fff; }
 .btn-full { width: 100%; }
+.btn-export {
+    background: transparent;
+    color: var(--nav);
+    border: 1.5px solid var(--nav);
+    height: 36px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
 
 /* Logout button */
 .btn-logout {

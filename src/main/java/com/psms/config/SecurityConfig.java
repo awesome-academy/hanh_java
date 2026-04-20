@@ -1,6 +1,7 @@
 package com.psms.config;
 
 import com.psms.security.JwtAuthenticationFilter;
+import com.psms.security.RateLimitFilter;
 import com.psms.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +60,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final RateLimitFilter rateLimitFilter;
 
     // ----------------------------------------------------------------
     // Filter chain cho REST API (/api/**)
@@ -107,6 +109,7 @@ public class SecurityConfig {
 
             // JWT filter chạy trước UsernamePasswordAuthenticationFilter
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
             // Không có config này: Spring Security trả 403 cho CẢ HAI trường hợp

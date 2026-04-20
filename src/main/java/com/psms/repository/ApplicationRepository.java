@@ -131,4 +131,25 @@ public interface ApplicationRepository extends JpaRepository<Application, Long>,
         GROUP BY a.status
         """)
     List<Object[]> countGroupByStatus();
+
+    /**
+     * Đếm tổng hồ sơ theo từng citizen — dùng cho CSV export công dân.
+     * row[0] = citizenId (Long), row[1] = count (Long)
+     */
+    @Query("SELECT a.citizen.id, COUNT(a) FROM Application a GROUP BY a.citizen.id")
+    List<Object[]> countAllGroupByCitizenId();
+
+    /**
+     * Fetch toàn bộ applications kèm associations cần thiết cho CSV export.
+     * JOIN FETCH tránh N+1 khi truy cập các trường lồng nhau.
+     */
+    @Query("""
+        SELECT a FROM Application a
+        JOIN FETCH a.citizen c
+        JOIN FETCH c.user cu
+        JOIN FETCH a.serviceType st
+        LEFT JOIN FETCH a.assignedStaff
+        ORDER BY a.submittedAt DESC
+        """)
+    List<Application> findAllForExport();
 }

@@ -318,7 +318,7 @@
     border-bottom: 1px solid var(--border);
 }
 
-.modal-hd h3 { font-size: 15px; font-weight: 700; }
+.modal-hd h3 { margin: 0; font-size: 15px; font-weight: 700; }
 
 .modal-close {
     background: var(--light);
@@ -395,3 +395,55 @@
 .tl-body     { padding: 16px; }
 .tl-dot-wrap { position: relative; margin-right: 10px; }
 .tl-content  { flex: 1; padding-bottom: 16px; }
+
+/* ── Import modal ────────────────────────────────────────── */
+.import-guide {
+    background: var(--light);
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 13px;
+    margin: 16px 20px;
+}
+
+.import-guide-ttl {
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+
+.import-guide-list {
+    margin: 0;
+    padding-left: 18px;
+    line-height: 1.8;
+}
+
+.import-guide-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--info);
+}
+
+.import-file-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.import-file-hint {
+    font-size: 11px;
+    color: var(--muted);
+    padding-top: 6px;
+    margin: 0;
+}
+
+.import-result {
+    display: none;
+    margin-bottom: 16px;
+    padding: 0 20px;
+}

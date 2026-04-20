@@ -435,3 +435,142 @@ async function deleteUser(userId, fullName) {
         showPageFlash('Lỗi kết nối. Vui lòng thử lại.', 'error');
     }
 }
+
+// ─── CSV Import ───────────────────────────────────────────────────────────────
+
+/**
+ * Import CSV: upload file lên /admin/import/{type} qua fetch().
+ * Sau khi xong → renderImportResult() hiển thị kết quả trong modal.
+ *
+ * @param {string} type - loại import: 'citizens' | 'services' | 'departments' | 'staff'
+ */
+async function importCsv(type) {
+    const fileInput = document.getElementById(`csv-file-${type}`);
+    const errorEl   = document.getElementById(`import-error-${type}`);
+    const resultEl  = document.getElementById(`import-result-${type}`);
+    const btn       = document.getElementById(`import-btn-${type}`);
+
+    // Reset trạng thái cũ
+    if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    if (resultEl) { resultEl.style.display = 'none'; resultEl.innerHTML = ''; }
+
+    if (!fileInput || !fileInput.files.length) {
+        if (errorEl) { errorEl.textContent = 'Vui lòng chọn file CSV trước khi import.'; errorEl.style.display = 'block'; }
+        return;
+    }
+
+    const file = fileInput.files[0];
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        if (errorEl) { errorEl.textContent = 'Chỉ chấp nhận file .csv'; errorEl.style.display = 'block'; }
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Đang import...'; }
+
+    try {
+        const csrf  = getCsrfToken();
+        const headers = { 'Accept': 'application/json' };
+        if (csrf) headers[getCsrfHeader()] = csrf;
+
+        const res  = await fetch(`/admin/import/${type}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers,
+            body: formData
+        });
+        const json = await res.json();
+
+        if (!res.ok) {
+            if (errorEl) { errorEl.textContent = json.message || 'Lỗi import. Vui lòng thử lại.'; errorEl.style.display = 'block'; }
+            return;
+        }
+        // Hiển thị kết quả
+        if (resultEl && json.data) {
+            renderImportResult(resultEl, json.data);
+            resultEl.style.display = 'block';
+        }
+    } catch (err) {
+        if (errorEl) { errorEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.'; errorEl.style.display = 'block'; }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '↑ Import'; }
+    }
+}
+
+/**
+ * Render kết quả import vào container element.
+ * Hiển thị: summary (total/success/failed) + bảng lỗi từng row nếu có.
+ *
+ * @param {HTMLElement} container - element để render vào
+ * @param {Object} result - { total, success, failed, errors: [{row, field, message}] }
+ */
+function renderImportResult(container, result) {
+    const isSuccess = result.failed === 0;
+    const summaryColor = isSuccess ? 'var(--success)' : (result.success > 0 ? 'var(--warn)' : 'var(--danger)');
+
+    let html = `
+      <div style="border:1px solid ${summaryColor};border-radius:8px;padding:12px;background:${isSuccess ? '#f0fdf4' : '#fffbeb'}">
+        <p style="margin:0 0 4px;font-weight:700;color:${summaryColor}">
+          ${isSuccess ? '✓ Import thành công' : '⚠ Import hoàn thành với lỗi'}
+        </p>
+        <p style="margin:0;font-size:13px">
+          Tổng cộng: <strong>${result.total}</strong> rows —
+          <span style="color:var(--success)">✓ ${result.success} thành công</span>
+          ${result.failed > 0 ? ` · <span style="color:var(--danger)">✗ ${result.failed} lỗi</span>` : ''}
+        </p>
+      </div>`;
+
+    // Bảng lỗi chi tiết nếu có
+    if (result.errors && result.errors.length > 0) {
+        html += `
+          <div style="margin-top:12px;max-height:200px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:var(--light)">
+                  <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Row</th>
+                  <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Field</th>
+                  <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Lỗi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${result.errors.map(e => `
+                  <tr>
+                    <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--muted)">${e.row}</td>
+                    <td style="padding:5px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--info)">${e.field}</td>
+                    <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--danger)">${e.message}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+/**
+ * Reset and open import modal for CSV import (citizens, services, departments, staff)
+ * @param {string} type - import type (e.g. 'citizens')
+ */
+function openImportModal(type) {
+    const modalId = 'import-modal-' + type;
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    // Reset file input
+    const fileInput = document.getElementById('csv-file-' + type);
+    if (fileInput) fileInput.value = '';
+    // Reset error
+    const errorDiv = document.getElementById('import-error-' + type);
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+    }
+    // Reset result
+    const resultDiv = document.getElementById('import-result-' + type);
+    if (resultDiv) {
+        resultDiv.style.display = 'none';
+        resultDiv.textContent = '';
+    }
+    openModal(modalId);
+}

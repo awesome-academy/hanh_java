@@ -101,6 +101,13 @@
 			<version>2.8.4</version>
 		</dependency>
 
+		<!-- ═══ CSV Import/Export ═══ -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.12.0</version>
+		</dependency>
+
 		<!-- ═══ Database ═══ -->
 		<dependency>
 			<groupId>com.mysql</groupId>

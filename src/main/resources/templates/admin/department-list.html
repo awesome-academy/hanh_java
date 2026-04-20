@@ -18,7 +18,13 @@
             Tổng cộng <strong th:text="${departments.totalElements}">0</strong> phòng ban
         </p>
     </div>
-    <button class="btn btn-p" onclick="openCreateDeptModal()">+ Thêm phòng ban</button>
+    <div th:replace="~{layout/action-btn-group :: actionBtnGroup(~{::buttons})}">
+        <th:block th:fragment="buttons">
+            <button class="btn btn-p" onclick="openCreateDeptModal()">+ Thêm phòng ban</button>
+            <a href="/admin/export/departments" class="btn btn-export">↓ Export CSV</a>
+            <button class="btn btn-o" onclick="openImportModal('departments')" style="height:36px;padding:0 14px">↑ Import CSV</button>
+        </th:block>
+    </div>
 </div>
 
 <!-- ── Filter bar ────────────────────────────────────────────────────── -->
@@ -239,6 +245,9 @@
 
 <!-- ── Page JS ───────────────────────────────────────────────────────── -->
 <script th:src="@{/js/admin-dept.js}"></script>
+
+<!-- ── Import CSV Modal ───────────────────────────────────────────────── -->
+<div th:insert="~{admin/import-modal :: importModal('departments')}"></div>
 
 </th:block>
 </body>

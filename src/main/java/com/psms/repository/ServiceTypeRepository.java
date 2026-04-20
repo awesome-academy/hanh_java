@@ -54,5 +54,12 @@ public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long>,
     // Lấy toàn bộ DV active, sắp xếp A-Z — dùng cho dropdown form nộp hồ sơ
     List<ServiceType> findAllByIsActiveTrueOrderByNameAsc();
 
+    /**
+     * Fetch toàn bộ service types kèm category + department — dùng cho CSV export.
+     */
+    @EntityGraph(attributePaths = {"category", "department"})
+    @Query("SELECT s FROM ServiceType s ORDER BY s.name")
+    List<ServiceType> findAllForExport();
+
 }
 

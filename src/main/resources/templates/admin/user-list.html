@@ -18,7 +18,13 @@
             Tổng cộng <strong th:text="${users.totalElements}">0</strong> tài khoản
         </p>
     </div>
-    <button class="btn btn-p" onclick="openCreateModal()">+ Tạo tài khoản</button>
+    <div th:replace="~{layout/action-btn-group :: actionBtnGroup(~{::buttons})}">
+        <th:block th:fragment="buttons">
+            <button class="btn btn-p" onclick="openCreateModal()">+ Tạo tài khoản</button>
+            <a href="/admin/export/citizens" class="btn btn-export">↓ Export CSV</a>
+            <button class="btn btn-o" onclick="openImportModal('citizens')" style="height:36px;padding:0 14px">↑ Import CSV</button>
+        </th:block>
+    </div>
 </div>
 
 <!-- ── Filter bar ────────────────────────────────────────────────────── -->
@@ -336,6 +342,8 @@
     </div>
 </div>
 
+<!-- ── Import CSV Modal ───────────────────────────────────────────────── -->
+<div th:insert="~{admin/import-modal :: importModal('citizens')}"></div>
 
 </th:block>
 </body>

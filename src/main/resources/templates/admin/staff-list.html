@@ -24,6 +24,8 @@
         <span class="pill p-green">0–4 HS</span>
         <span class="pill p-amber">5–7 HS</span>
         <span class="pill p-red">≥ 8 HS</span>
+        <a href="/admin/export/staff" class="btn btn-o" style="height:32px;padding:0 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;margin-left:8px">↓ Export CSV</a>
+        <button class="btn btn-o" onclick="openImportModal('staff')" style="height:32px;padding:0 12px;font-size:12px">↑ Import CSV</button>
     </div>
 </div>
 
@@ -44,7 +46,7 @@
     </select>
 
     <button type="submit" class="btn btn-p" style="height:36px;padding:0 14px">Lọc</button>
-    <a th:href="@{/admin/staff}" class="btn btn-o" style="height:36px;padding:0 14px;display:inline-flex;align-items:center">Reset</a>
+    <a th:href="@{/admin/staff}" class="btn btn-export">Reset</a>
 </form>
 
 <!-- ── Staff table ───────────────────────────────────────────────────── -->
@@ -165,6 +167,9 @@
 
 <!-- ── Page JS ───────────────────────────────────────────────────────── -->
 <script th:src="@{/js/admin-staff.js}"></script>
+
+<!-- ── Import CSV Modal ───────────────────────────────────────────────── -->
+<div th:insert="~{admin/import-modal :: importModal('staff')}"></div>
 
 </th:block>
 </body>

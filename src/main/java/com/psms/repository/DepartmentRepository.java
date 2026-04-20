@@ -43,5 +43,12 @@ public interface DepartmentRepository extends JpaRepository<Department, Long>, J
     /** Đếm số dịch vụ thuộc phòng ban (dùng trong AdminDepartmentResponse) */
     @Query("SELECT COUNT(s) FROM ServiceType s WHERE s.department.id = :deptId")
     long countServicesByDepartmentId(@Param("deptId") Long deptId);
+
+    /**
+     * Fetch toàn bộ departments kèm leader trong 1 query — dùng cho CSV export.
+     */
+    @EntityGraph(attributePaths = "leader")
+    @Query("SELECT d FROM Department d ORDER BY d.name")
+    List<Department> findAllWithLeader();
 }
 

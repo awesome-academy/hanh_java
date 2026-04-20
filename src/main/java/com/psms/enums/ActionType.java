@@ -10,4 +10,5 @@ public enum ActionType {
     CREATE_DEPT, UPDATE_DEPT, DELETE_DEPT,
     DELETE_DOC, UPLOAD_DOC,
     DELETE_LOG,
+    EXPORT, IMPORT,
 }
