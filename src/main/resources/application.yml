@@ -1,4 +1,9 @@
 # src/main/resources/application.yml
+server:
+  max-http-request-header-size: 32KB   # tăng từ 8KB lên 32KB để tránh lỗi "Request header is too large"
+  tomcat:
+    max-http-response-header-size: 32KB
+
 spring:
   profiles:
     active: dev
@@ -34,6 +39,21 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
+  # Mail — base config (spring.mail.host phải có để Spring Boot tạo JavaMailSender bean)
+  # Dev override: application-dev.yml (Mailtrap credentials)
+  # Prod override: application-prod.yml (env vars)
+  mail:
+    host: ${MAIL_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:${MAILTRAP_USER:placeholder}}
+    password: ${MAIL_PASSWORD:${MAILTRAP_PASS:placeholder}}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
 # Actuator
 management:
   endpoints:
@@ -48,6 +68,11 @@ management:
 jwt:
   expiration: 3600000          # 1 giờ (ms)
   refresh-expiration: 604800000 # 7 ngày (ms)
+
+# Email sender display
+email:
+  from: ${MAIL_FROM:noreply@psms.gov.vn}
+  from-name: "Cổng DVCQG"
 
 # File storage
 file:

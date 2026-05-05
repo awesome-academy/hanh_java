@@ -28,9 +28,10 @@ Hệ thống hướng đến việc số hoá toàn bộ quy trình hành chính
 **Trong phạm vi (In scope)**
 - Cổng công dân: đăng ký, đăng nhập, nộp hồ sơ, tra cứu, thông báo
 - Cổng quản trị: tiếp nhận, xử lý, phê duyệt hồ sơ; quản lý danh mục dịch vụ, phòng ban, cán bộ
-- Hệ thống thông báo: email + in-app notification
+- Hệ thống thông báo: email async + in-app notification + real-time WebSocket push
 - Nhật ký hoạt động: ghi lại toàn bộ thao tác
-- Import / Export dữ liệu CSV
+- Import / Export dữ liệu CSV và Excel (XLSX)
+- Đăng nhập qua OAuth2 (Google) cho công dân
 
 **Ngoài phạm vi (Out of scope)**
 - Thanh toán lệ phí trực tuyến (tích hợp cổng thanh toán)
@@ -324,11 +325,14 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 - Số hồ sơ quá hạn (`processing_deadline < NOW()` và chưa hoàn thành)
 
 **Biểu đồ phân bố hồ sơ theo lĩnh vực**
-- Bar chart CSS — không cần thư viện JS
+- Bar chart dùng **Chart.js** — dữ liệu từ `GET /api/admin/dashboard/by-category`
 - Hiển thị top 6 lĩnh vực có nhiều hồ sơ nhất trong tháng hiện tại
+- Màu bar theo design token, tooltip hiện số lượng + phần trăm
 
-**Biểu đồ trạng thái (Donut CSS)**
-- Tỷ lệ phần trăm theo từng trạng thái
+**Biểu đồ trạng thái (Doughnut Chart.js)**
+- Doughnut chart dùng **Chart.js** — dữ liệu từ `GET /api/admin/dashboard/by-status`
+- Màu segment theo `ApplicationStatus.badgeClass` (xanh/đỏ/vàng/xám)
+- Legend hiển thị label tiếng Việt + số lượng
 
 **Bảng hồ sơ mới nhất cần xử lý**
 - 10 hồ sơ gần nhất có status `SUBMITTED` hoặc `RECEIVED`
@@ -486,9 +490,12 @@ DRAFT → SUBMITTED → RECEIVED → PROCESSING → APPROVED
 ### 6.1 Export
 
 Tất cả export đều:
+- Hỗ trợ 2 format: **CSV** (mặc định) và **Excel XLSX** (Apache POI)
 - Set header `Content-Disposition: attachment; filename="..."`
-- Encoding UTF-8 BOM (để Excel đọc tiếng Việt đúng)
+- Encoding UTF-8 BOM cho CSV (để Excel đọc tiếng Việt đúng); XLSX không cần BOM
+- Query param: `?format=csv` hoặc `?format=xlsx` (default: `csv`)
 - Có thể filter trước khi export (áp dụng filter đang active trên trang list)
+- Excel XLSX: header row có background màu `#0D3B7C`, chữ trắng, bold; auto-size columns
 
 | Loại | Endpoint | Columns |
 |---|---|---|
@@ -607,7 +614,7 @@ Tất cả export đều:
 | Màu chủ đạo Admin | Dark sidebar `#111827` + Blue accent `#3B82F6` |
 | Responsive | Hỗ trợ tối thiểu 375px (mobile) đến 1440px (desktop) |
 
-### 9.2 Màn hình Client (8 màn hình)
+### 9.2 Màn hình Client (9 màn hình)
 
 | ID | Màn hình | Route |
 |---|---|---|
@@ -619,6 +626,7 @@ Tất cả export đều:
 | C-04 | Chi tiết hồ sơ + Timeline | `GET /applications/{id}` |
 | C-05 | Hồ sơ cá nhân | `GET /profile` |
 | C-06 | Thông báo | `GET /notifications` |
+| C-07 | Hoàn thiện profile OAuth2 | `GET/POST /auth/oauth2/complete-profile` |
 
 ### 9.3 Màn hình Admin (7 màn hình)
 
@@ -725,6 +733,8 @@ psms/
 | `MAIL_PASSWORD` | SMTP password |
 | `UPLOAD_DIR` | Thư mục lưu file upload |
 | `APP_BASE_URL` | URL gốc của app (dùng trong email template) |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 client ID (lấy từ Google Cloud Console) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret |
 
 ### 12.2 Profiles
 
@@ -783,4 +793,100 @@ psms/
 ---
 
 *Tài liệu liên quan: `psms_schema.sql` · `psms_gui_mockup.html`*
-*Cập nhật lần cuối: 2026-04-07 · v1.1*
+*Cập nhật lần cuối: 2026-04-28 · v1.3 — thêm OAuth2, WebSocket, Excel, Chart.js*
+
+---
+
+## 15. OAuth2 / Social Login
+
+> **Phạm vi:** Chỉ áp dụng cho **cổng công dân** (MVC layer).
+> Admin portal (`/admin/**`) **không** hỗ trợ OAuth2 — bắt buộc dùng email/password nội bộ.
+
+### 15.1 Mục tiêu
+
+Cho phép công dân đăng ký / đăng nhập nhanh bằng tài khoản Google mà không cần nhập mật khẩu, giảm friction đối với người dùng lần đầu.
+
+### 15.2 Flow đăng nhập Google
+
+```
+Citizen click "Đăng nhập bằng Google"
+  → Spring Security redirect → Google OAuth2 consent
+  → Google callback /login/oauth2/code/google
+  → OAuth2UserService.loadUser() — tra cứu/tạo User
+  → OAuth2LoginSuccessHandler
+      → issue JWT (JwtTokenProvider.generateAccessToken)
+      → refreshTokenService.create(user)
+      → session.setAttribute("ACCESS_TOKEN", token)   ← consistent với login thường
+  → redirect /
+```
+
+### 15.3 Account Linking — 3 trường hợp
+
+| Trường hợp | Điều kiện | Xử lý |
+|---|---|---|
+| **Mới hoàn toàn** | Không có User nào có email Google | Tạo `User` + `Citizen` mới; `eid_provider=GOOGLE`, `eid_subject=<sub>` |
+| **Email trùng** | Có User với email Google nhưng chưa link | Link account: set `eid_provider=GOOGLE`, `eid_subject=<sub>` vào User cũ |
+| **Thiếu CCCD** | User mới qua Google, chưa có CCCD | Redirect `GET /auth/oauth2/complete-profile` để nhập CCCD + ngày sinh |
+
+### 15.4 Schema liên quan (đã có sẵn)
+
+Bảng `users` đã có 2 column hỗ trợ OAuth2:
+- `eid_provider VARCHAR(50)` — ví dụ: `GOOGLE`, `FACEBOOK`, `VNEID`
+- `eid_subject VARCHAR(255)` — subject ID từ provider (Google `sub` claim)
+
+User đăng nhập OAuth2 không có `password` (null) — không thể login bằng form thường.
+
+### 15.5 Business Rules
+
+- Citizen đã link Google vẫn có thể đổi sang email/password (qua trang Profile → "Đặt mật khẩu")
+- Một Google account chỉ link được 1 PSMS account — nếu `eid_subject` đã tồn tại → trả lỗi
+- Sau OAuth2 login thành công: hệ thống **vẫn issue JWT** như login thường → toàn bộ token infrastructure (refresh, revoke, blacklist) hoạt động giống nhau
+- Profile completion page (C-07): bắt buộc nhập CCCD + ngày sinh trước khi vào hệ thống; `email` và `fullName` đã auto-fill từ Google claims
+
+### 15.6 Môi trường dev
+
+Dùng **Keycloak** (Docker) làm OIDC provider mock thay thế Google — cùng giao thức, không cần internet.
+
+---
+
+## 16. Real-time Notification (WebSocket + STOMP)
+
+> **Mục tiêu:** Thay thế polling 30 giây trong `client.js` bằng push notification qua WebSocket, giảm server load và cải thiện UX.
+
+### 16.1 Kiến trúc
+
+```
+Client (SockJS + STOMP)  ←──────  Spring WebSocket Broker
+                          subscribe /user/queue/notifications
+                          ←── message khi có notification mới
+```
+
+- **SockJS**: fallback HTTP long-polling nếu WebSocket bị block (corporate firewall)
+- **STOMP**: message protocol trên WebSocket (frame `SUBSCRIBE`, `MESSAGE`, `SEND`)
+- **User destination**: `/user/queue/notifications` — chỉ push đến đúng citizen đang login
+
+### 16.2 Authentication trên WebSocket
+
+- JWT được gửi qua **query parameter** khi connect: `/ws?token=<accessToken>`
+- `JwtHandshakeInterceptor` validate token trước khi upgrade HTTP → WebSocket
+- Nếu token không hợp lệ → reject handshake, client thấy connection error → fallback polling
+
+### 16.3 Sự kiện trigger push
+
+| Sự kiện | Dữ liệu push |
+|---|---|
+| Trạng thái HS thay đổi | `{ type: "STATUS_UPDATED", applicationCode, newStatus, newStatusLabel }` |
+| Có notification mới bất kỳ | `{ type: "NEW_NOTIFICATION", unreadCount }` |
+
+### 16.4 Client-side behavior
+
+- Khi WebSocket message đến: cập nhật badge số thông báo + hiện `showToast()`
+- **Fallback**: nếu WebSocket connect thất bại sau 3 lần thử → chuyển sang polling 60s (tăng từ 30s)
+- Disconnect tự động khi tab/window đóng
+
+### 16.5 Business Rules
+
+- WebSocket chỉ dành cho **citizen** (cổng công dân); admin portal vẫn dùng polling (đủ dùng)
+- Server không lưu WebSocket session vào DB — connection state thuần in-memory
+- Nếu server restart: client tự reconnect sau backoff 5s → 10s → 30s
+- STOMP broker: **in-memory** (`SimpleBroker`) — không cần RabbitMQ/ActiveMQ cho scale hiện tại

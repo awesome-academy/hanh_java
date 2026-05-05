@@ -25,7 +25,11 @@ Khi implement một task, tra bảng này để biết cần đọc section nào
 | 5.7 Phân công cán bộ | Rules: workload indicator, chỉ CB available | **A-06** Staff list | `## A-02 → A-07` |
 | 5.8 Activity Log | Rules: color-coded tags, purge chỉ SUPER_ADMIN | **A-07** Log list | `## A-02 → A-07` |
 | 6. Import/Export | Rules: UTF-8 BOM, partial failure CSV | Nút trên mọi admin list page | `## Admin table action buttons` |
+| 6.1 Export Excel | Rules: POI XLSX, header style, query param format | Nút "↓ Excel" toolbar admin list | `## Export button — Excel / CSV dropdown` |
 | 7. Notification | Rules: async email, type enum | Badge trên topbar, C-06 feed | `## C-06`, `## Topbar — Client` |
+| 15. OAuth2 Login | Rules: account linking 3 cases, citizen only, issue JWT sau | `auth/login.html` button + **C-07** complete profile | `## C-07 · OAuth2 Profile Completion` |
+| 16. WebSocket Notification | Rules: /user/queue, JWT handshake, fallback polling | Badge topbar, `js/client.js` | `## WebSocket — Real-time Notification` |
+| 5.2 Dashboard (Chart.js) | Rules: BY-category + by-status API data | **A-01** Dashboard canvas | `## A-01 (update) · Dashboard — Chart.js` |
 
 ---
 

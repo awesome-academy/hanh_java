@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--
+  Email layout fragment — dùng chung cho tất cả email templates.
+
+  Cách dùng trong template con:
+    <div th:replace="~{email/layout :: wrap(~{::body-content}, 'Tiêu đề', '#0D3B7C')}">
+      <div th:ref="body-content">... nội dung riêng ...</div>
+    </div>
+
+  Lưu ý: CSS được inline trực tiếp vào style="" attribute (không dùng <style> block)
+  vì Gmail, Outlook, Yahoo Mail strip toàn bộ <style> block trong <head>.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+
+<!--
+  Fragment: wrap(content, headerColor)
+    content     — th:ref fragment chứa nội dung chính của email
+    headerColor — mã màu hex cho header bar (vd: #0D3B7C, #16A34A, #DC2626, #D97706)
+-->
+<div th:fragment="wrap(content, headerColor)"
+     style="margin:0;padding:0;background:#F0F4FA;font-family:'Segoe UI',system-ui,sans-serif;color:#1A2540;">
+
+  <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+
+    <!-- HEADER — màu thay đổi theo loại email -->
+    <div th:style="|background:${headerColor};padding:28px 32px;|">
+      <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Cổng Dịch vụ công Quốc gia</h1>
+      <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Thông báo tự động — vui lòng không trả lời email này</p>
+    </div>
+
+    <!-- BODY — nội dung được inject từ template con -->
+    <div style="padding:28px 32px;" th:insert="${content}">
+      <!-- placeholder, sẽ bị replace bởi template con -->
+    </div>
+
+    <!-- FOOTER — dùng chung -->
+    <div style="background:#F1F5F9;padding:18px 32px;text-align:center;font-size:12px;color:#94A3B8;border-top:1px solid #E2E8F0;">
+      © 2026 Cổng Dịch vụ công Quốc gia &nbsp;·&nbsp; Email tự động, không trả lời
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
+

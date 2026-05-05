@@ -55,6 +55,7 @@ public class AdminApplicationService {
     private final StaffMapper staffMapper;
     private final DocumentService documentService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     /** Số hồ sơ pending tối đa hiển thị trên dashboard. */
     private static final int RECENT_PENDING_LIMIT = 10;
@@ -257,6 +258,20 @@ public class AdminApplicationService {
 
         // Gửi thông báo in-app cho citizen về thay đổi trạng thái
         notificationService.notifyStatusChange(app, newStatus, request.getNotes());
+
+        // Gửi email async — extract values TRONG transaction để tránh LazyInitializationException.
+        // app.getCitizen() và app.getServiceType() là @ManyToOne LAZY — phải access ở đây
+        // trong khi Hibernate session còn mở, trước khi @Async thread chạy.
+        String citizenEmail    = app.getCitizen().getUser().getEmail();
+        String citizenName     = app.getCitizen().getUser().getFullName();
+        boolean emailEnabled   = app.getCitizen().getUser().isEmailNotifEnabled();
+        String appCode         = app.getApplicationCode();
+        String svcName         = app.getServiceType().getName();
+        String deadlineStr     = app.getProcessingDeadline() != null
+                ? app.getProcessingDeadline().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                : "—";
+        emailService.sendStatusUpdate(citizenEmail, citizenName, emailEnabled,
+                appCode, svcName, deadlineStr, newStatus, request.getNotes());
 
         log.info("Status updated: appId={} {} -> {} by userId={}",
                 id, oldStatus, newStatus, actingUser.getId());

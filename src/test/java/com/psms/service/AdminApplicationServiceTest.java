@@ -3,6 +3,7 @@ package com.psms.service;
 import com.psms.dto.request.UpdateStatusRequest;
 import com.psms.dto.response.AdminApplicationResponse;
 import com.psms.entity.*;
+import com.psms.entity.ServiceType;
 import com.psms.enums.ApplicationStatus;
 import com.psms.exception.BusinessException;
 import com.psms.exception.InvalidStatusTransitionException;
@@ -11,6 +12,7 @@ import com.psms.mapper.ApplicationMapper;
 import com.psms.mapper.StaffMapper;
 import com.psms.service.AdminApplicationService;
 import com.psms.service.DocumentService;
+import com.psms.service.EmailService;
 import com.psms.service.NotificationService;
 import com.psms.util.ApplicationStateMachine;
 import com.psms.repository.ApplicationRepository;
@@ -56,6 +58,7 @@ class AdminApplicationServiceTest {
     @Mock StaffMapper staffMapper;
     @Mock DocumentService documentService;
     @Mock NotificationService notificationService;
+    @Mock EmailService emailService;
 
     @InjectMocks AdminApplicationService adminApplicationService;
 
@@ -64,16 +67,24 @@ class AdminApplicationServiceTest {
     private Application makeApp(ApplicationStatus status) {
         User user = new User();
         user.setId(1L);
+        user.setEmail("citizen@test.com");
+        user.setEmailNotifEnabled(false);  // disable email trong test để không trigger email logic
 
         Citizen citizen = new Citizen();
         citizen.setId(1L);
         citizen.setUser(user);
+
+        ServiceType serviceType = new ServiceType();
+        serviceType.setId(5L);
+        serviceType.setName("Dịch vụ test");
 
         Application app = new Application();
         app.setId(10L);
         app.setApplicationCode("HS-20260101-00001");
         app.setStatus(status);
         app.setCitizen(citizen);
+        app.setServiceType(serviceType);
+        app.setProcessingDeadline(java.time.LocalDate.now().plusDays(7));
         return app;
     }
 

@@ -557,3 +557,273 @@ function confirmAction(message, formId) {
 <button onclick="confirmAction('Xóa người dùng này?', 'del-[[${item.id}]]')"
         class="bsm bd">Xóa</button>
 ```
+
+---
+
+## C-07 · OAuth2 Profile Completion (/auth/oauth2/complete-profile)
+
+Màn hình này chỉ hiện khi citizen đăng nhập lần đầu qua Google và chưa có CCCD trong hệ thống.
+
+**Layout:** Trang standalone (không dùng layout/client.html — chưa có citizen record hoàn chỉnh)
+
+**Form:**
+```html
+<div class="auth-card">
+  <div class="auth-header">
+    <div class="logo-icon">DV</div>
+    <h2>Hoàn thiện hồ sơ</h2>
+    <p>Vui lòng cung cấp thêm thông tin để hoàn tất đăng ký</p>
+  </div>
+
+  <!-- Email + Tên: auto-fill từ Google, read-only -->
+  <div class="fg">
+    <label class="fl">Email <span class="oauth-badge">Từ Google</span></label>
+    <input class="fi dis" th:value="${oauthEmail}" disabled>
+  </div>
+  <div class="fg">
+    <label class="fl">Họ và tên</label>
+    <input class="fi" th:field="*{fullName}">
+  </div>
+
+  <!-- CCCD + Ngày sinh: bắt buộc điền -->
+  <div class="form-g">
+    <div class="fg">
+      <label class="fl">Số CCCD / CMND <span class="req">*</span></label>
+      <input class="fi" th:field="*{nationalId}" placeholder="012345678901">
+      <div class="err" th:if="${#fields.hasErrors('nationalId')}"
+           th:errors="*{nationalId}"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Ngày sinh <span class="req">*</span></label>
+      <input class="fi" type="date" th:field="*{dateOfBirth}">
+    </div>
+  </div>
+
+  <button class="btn-primary full-w" type="submit">Hoàn tất đăng ký</button>
+</div>
+```
+
+**OAuth2 Login Button — thêm vào `auth/login.html`:**
+```html
+<!-- Sau form đăng nhập, trước link "Chưa có tài khoản?" -->
+<div class="oauth-sep"><span>hoặc tiếp tục với</span></div>
+<a class="btn-google" href="/oauth2/authorization/google">
+  <!-- Google G icon inline SVG -->
+  <svg width="18" height="18" viewBox="0 0 48 48">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  </svg>
+  Đăng nhập bằng Google
+</a>
+```
+
+```css
+/* components.css — OAuth2 */
+.oauth-sep {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0; color: var(--muted); font-size: 13px;
+}
+.oauth-sep::before, .oauth-sep::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: white; color: var(--text); font-size: 14px; font-weight: 500;
+  text-decoration: none; cursor: pointer; transition: background .15s, border-color .15s;
+}
+.btn-google:hover { background: var(--light); border-color: #c0c8d8; }
+.oauth-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 6px; background: #EFF6FF; color: #1D4ED8;
+  border-radius: 4px; font-size: 10px; font-weight: 600;
+}
+```
+
+---
+
+## A-01 (update) · Dashboard — Chart.js
+
+Kể từ #17, CSS bar chart được thay thế bằng **Chart.js**. Data fetch từ API đã có sẵn.
+
+**Canvas elements thay thế CSS bar chart:**
+```html
+<!-- Thay thế toàn bộ .bar-r loop trong dashboard.html -->
+<div class="chart-card">
+  <div class="chart-title">Phân bố theo lĩnh vực</div>
+  <canvas id="chart-category" style="max-height:220px"></canvas>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Phân bố theo trạng thái</div>
+  <canvas id="chart-status" style="max-height:220px"></canvas>
+</div>
+```
+
+```css
+/* admin.css — Chart.js wrapper */
+.chart-card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px;
+}
+.chart-title {
+  font-weight: 600; font-size: 14px; color: var(--text);
+  margin-bottom: 16px;
+}
+```
+
+**JS initialization (admin.js):**
+```javascript
+// Khởi tạo sau DOM ready
+async function initDashboardCharts() {
+  // Bar chart — phân bố theo lĩnh vực
+  const catData = await fetch('/api/admin/dashboard/by-category')
+    .then(r => r.json()).then(r => r.data);           // ApiResponse<List<...>>
+
+  new Chart(document.getElementById('chart-category'), {
+    type: 'bar',
+    data: {
+      labels: catData.map(d => d.categoryName),
+      datasets: [{
+        label: 'Số hồ sơ',
+        data: catData.map(d => d.count),
+        backgroundColor: '#3B82F6',
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // Doughnut chart — phân bố theo trạng thái
+  const statusData = await fetch('/api/admin/dashboard/by-status')
+    .then(r => r.json()).then(r => r.data);
+
+  // Màu theo ApplicationStatus.badgeClass (xem badge mapping ở đầu file)
+  const STATUS_COLORS = {
+    SUBMITTED: '#FEF9C3', RECEIVED: '#FDE68A', PROCESSING: '#DBEAFE',
+    ADDITIONAL_REQUIRED: '#FEF9C3', APPROVED: '#DCFCE7', REJECTED: '#FEE2E2'
+  };
+  new Chart(document.getElementById('chart-status'), {
+    type: 'doughnut',
+    data: {
+      labels: statusData.map(d => d.statusLabel),
+      datasets: [{
+        data: statusData.map(d => d.count),
+        backgroundColor: statusData.map(d => STATUS_COLORS[d.status] || '#F1F5F9'),
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+}
+```
+
+**Chart.js CDN — thêm vào `layout/admin.html` trước `</body>`:**
+```html
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/admin.js"></script>
+```
+
+---
+
+## Export button — Excel / CSV dropdown
+
+**Pattern dùng cho mọi trang admin list (thay thế nút "↓ Export CSV" đơn):**
+```html
+<!-- Trong toolbar của mỗi trang admin list -->
+<div class="export-group">
+  <a th:href="@{/admin/export/{type}(type=${exportType})}"
+     class="btn-sm btn-outline">↓ CSV</a>
+  <a th:href="@{/admin/export/{type}(type=${exportType},format='xlsx')}"
+     class="btn-sm btn-outline btn-excel">↓ Excel</a>
+</div>
+```
+
+```css
+/* components.css — Export button group */
+.export-group   { display: flex; gap: 6px; }
+.btn-sm         { padding: 6px 12px; font-size: 12px; border-radius: 6px;
+                  cursor: pointer; font-weight: 600; text-decoration: none;
+                  border: 1.5px solid var(--border); }
+.btn-outline    { background: white; color: var(--text); }
+.btn-outline:hover { background: var(--light); }
+.btn-excel      { color: #15803D; border-color: #86EFAC; }
+.btn-excel:hover { background: #F0FDF4; }
+```
+
+---
+
+## WebSocket — Real-time Notification
+
+**CDN thêm vào `layout/client.html` trước `</body>`:**
+```html
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script src="/js/client.js"></script>
+```
+
+**JS pattern trong `client.js` — thay thế `setInterval` polling:**
+```javascript
+// Thay thế updateNotifBadge() setInterval bằng WebSocket + fallback
+
+let stompClient = null;
+let wsRetryCount = 0;
+const WS_MAX_RETRY = 3;
+
+function connectWebSocket(accessToken) {
+  const socket = new SockJS('/ws?token=' + encodeURIComponent(accessToken));
+  stompClient = new StompJs.Client({
+    webSocketFactory: () => socket,
+    reconnectDelay: 5000,
+    onConnect: (frame) => {
+      wsRetryCount = 0;
+      // Subscribe topic riêng của user đang login
+      stompClient.subscribe('/user/queue/notifications', (message) => {
+        const payload = JSON.parse(message.body);
+        if (payload.unreadCount !== undefined) {
+          updateNotifBadge(payload.unreadCount);   // cập nhật badge trực tiếp
+        }
+        showToast('Bạn có thông báo mới');         // main.js toast
+      });
+    },
+    onDisconnect: () => {
+      if (wsRetryCount >= WS_MAX_RETRY) {
+        fallbackToPolling();                        // nếu quá 3 lần thử → polling
+      }
+    },
+    onStompError: (frame) => {
+      wsRetryCount++;
+    }
+  });
+  stompClient.activate();
+}
+
+// Fallback: nếu WebSocket không connect được
+function fallbackToPolling() {
+  setInterval(() => fetch('/api/client/notifications/unread-count')
+    .then(r => r.json())
+    .then(r => updateNotifBadge(r.data)), 60000);  // 60s thay vì 30s
+}
+
+// Badge update helper
+function updateNotifBadge(count) {
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+}
+```
+
+**Không có UI element mới** — WebSocket chỉ update badge và trigger toast, không cần component riêng.
+Badge element giữ nguyên class và id như layout hiện tại (`#notif-badge`).
+

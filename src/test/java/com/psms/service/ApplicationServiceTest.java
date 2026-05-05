@@ -20,6 +20,7 @@ import com.psms.util.ApplicationCodeGenerator;
 import com.psms.service.ApplicationService;
 import com.psms.service.DocumentService;
 import com.psms.service.NotificationService;
+import com.psms.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -65,6 +66,7 @@ class ApplicationServiceTest {
     @Mock ApplicationMapper                  applicationMapper;
     @Mock DocumentService                    documentService;
     @Mock NotificationService                notificationService;
+    @Mock EmailService                       emailService;
 
     @InjectMocks
     ApplicationService applicationService;
