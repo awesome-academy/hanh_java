@@ -13,12 +13,22 @@ spring:
   thymeleaf:
     cache: true
 
+  # Mail — production SMTP credentials (AWS SES / SendGrid / Gmail relay)
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
 springdoc:
   api-docs:
     enabled: false             # tắt Swagger hoàn toàn trên prod
 
 jwt:
   secret: ${JWT_SECRET}
+
+email:
+  from: ${MAIL_FROM:noreply@psms.gov.vn}
 
 app:
   upload-dir: ${UPLOAD_DIR}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hồ sơ bị từ chối</title>
+</head>
+<body>
+
+<div th:replace="~{email/layout :: wrap(~{::body-content}, '#DC2626')}">
+  <div th:ref="body-content">
+
+    <p style="font-size:15px;margin-bottom:20px;">
+      Xin chào <strong th:text="${fullName}">Nguyễn Văn A</strong>,
+    </p>
+    <p style="font-size:14px;color:#374151;margin-bottom:20px;">
+      Chúng tôi rất tiếc phải thông báo rằng hồ sơ của bạn đã bị từ chối sau quá trình xét duyệt.
+    </p>
+
+    <div style="background:#FFF5F5;border-left:4px solid #DC2626;border-radius:6px;padding:16px 20px;margin:20px 0;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #FEE2E2;font-size:14px;">
+        <span style="color:#64748B;">Mã hồ sơ</span>
+        <span style="font-weight:700;color:#1A2540;" th:text="${applicationCode}">HS-20260428-00001</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #FEE2E2;font-size:14px;">
+        <span style="color:#64748B;">Dịch vụ</span>
+        <span style="font-weight:600;color:#1A2540;" th:text="${serviceName}">Cấp CCCD</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;">
+        <span style="color:#64748B;">Kết quả</span>
+        <span style="font-weight:700;color:#DC2626;">✗ Từ chối</span>
+      </div>
+    </div>
+
+    <!-- Lý do từ chối -->
+    <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:8px;padding:16px 20px;margin:20px 0;">
+      <div style="font-weight:700;color:#B91C1C;margin-bottom:8px;font-size:14px;">Lý do từ chối:</div>
+      <div style="font-size:14px;line-height:1.6;" th:if="${hasNotes}" th:text="${notes}">Tài liệu không hợp lệ</div>
+      <div style="font-size:14px;line-height:1.6;color:#94A3B8;font-style:italic;" th:unless="${hasNotes}">
+        Vui lòng liên hệ trực tiếp cơ quan tiếp nhận để được giải thích rõ hơn.
+      </div>
+    </div>
+
+    <!-- Hướng dẫn tiếp theo -->
+    <div style="background:#FFFBEB;border-radius:8px;padding:16px 20px;margin:20px 0;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#92400E;">Bạn có thể:</div>
+      <div style="font-size:13px;padding:4px 0;">→ Nộp hồ sơ mới sau khi đã bổ sung/sửa đổi tài liệu theo yêu cầu</div>
+      <div style="font-size:13px;padding:4px 0;">→ Liên hệ cơ quan tiếp nhận để được hướng dẫn chi tiết</div>
+      <div style="font-size:13px;padding:4px 0;">→ Xem lại yêu cầu hồ sơ trên trang chi tiết dịch vụ</div>
+    </div>
+
+    <p style="font-size:13px;color:#64748B;margin-top:20px;line-height:1.6;">
+      Nếu bạn cho rằng quyết định từ chối là chưa chính xác, vui lòng liên hệ trực tiếp cơ quan tiếp nhận hồ sơ.
+    </p>
+
+  </div>
+</div>
+
+</body>
+</html>
+

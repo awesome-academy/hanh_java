@@ -49,6 +49,7 @@ public class ApplicationService {
     private final ApplicationMapper applicationMapper;
     private final DocumentService documentService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     // ─── Submit ───────────────────────────────────────────────────────
 
@@ -110,6 +111,18 @@ public class ApplicationService {
 
         // 7. Tạo notification xác nhận nộp hồ sơ thành công
         notificationService.notifyApplicationSubmitted(application);
+
+        // 8. Gửi email async — dùng local variables (now, deadline, serviceType) đã có sẵn
+        //    trong transaction này, KHÔNG đọc lại từ application entity (tránh LazyInit
+        //    và NPE nếu mock trả entity không đầy đủ trong test)
+        emailService.sendApplicationReceived(
+                citizen.getUser().getEmail(),
+                citizen.getUser().getFullName(),
+                citizen.getUser().isEmailNotifEnabled(),
+                application.getApplicationCode(),
+                serviceType.getName(),
+                now.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")),
+                deadline.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         return applicationMapper.toResponse(application);
     }
